@@ -6,7 +6,7 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <h1 class="display-6">Welcome, {{ name.title() }}!</h1>
+      <h1 class="display-6">Welcome, {{ name.capitalize() }}!</h1>
       {#
       {% if user.is_authenticated %}
         <ul class="list-group">
@@ -20,6 +20,11 @@
       <h3>Please, log in!</h3>
       {% endif %}
       #}
+    </div>
+    <div>
+      {% for device in devices %}
+      <p>{{device}}</p>
+      {% endfor %}
     </div>
   </div>
 </div>

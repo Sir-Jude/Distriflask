@@ -12,4 +12,15 @@ def admin():
 
 @app.route('/user/<name>/')
 def user(name):
-    return render_template("user.html", name=name)
+    # To be substituted with a database...
+    devices = [
+        "device_1",
+        "device_2",
+        "device_3",
+        "device_4",
+        "..."
+    ]
+    return render_template(
+        "user.html",
+        name=name,
+        devices=devices)
