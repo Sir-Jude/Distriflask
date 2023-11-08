@@ -14,6 +14,46 @@ pip install -r requirements.txt
 ```
 
 
+# Create the .gitignore file
+```
+.env
+.venv
+venv
+__pycache__
+*.pyc
+*.sqlite3
+request.http
+.python-version
+```
+
+
+# Create the .env file and import the libraries to use it
+Import the libraries
+```
+import os
+from dotenv import load_dotenv
+```
+
+
+
+# Create the project.py file and import the libraries to use flask
+Import the libraries
+```
+from flask import Flask, render_template
+```
+
+Initialize a Flask application instance
+```
+app = Flask(__name__)
+```
+
+Sets a configuration variable for the Flask application and store it in the .emv file
+```
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+```
+
+
+
 # Run the development server in debug mode
 Add the "--debug" option to enable the debug mode.
 
@@ -44,9 +84,9 @@ Import SQLAlchemy
 from flask_sqlalchemy import SQLAlchemy
 ```
 
-Create a SQLAlchemy instance:
+Create a SQLAlchemy instance and link to the app:
 ```
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 ```
 
 Configure the database connection URI (Uniform Resource Identifier) for SQLAlchemy
@@ -54,9 +94,11 @@ Configure the database connection URI (Uniform Resource Identifier) for SQLAlche
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 ```
 
-Links SQLAlchemy with Flask
+Create the actual DB from the flask shell typing into the terminal:
 ```
-db.init_app(app)
+flask shell
+db.create_all()
+exit()
 ```
 
 
@@ -66,14 +108,9 @@ Import Admin
 from flask_admin import Admin
 ```
 
-Create Admin page instance
+Create Admin page instance and link it to the app
 ```
-admin = Admin()
-```
-
-Links the Admin instance with Flask
-```
-db.init_app(app)
+admin = Admin(app)
 ```
 
 In order to personalize the default page, create in the folder "templates" the subfolder "admin" where to store the admin page "index.html". Then, to modify it, extend the base page provided by the admin package folder and put all the code between a block body:
@@ -86,6 +123,18 @@ In order to personalize the default page, create in the folder "templates" the s
 
 {% endblock %}
 ```
+
+# Create a Login feature
+Import the libraries
+```
+from flask_login import LoginManager
+```
+Create an instance of the login_manager class and link it the login to the app
+```
+login_manager = LoginManager(app)
+```
+
+
 
 # Create a User model and link it to the admin page
 Import the libraries to use the UUID (Universally Unique Identifier)
@@ -109,11 +158,4 @@ from flask_admin.contrib.sqla import ModelView
 Add a new view for the Use model to the admin interface
 ```
 admin.add_view(ModelView(User, db.session))
-```
-
-Create the actual DB from the flask shell typing into the terminal:
-```
-flask shell
-db.create_all()
-exit()
 ```

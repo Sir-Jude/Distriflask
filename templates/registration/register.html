@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
+{% block title %}
+<title>Register</title>
+{% endblock %}
 {% block content %}
 <p>
-    Enter your email:
+    Register nere:
 </p>
+<form method="POST" action="">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    {{ form.username }}
+    {{ form.password }}
+    {{ form.submit }}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-
-    <button type="submit">Reset password</button>
+    <button class="btn btn-primary" type="submit">Login</button>
 </form>
-
 {% endblock %}

@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
+{% block title %}
+<title>Login</title>
+{% endblock %}
 {% block content %}
-<h1>
+<h1 class="display-6">
     Welcome to the login page!
 </h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+<form method="POST" action="">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    {{ form.username }}
+    {{ form.password }}
+    {{ form.submit }}
 
     <button class="btn btn-primary" type="submit">Login</button>
 </form>
-Forgotten password? <a href= {% url_for 'password_reset' %}>Reset</a>
 {% endblock %}
