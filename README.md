@@ -102,11 +102,11 @@ admin.add_view(ModelView(User, db.session))
 ```
 
 # Initiate the database
-Import SQLAlchemy
+Import SQLAlchemy and Migrate
 ```
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 ```
-
 Create a SQLAlchemy instance and link to the app:
 ```
 db = SQLAlchemy(app)
@@ -123,7 +123,17 @@ flask shell
 db.create_all()
 exit()
 ```
+Run the command
+```
+flask db init
+```
 
+Whenever we modify a model, run the following command:
+```
+flask db migrate -m "short description..."
+flask db upgrade
+```
+flask db migrate -m "Add UserMixin to the User model"
 
 # Create the admin page
 Import Admin
