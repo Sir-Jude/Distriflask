@@ -3,16 +3,17 @@
 <title>Register</title>
 {% endblock %}
 {% block content %}
-<p>
-    Register nere:
-</p>
-<form method="POST" action="">
-    {{ form.csrf_token }}
-    {{ form.hidden_tag() }}
-    {{ form.username }}
-    {{ form.password }}
-    {{ form.submit }}
-
-    <button class="btn btn-primary" type="submit">Login</button>
-</form>
+  <p>
+    Register here:
+  </p>
+    <form method="POST" action="{{ url_for('register') }}">
+      {{ form.csrf_token }}
+      {{ form.hidden_tag() }}
+      {{ form.username() }}
+      {{ form.password() }}
+      {{ form.submit() }}
+    </form>
+    {% for error in form.username.errors %}
+      <p class="error">{{ error }}</p>
+    {% endfor %}
 {% endblock %}
