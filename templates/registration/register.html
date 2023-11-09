@@ -10,7 +10,11 @@
       {{ form.csrf_token }}
       {{ form.hidden_tag() }}
       {{ form.username() }}
+      <br>
       {{ form.password() }}
+      <br>
+      {{ form.password_2() }}
+      <br>
       {{ form.submit() }}
     </form>
     {% for error in form.username.errors %}

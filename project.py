@@ -10,8 +10,8 @@ from sqlalchemy_utils import UUIDType
 import uuid
 from flask_admin.contrib.sqla import ModelView
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from flask_migrate import Migrate
 
 
@@ -72,8 +72,12 @@ class RegisterForm(FlaskForm):
         render_kw={"placeholder": "Username"},
     )
     password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
+        validators=[InputRequired(), Length(min=8, max=20), EqualTo('password_2', message="Passwords must match!")],
         render_kw={"placeholder": "Password"},
+    )
+    password_2 = PasswordField(
+        validators=[InputRequired()],
+        render_kw={"placeholder": "Confirm Password"},
     )
     submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
 
