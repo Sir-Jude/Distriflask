@@ -3,16 +3,14 @@
 <title>Login</title>
 {% endblock %}
 {% block content %}
-<h1 class="display-6">
-    Welcome to the login page!
-</h1>
-<form method="POST" action="">
+<p>
+    Please, insert your username and password:
+</p>
+<form method="POST" action="{{ url_for('login') }}">
     {{ form.csrf_token }}
     {{ form.hidden_tag() }}
-    {{ form.username }}
-    {{ form.password }}
-    {{ form.submit }}
-
-    <button class="btn btn-primary" type="submit">Login</button>
+    {{ form.username() }}
+    {{ form.password() }}
+    {{ form.submit() }}
 </form>
 {% endblock %}
