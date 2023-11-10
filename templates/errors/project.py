@@ -1,19 +1,24 @@
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from flask_login import (
+    UserMixin,
+    LoginManager,
+    login_user,
+    login_required,
+    logout_user,
+    current_user,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
-# Import the libraries to use UUID (Universal Unique Identifier)
 from sqlalchemy_utils import UUIDType
 import uuid
 from flask_admin.contrib.sqla import ModelView
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from flask_migrate import Migrate
-
 
 
 load_dotenv()
@@ -32,13 +37,13 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
-class User(db.Model, UserMixin) :
+class User(db.Model, UserMixin):
     __tablename__ = "user"
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
-    password_hash  = db.Column(db.String(50), nullable=False)
+    password_hash = db.Column(db.String(50), nullable=False)
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
     # devices = db.Column # Only for customers, just one device (one to one)
@@ -50,19 +55,20 @@ class User(db.Model, UserMixin) :
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
-        
+
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
+
     @staticmethod
     def authenticate(username, password):
         user = User.query.filter_by(username=username).first()
         if user and user.verify_password(password):
             return user
         return None
-    
+
     def get_id(self):
         return str(self.user_id)
+
 
 @app.route("/")
 @app.route("/home/", methods=["GET"])
@@ -82,7 +88,11 @@ class RegisterForm(FlaskForm):
         render_kw={"placeholder": "Username"},
     )
     password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20), EqualTo('password_2', message="Passwords must match!")],
+        validators=[
+            InputRequired(),
+            Length(min=8, max=20),
+            EqualTo("password_2", message="Passwords must match!"),
+        ],
         render_kw={"placeholder": "Password"},
     )
     password_2 = PasswordField(
@@ -129,14 +139,13 @@ class LoginForm(FlaskForm):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        print("Form validation successful")
         user = User.authenticate(
             username=form.username.data, password=form.password.data
         )
 
         if user:
-            print("User authenticated")
             login_user(user)
+            flash("User successufully logged", "success")
             return redirect(url_for("user", name=form.username.data))
         else:
             flash("Invalid username or password", "danger")
@@ -144,8 +153,23 @@ def login():
     return render_template("registration/login.html", form=form)
 
 
-@app.route("/user/<name>/")
-def user(name):
+@app.route("/logout/", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+
+
+@app.route("/user/<username>/")
+def user(username):
     # To be substituted with a database...
     devices = ["device_1", "device_2", "device_3", "device_4", "..."]
-    return render_template("user.html", username=name, devices=devices)
+    return render_template("user.html", username=username, devices=devices)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("errors/404.html"), 404
+
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template("errors/500.html"), 500
