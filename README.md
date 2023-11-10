@@ -27,12 +27,25 @@ request.http
 ```
 
 
-# Create the .env file and import the libraries to use it
-Import the libraries
+# .env file and import the libraries to use it
+Create a .env file
+```
+code .env
+```
+Add the following environmental variables
+```
+SECRET_KEY = <a_secure_secret_key>
+export FLASK_ENV=development
+export FLASK_APP=project.py
+```
+Whitout these, we would have to stop the server and restart it everytime we made some modifications in our code to let them take effect.
+
+Finally, in the main project file, import the libraries which allows to use it
 ```
 import os
 from dotenv import load_dotenv
 ```
+
 
 
 # Create the project.py file and import the libraries to use flask
@@ -46,11 +59,10 @@ Initialize a Flask application instance
 app = Flask(__name__)
 ```
 
-Sets a configuration variable for the Flask application and store it in the .env file
+Sets a configuration variable for the Flask application
 ```
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 ```
-
 
 
 # Run the development server in debug mode
@@ -63,13 +75,6 @@ This allows:
 
 ```
 flask run --debug
-```
-
-
-# Install the environmental variables
-```
-export FLASK_ENV=development
-export FLASK_APP=project.py
 ```
 
 
@@ -100,6 +105,7 @@ Add a new view for the Use model to the admin interface
 ```
 admin.add_view(ModelView(User, db.session))
 ```
+
 
 # Initiate the database
 Import SQLAlchemy and Migrate
