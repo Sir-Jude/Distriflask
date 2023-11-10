@@ -29,7 +29,7 @@ login_manager = LoginManager(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(user_id)
 
 
 class User(db.Model, UserMixin) :
@@ -53,6 +53,16 @@ class User(db.Model, UserMixin) :
         
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    @staticmethod
+    def authenticate(username, password):
+        user = User.query.filter_by(username=username).first()
+        if user and user.verify_password(password):
+            return user
+        return None
+    
+    def get_id(self):
+        return str(self.user_id)
 
 @app.route("/")
 @app.route("/home/", methods=["GET"])
@@ -114,25 +124,19 @@ class LoginForm(FlaskForm):
     )
     submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
-    def validate_username(self, username):
-        existing_user_username = User.query.filter_by(username=username.data).first()
-        if existing_user_username:
-            raise ValidationError(
-                "This username already exists. Please choose a different one."
-            )
-
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        print("Form validation successful")
         user = User.authenticate(
             username=form.username.data, password=form.password.data
         )
 
         if user:
+            print("User authenticated")
             login_user(user)
-            flash("Login successful!", "success")
             return redirect(url_for("user", name=form.username.data))
         else:
             flash("Invalid username or password", "danger")
