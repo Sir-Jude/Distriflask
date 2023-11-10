@@ -14,5 +14,15 @@
     {{ form.password() }}
     <br>
     {{ form.submit() }}
+
+    {% if form.errors %}
+    <ul class="errors">
+        {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+                <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+{% endif %}
 </form>
 {% endblock %}
