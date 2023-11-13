@@ -146,7 +146,7 @@ def login():
         if user:
             login_user(user)
             flash("User successufully logged", "success")
-            return redirect(url_for("user", name=form.username.data))
+            return redirect(url_for("user", username=form.username.data))
         else:
             flash("Invalid username or password", "danger")
 
