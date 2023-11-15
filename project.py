@@ -108,7 +108,7 @@ class RegisterForm(FlaskForm):
             )
 
 
-@app.route("/register/", methods=["GET", "POST"])
+@app.route("/admin/user/register/", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
 
@@ -117,7 +117,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        return redirect(url_for("login"))
+        return redirect(url_for("admin.index", _external=True, _scheme='http') + "user/")
+
 
     return render_template("registration/register.html", form=form)
 
