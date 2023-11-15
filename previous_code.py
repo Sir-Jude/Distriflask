@@ -1,11 +1,11 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import (
     UserMixin,
-    LoginManager,
     login_user,
+    LoginManager,
     login_required,
     logout_user,
     current_user,
@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from sqlalchemy_utils import UUIDType
 import uuid
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from flask_migrate import Migrate
 
@@ -47,7 +47,7 @@ class User(db.Model, UserMixin):
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
-    password_hash = db.Column(db.String(200), nullable=False)
+    password_hash = db.Column(db.String(50), nullable=False)
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
     # devices = db.Column # Only for customers, just one device (one to one)
@@ -80,6 +80,7 @@ admin.add_view(ModelView(User, db.session))
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
 
 class RegisterForm(FlaskForm):
     username = StringField(
@@ -121,6 +122,7 @@ def register():
 
     return render_template("registration/register.html", form=form)
 
+
 class LoginForm(FlaskForm):
     username = StringField(
         validators=[InputRequired(), Length(min=4, max=20)],
@@ -137,23 +139,26 @@ class LoginForm(FlaskForm):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        print("Form validation successful")
         user = User.authenticate(
             username=form.username.data, password=form.password.data
         )
 
         if user:
+            print("User authenticated")
             login_user(user)
-            return redirect(url_for("user", username=form.username.data))
+            return redirect(url_for("user", name=form.username.data))
+        else:
+            flash("Invalid username or password", "danger")
 
     return render_template("registration/login.html", form=form)
 
 
-@app.route("/user/<username>/")
-def user(username):
+@app.route("/user/<name>/")
+def user(name):
     # To be substituted with a database...
     devices = ["device_1", "device_2", "device_3", "device_4", "..."]
-    return render_template("user.html", username=username, devices=devices)
-
+    return render_template("user.html", username=name, devices=devices)
 
 @app.route("/logout/", methods=["GET", "POST"])
 @login_required
