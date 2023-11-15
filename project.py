@@ -74,12 +74,10 @@ class User(db.Model, UserMixin):
         return str(self.user_id)
 
 
-admin.add_view(ModelView(User, db.session))
-
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
 
 class RegisterForm(FlaskForm):
     username = StringField(
@@ -108,6 +106,12 @@ class RegisterForm(FlaskForm):
             )
 
 
+@app.route("/admin/user/new/", methods=["GET", "POST"])
+def custom_register():
+    # Redirect to your custom registration page
+    return redirect(url_for("register"))
+
+
 @app.route("/admin/user/register/", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -117,10 +121,15 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        return redirect(url_for("admin.index", _external=True, _scheme='http') + "user/")
-
+        return redirect(
+            url_for("admin.index", _external=True, _scheme="http") + "user/"
+        )
 
     return render_template("registration/register.html", form=form)
+
+
+admin.add_view(ModelView(User, db.session))
+
 
 class LoginForm(FlaskForm):
     username = StringField(
