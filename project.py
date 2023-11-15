@@ -10,7 +10,6 @@ from flask_login import (
     logout_user,
     current_user,
 )
-from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
 from sqlalchemy_utils import UUIDType
@@ -19,7 +18,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from flask_migrate import Migrate
-
+from flask_bcrypt import Bcrypt 
 
 load_dotenv()
 
@@ -30,6 +29,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 admin = Admin(app)
 login_manager = LoginManager(app)
+bcrypt = Bcrypt(app)
 
 
 @app.route("/")
@@ -58,10 +58,10 @@ class User(db.Model, UserMixin):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8') 
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
 
     @staticmethod
     def authenticate(username, password):
