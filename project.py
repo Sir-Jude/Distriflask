@@ -157,7 +157,7 @@ def login():
         if user:
             if bcrypt.check_password_hash(user.password_hash, form.password.data):
                 login_user(user)
-                flash("Login successfully!")
+                flash("Logged in successfully!")
                 return redirect(url_for("user", username=form.username.data))
             else:
                 flash("Wrong password - Try Again...")
