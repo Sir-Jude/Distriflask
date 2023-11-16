@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from sqlalchemy_utils import UUIDType
 import uuid
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SelectField,SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo, Email
 from flask_bcrypt import Bcrypt 
 
@@ -54,6 +54,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), nullable=False, unique=True)
     email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='user')
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
     # devices = db.Column # Only for customers, just one device (one to one)
@@ -87,7 +88,6 @@ class RegisterForm(FlaskForm):
         ],
         render_kw={"placeholder": "Username"},
     )
-    
     email = StringField(
         validators=[
             InputRequired(), Email(),
@@ -105,6 +105,13 @@ class RegisterForm(FlaskForm):
     password_2 = PasswordField(
         validators=[InputRequired()],
         render_kw={"placeholder": "Confirm Password"},
+    )
+    role = SelectField(
+        choices=[('user', 'User'), ('admin', 'Admin')],
+        validators=[
+            InputRequired(), 
+        ],
+        render_kw={"placeholder": "Role"},
     )
     submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
 
@@ -129,7 +136,7 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data, role=form.role.data)
         db.session.add(new_user)
         db.session.commit()
 
