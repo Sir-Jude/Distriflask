@@ -45,12 +45,16 @@
       </div>
       <p>Register here:</p>
       <form method="POST" action="{{ url_for('register') }}">
-        {{ form.csrf_token }} {{ form.hidden_tag() }} {{ form.username() }}
-        <br />
+        {{ form.csrf_token }}
+        {{ form.hidden_tag() }}
+        {{ form.username() }}
+        <br/>
+        {{ form.email() }}
+        <br/>
         {{ form.password() }}
-        <br />
+        <br/>
         {{ form.password_2() }}
-        <br />
+        <br/>
         {{ form.submit() }}
       </form>
       {% for error in form.username.errors %}

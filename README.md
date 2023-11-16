@@ -169,11 +169,20 @@ exit()
 ```
 **Important**: *db.create_all()* creates the tables for all the models that have been defined in the application, but if new models are added later, the command needs to be run again. 
 
+Using SQLite, to check whether the tables have been created, run the command
+```
+sqlite3 <relative_path_to_the_database_file>
+# for example 
+# sqlite3 instance/db.sqlite3
+.tables
+.exit
+``` 
 
 
-Finally, set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a project.
+Set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a project.
 ```
 flask db init
+flask db migrate
 ```
 
 **IMPORTANT**: whenever a model is modified or a new one is created, the following commands must to run in order to migrate the new changes into the database and upgrade its structure.
@@ -181,6 +190,8 @@ flask db init
 flask db migrate -m "short description..."
 flask db upgrade
 ```
+
+
 
 
 # Create the admin page
