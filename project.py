@@ -28,7 +28,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 admin = Admin(app)
-login_manager = LoginManager(app)
 bcrypt = Bcrypt(app)
 
 
@@ -79,11 +78,6 @@ class User(db.Model, UserMixin):
 
     def get_id(self):
         return str(self.user_id)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
 
 
 class RegisterForm(FlaskForm):
@@ -149,6 +143,14 @@ def register():
 admin.add_view(ModelView(User, db.session))
 
 
+# Flask_login stuff 
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
 class LoginForm(FlaskForm):
     username = StringField(
         validators=[InputRequired(), Length(min=4, max=20)],
@@ -158,7 +160,9 @@ class LoginForm(FlaskForm):
         validators=[InputRequired(), Length(min=8, max=20)],
         render_kw={"placeholder": "Password"},
     )
-    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
+    submit = SubmitField(
+        "Login",
+        render_kw={"class": "btn btn-primary"})
 
 
 @app.route("/login/", methods=["GET", "POST"])
@@ -178,7 +182,8 @@ def login():
     return render_template("registration/login.html", form=form)
 
 
-@app.route("/user/<username>/")
+@app.route("/user/<username>/", methods=["GET", "POST"])
+@login_required
 def user(username):
     # To be substituted with a database...
     devices = ["device_1", "device_2", "device_3", "device_4", "..."]
@@ -189,6 +194,7 @@ def user(username):
 @login_required
 def logout():
     logout_user()
+    flash("You have been logged out.")
     return redirect(url_for("login"))
 
 
