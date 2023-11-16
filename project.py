@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_admin import Admin
@@ -153,14 +153,16 @@ class LoginForm(FlaskForm):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.authenticate(
-            username=form.username.data, password=form.password.data
-        )
-
+        user = User.query.filter_by(username=form.username.data).first()
         if user:
-            login_user(user)
-            return redirect(url_for("user", username=form.username.data))
-
+            if bcrypt.check_password_hash(user.password_hash, form.password.data):
+                login_user(user)
+                flash("Login successfully!")
+                return redirect(url_for("user", username=form.username.data))
+            else:
+                flash("Wrong password - Try Again...")
+        else:
+            flash("This username does not exist - Try again...")
     return render_template("registration/login.html", form=form)
 
 
