@@ -27,7 +27,7 @@ request.http
 ```
 
 
-# .env file and import the libraries to use it
+# Set the environmental variables
 Create a .env file
 ```
 code .env
@@ -35,23 +35,27 @@ code .env
 Add the following environmental variables
 ```
 SECRET_KEY = <a_secure_secret_key>
-export FLASK_ENV=development
-export FLASK_APP=project.py
+FLASK_ENV=development
+FLASK_APP=project.py
 ```
-Whitout these, we would have to stop the server and restart it everytime we made some modifications in our code to let them take effect.
 
-Finally, in the main project file, import the libraries which allows to use it
+The **SECRET_KEY** is a crucial configuration variable used for security-related purposes, especially for cryptographic functions and session management
+
+The **FLASK_ENV** variable is used to set the Flask environment and determines the behavior of the app: it can have values like "development", "testing" or "production".
+
+The **FLASK_APP** variable is used by Flask to locate the app and it is used as its entry point.
+
+Finally, in the main project file, import the libraries which allows to use the .env file
 ```
 import os
 from dotenv import load_dotenv
 ```
 
 
-
-# Create the project.py file and import the libraries to use flask
+# Create the project.py file and set it up to use Flask
 Import the libraries
 ```
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 ```
 
 Initialize a Flask application instance
@@ -59,30 +63,48 @@ Initialize a Flask application instance
 app = Flask(__name__)
 ```
 
-Sets a configuration variable for the Flask application
+Link SECRET_KEY to the project through the .env file 
 ```
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 ```
 
 
-# Run the development server in debug mode
-Add the "--debug" option to enable the debug mode.
-
-This allows:
- - the continuous synchronization of the code without having to restart it
- - the error visualization  
-**IMPORTANT**: Remember to remove the debug mode when the project will be deployed.
-
+# Start the Flask application in debug mode
 ```
 flask run --debug
 ```
+The "--debug" option provide:
+- the continuous synchronization of the code after every modification, so that the application has not to be retart to be updated
+- the interactive debugger, which highlights the errors in the code
 
 
-# Create a **templates** folder
-It will store the html template pages
+
+# Create a "*templates*" folder
+It will store the files with the code for the html pages
+
+
+# Create a route to a web page and its logic
+The @app.route decorator is used to bind a URL path to a function. Additionally, by using the methods argument, it specify the permissible HTTP request methods that the associated function will respond to.
+```
+@app.route("/logout/", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+```
+
+Finally, render one of the html file kept in the *templates* folder
+```
+return render_template("registration/login.html", context=object)
+```
+
+Or redirect the user to a specific route, identifed by the name of its associatd function:
+```
+return redirect(url_for("login"))
+```
 
 
 # Create a User model and link it to the admin page
+# TO BE REVIEW AND REWRITTEN!!!
 Import the libraries to use the UUID (Universally Unique Identifier)
 ```
 from sqlalchemy.dialects.postgresql import UUID
@@ -91,9 +113,13 @@ import uuid
 
 Create the model view
 ```
-class User(db.Model):
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    username = db.Column(db.String(50))
+class User(db.Model, UserMixin):
+    __tablename__ = "user"
+    user_id = db.Column(
+        UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
+    )
+    username = db.Column(db.String(20), nullable=False, unique=True)
+    password_hash = db.Column(db.String(200), nullable=False)
 ```
 
 Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
@@ -113,28 +139,44 @@ Import SQLAlchemy and Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 ```
+
+Configure the parameter which specifies the **URI** (**U**niform **R**esource **I**dentifier) used to connect to a database. In this case, SQLAlchemy (an open-source SQL toolkit and Object-Relational Mapping (ORM) library for Python) use the URI to establish a connection with a SQLite database called *db.sqlite3*
+```
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+```
+
 Create a SQLAlchemy instance and link to the app:
 ```
 db = SQLAlchemy(app)
 ```
 
-Configure the database connection URI (Uniform Resource Identifier) for SQLAlchemy
+Initialize the **Flask-Migrate** extension, which provides a set of commands to handle database migrations: Flask-Migrate helps manage changes in the structure of your database over time, allowing you to easily create and apply migrations when you modify your database schema or models.
+It takes as parameters the Flask application app and db instances set earlier.
 ```
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+migrate = Migrate(app, db)
 ```
 
-Create the actual DB from the flask shell typing into the terminal:
+From the terminal, launch the flask shell...
 ```
 flask shell
+```
+
+...and create the actual DB typing the following commands:
+```
+from project import db
 db.create_all()
 exit()
 ```
-Run the command
+**Important**: *db.create_all()* creates the tables for all the models that have been defined in the application, but if new models are added later, the command needs to be run again. 
+
+
+
+Finally, set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a project.
 ```
 flask db init
 ```
 
-Whenever we modify a model, run the following command:
+**IMPORTANT**: whenever a model is modified or a new one is created, the following commands must to run in order to migrate the new changes into the database and upgrade its structure.
 ```
 flask db migrate -m "short description..."
 flask db upgrade
@@ -164,7 +206,7 @@ In order to personalize the default page, create in the folder "templates" the s
 ```
 
 
-# Create a registration form and its relative register webpage 
+# Create a registration form and its relative html webpage 
 Import the relevant libraries
 ```
 from flask_wtf import FlaskForm

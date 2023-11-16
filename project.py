@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import (
@@ -17,7 +18,6 @@ import uuid
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
-from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt 
 
 load_dotenv()
@@ -35,6 +35,12 @@ bcrypt = Bcrypt(app)
 @app.route("/")
 @app.route("/home/", methods=["GET"])
 def home_page():
+    '''
+    By initializing username as None, it ensures that the "username"
+    variable exists even if the user isn't authenticated. This approach
+    avoids potential errors that might arise if current_user.is_authenticated
+    evaluates to False, and username hasn't been assigned a value yet.
+    '''
     username = None
     if current_user.is_authenticated:
         username = current_user.username
