@@ -17,7 +17,7 @@ from sqlalchemy_utils import UUIDType
 import uuid
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+from wtforms.validators import InputRequired, Length, ValidationError, EqualTo, Email
 from flask_bcrypt import Bcrypt 
 
 load_dotenv()
@@ -53,6 +53,7 @@ class User(db.Model, UserMixin):
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
+    email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
@@ -87,8 +88,17 @@ def load_user(user_id):
 
 class RegisterForm(FlaskForm):
     username = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
+        validators=[
+            InputRequired(), Length(min=4, max=20),
+        ],
         render_kw={"placeholder": "Username"},
+    )
+    
+    email = StringField(
+        validators=[
+            InputRequired(), Email(),
+        ],
+        render_kw={"placeholder": "Email"},
     )
     password = PasswordField(
         validators=[
@@ -105,6 +115,8 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
 
     def validate_username(self, field):
+        field.data = field.data.lower()
+        
         existing_user_username = User.query.filter_by(username=field.data).first()
         if existing_user_username:
             raise ValidationError(
@@ -123,7 +135,7 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, password=form.password.data)
+        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
         db.session.add(new_user)
         db.session.commit()
 
@@ -153,7 +165,7 @@ class LoginForm(FlaskForm):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(username=form.username.data.lower()).first()
         if user:
             if bcrypt.check_password_hash(user.password_hash, form.password.data):
                 login_user(user)
