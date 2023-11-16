@@ -190,8 +190,9 @@ flask db migrate
 flask db migrate -m "short description..."
 flask db upgrade
 ```
-
-
+**DO NOT FORGET**: in case a model is modiefied, for example the "User", you need to update also:
+- the register form
+- the reigster route  
 
 
 # Create the admin page
