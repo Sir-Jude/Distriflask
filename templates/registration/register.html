@@ -55,6 +55,8 @@
         <br/>
         {{ form.password_2() }}
         <br/>
+        {{ form.role() }}
+        <br/>
         {{ form.submit() }}
       </form>
       {% for error in form.username.errors %}
