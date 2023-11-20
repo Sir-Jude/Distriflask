@@ -54,7 +54,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), nullable=False, unique=True)
     email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='user')
+    role = db.Column(db.String(20), nullable=False)
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
     # devices = db.Column # Only for customers, just one device (one to one)
