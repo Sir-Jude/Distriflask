@@ -25,9 +25,10 @@ load_dotenv()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+admin = Admin(app, name='Admin', template_mode='bootstrap3')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-admin = Admin(app)
 bcrypt = Bcrypt(app)
 
 
@@ -181,7 +182,7 @@ def login():
             if bcrypt.check_password_hash(user.password_hash, form.password.data):
                 login_user(user)
                 flash("Logged in successfully!")
-                return redirect(url_for("user", username=form.username.data))
+                return redirect(url_for("user", username=user.username))
             else:
                 flash("Wrong password - Try Again...")
         else:
@@ -192,6 +193,9 @@ def login():
 @app.route("/user/<username>/", methods=["GET", "POST"])
 @login_required
 def user(username):
+    if current_user.username != username:
+        return render_template("errors/403.html"), 403
+    
     # To be substituted with a database...
     devices = ["device_1", "device_2", "device_3", "device_4", "..."]
     return render_template("user.html", username=username, devices=devices)
