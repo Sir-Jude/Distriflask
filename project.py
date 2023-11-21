@@ -16,17 +16,17 @@ from dotenv import load_dotenv
 from sqlalchemy_utils import UUIDType
 import uuid
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField,SubmitField
+from wtforms import StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo, Email
-from flask_bcrypt import Bcrypt 
+from flask_bcrypt import Bcrypt
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
-app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
-admin = Admin(app, name='Admin', template_mode='bootstrap3')
+app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
+admin = Admin(app, name="Admin", template_mode="bootstrap3")
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
@@ -35,12 +35,12 @@ bcrypt = Bcrypt(app)
 @app.route("/")
 @app.route("/home/", methods=["GET"])
 def home_page():
-    '''
+    """
     By initializing username as None, it ensures that the "username"
     variable exists even if the user isn't authenticated. This approach
     avoids potential errors that might arise if current_user.is_authenticated
     evaluates to False, and username hasn't been assigned a value yet.
-    '''
+    """
     username = None
     if current_user.is_authenticated:
         username = current_user.username
@@ -55,6 +55,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), nullable=False, unique=True)
     email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
+    device = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
@@ -66,7 +67,7 @@ class User(db.Model, UserMixin):
 
     @password.setter
     def password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8') 
+        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
 
     def verify_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
@@ -78,6 +79,9 @@ class User(db.Model, UserMixin):
             return user
         return None
 
+    def is_admin(self):
+        return self.role == "admin"
+
     def get_id(self):
         return str(self.user_id)
 
@@ -85,13 +89,15 @@ class User(db.Model, UserMixin):
 class RegisterForm(FlaskForm):
     username = StringField(
         validators=[
-            InputRequired(), Length(min=4, max=20),
+            InputRequired(),
+            Length(min=4, max=20),
         ],
         render_kw={"placeholder": "Username"},
     )
     email = StringField(
         validators=[
-            InputRequired(), Email(),
+            InputRequired(),
+            Email(),
         ],
         render_kw={"placeholder": "Email"},
     )
@@ -107,10 +113,15 @@ class RegisterForm(FlaskForm):
         validators=[InputRequired()],
         render_kw={"placeholder": "Confirm Password"},
     )
+
+    device = StringField(
+        render_kw={"placeholder": "Device"},
+    )
+
     role = SelectField(
-        choices=[('user', 'User'), ('admin', 'Admin')],
+        choices=[("user", "User"), ("admin", "Admin")],
         validators=[
-            InputRequired(), 
+            InputRequired(),
         ],
         render_kw={"placeholder": "Role"},
     )
@@ -118,7 +129,7 @@ class RegisterForm(FlaskForm):
 
     def validate_username(self, field):
         field.data = field.data.lower()
-        
+
         existing_user_username = User.query.filter_by(username=field.data).first()
         if existing_user_username:
             raise ValidationError(
@@ -137,7 +148,13 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data, role=form.role.data)
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=form.password.data,
+            device=form.device.data,
+            role=form.role.data,
+        )
         db.session.add(new_user)
         db.session.commit()
 
@@ -147,20 +164,20 @@ def register():
 
     return render_template("registration/register.html", form=form)
 
+
 class UserAdminView(ModelView):
-    column_exclude_list = ('password_hash',)
-    form_edit_rules = (
-        'username',
-        'email',
-        'role',
-    )
+    column_exclude_list = ["password_hash"]
+    form_excluded_columns = ["password_hash"]
+
 
 admin.add_view(UserAdminView(User, db.session))
 
 
-# Flask_login stuff 
+# Flask_login stuff
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = "login"
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
@@ -175,9 +192,7 @@ class LoginForm(FlaskForm):
         validators=[InputRequired(), Length(min=8, max=20)],
         render_kw={"placeholder": "Password"},
     )
-    submit = SubmitField(
-        "Login",
-        render_kw={"class": "btn btn-primary"})
+    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
 
 @app.route("/login/", methods=["GET", "POST"])
@@ -202,9 +217,9 @@ def login():
 def user(username):
     if current_user.username != username:
         return render_template("errors/403.html"), 403
-    
+
     # To be substituted with a database...
-    devices = ["device_1", "device_2", "device_3", "device_4", "..."]
+    devices = current_user.device
     return render_template("user.html", username=username, devices=devices)
 
 
@@ -214,6 +229,11 @@ def logout():
     logout_user()
     flash("You have been logged out.")
     return redirect(url_for("login"))
+
+
+@app.errorhandler(403)
+def page_not_found(e):
+    return render_template("errors/403.html"), 403
 
 
 @app.errorhandler(404)

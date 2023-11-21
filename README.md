@@ -192,7 +192,8 @@ flask db upgrade
 ```
 **DO NOT FORGET**: in case a model is modiefied, for example the "User", you need to update also:
 - the register form
-- the reigster route  
+- the reigster route
+- the http template
 
 
 # Create the admin page
