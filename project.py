@@ -147,8 +147,15 @@ def register():
 
     return render_template("registration/register.html", form=form)
 
+class UserAdminView(ModelView):
+    column_exclude_list = ('password_hash',)
+    form_edit_rules = (
+        'username',
+        'email',
+        'role',
+    )
 
-admin.add_view(ModelView(User, db.session))
+admin.add_view(UserAdminView(User, db.session))
 
 
 # Flask_login stuff 
