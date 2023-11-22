@@ -72,19 +72,14 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
 
-    # At the moment, this function has not purpose
-    # However, it should be rewritten and renamed as "is_authenticated"
-    # def authenticate(username, password):
-    #     user = User.query.filter_by(username=username).first()
-    #     if user and user.verify_password(password):
-    #         return user
-    #     return None
-
     def is_admin(self):
         return self.role == "admin"
     
+    def is_authenticated(self):
+        return True
+    
     def is_active(self):
-        pass
+        return True
 
     def get_id(self):
         return str(self.user_id)
@@ -231,6 +226,7 @@ def user(username):
 @login_required
 def logout():
     logout_user()
+    
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
