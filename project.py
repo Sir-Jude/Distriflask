@@ -17,7 +17,7 @@ from sqlalchemy_utils import UUIDType
 import uuid
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError, EqualTo, Email
+from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from flask_bcrypt import Bcrypt
 
 load_dotenv()
@@ -46,14 +46,13 @@ def home_page():
         username = current_user.username
     return render_template("welcome.html", username=username)
 
-
+# User has to be plural
 class User(db.Model, UserMixin):
-    __tablename__ = "user"
+    __tablename__ = "users"
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
-    email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
     device = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
@@ -92,13 +91,6 @@ class RegisterForm(FlaskForm):
             Length(min=4, max=20),
         ],
         render_kw={"placeholder": "Username"},
-    )
-    email = StringField(
-        validators=[
-            InputRequired(),
-            Email(),
-        ],
-        render_kw={"placeholder": "Email"},
     )
     password = PasswordField(
         validators=[
@@ -149,7 +141,6 @@ def register():
     if form.validate_on_submit():
         new_user = User(
             username=form.username.data,
-            email=form.email.data,
             password=form.password.data,
             device=form.device.data,
             role=form.role.data,
@@ -166,7 +157,7 @@ def register():
 
 class UserAdminView(ModelView):
     column_exclude_list = ["password_hash"]
-    form_excluded_columns = ["password_hash"]
+    # form_excluded_columns = ["password_hash"]
 
 
 admin.add_view(UserAdminView(User, db.session))
