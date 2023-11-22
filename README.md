@@ -137,6 +137,29 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(200), nullable=False)
     device = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
+
+    @property
+    def password(self):
+        raise AttributeError("Password is not a readable attribute!")
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+
+    def verify_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
+
+    def is_admin(self):
+        return self.role == "admin"
+    
+    def is_authenticated(self):
+        return True
+    
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return str(self.user_id)
 ```
 
 Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
