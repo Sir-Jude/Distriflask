@@ -3,14 +3,18 @@
 python3 -m venv .venv
 source .venv/bin/activate
 ```
+Type "deactivate " to go out of the virtual environment.
 
 
 # Installation of the requirements
 ```
 sudo apt-get install libldap2-dev
 sudo apt-get install libsasl2-dev
-sudo yum install cyrus-sasl-devel
 pip install -r requirements.txt
+```
+To update requirements file, type this:
+```
+pip freeze > requirements.txt
 ```
 
 
@@ -124,8 +128,6 @@ It needs to implement the following properties and methods:
 *get_id()*  
     This method must return a str that uniquely identifies this user, and can be used to load the user from the user_loader callback. Note that this must be a str - if the ID is natively an int or some other type, you will need to convert it to str.
 
-To make implementing a user class easier, you can inherit from UserMixin, which provides default implementations for all of these properties and methods. (It’s not required, though.)
-
 ```
 class User(db.Model, UserMixin):
     __tablename__ = "user"
@@ -133,7 +135,6 @@ class User(db.Model, UserMixin):
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
-    email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
     device = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
@@ -201,6 +202,8 @@ From the terminal, launch the flask shell...
 flask shell
 ```
 
+
+
 ...and create the actual DB typing the following commands:
 ```
 from project import db
@@ -209,7 +212,7 @@ exit()
 ```
 **Important**: *db.create_all()* creates the tables for all the models that have been defined in the application, but if new models are added later, the command needs to be run again. 
 
-Using SQLite, to check whether the tables have been created, run the command
+To check whether the tables have been created, run the command (SQLite only)
 ```
 sqlite3 <relative_path_to_the_database_file>
 # for example 
@@ -217,6 +220,10 @@ sqlite3 <relative_path_to_the_database_file>
 .tables
 .exit
 ``` 
+To see the structure of the table (SQLite only)
+```
+PRAGMA table_info(table_name);
+```
 
 
 Set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a project.
@@ -232,7 +239,7 @@ flask db upgrade
 ```
 **DO NOT FORGET**: in case a model is modiefied, for example the "User", you need to update also:
 - the register form
-- the reigster route
+- the register route
 - the http template
 
 
