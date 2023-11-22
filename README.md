@@ -55,7 +55,7 @@ from dotenv import load_dotenv
 # Create the project.py file and set it up to use Flask
 Import the libraries
 ```
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, flash, render_template, redirect, url_for
 ```
 
 Initialize a Flask application instance
@@ -63,7 +63,7 @@ Initialize a Flask application instance
 app = Flask(__name__)
 ```
 
-Link SECRET_KEY to the project through the .env file 
+Link the SECRET_KEY to the project through the .env file 
 ```
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 ```
@@ -84,7 +84,7 @@ It will store the files with the code for the html pages
 
 
 # Create a route to a web page and its logic
-The @app.route decorator is used to bind a URL path to a function. Additionally, by using the methods argument, it specify the permissible HTTP request methods that the associated function will respond to.
+The **@app.route** decorator is extensivily used in Flask to bind a URL path to a function. Additionally, by using the methods argument, it specifies the permissible HTTP request methods that the associated function will respond to.
 ```
 @app.route("/logout/", methods=["GET", "POST"])
 @login_required
@@ -105,13 +105,27 @@ return redirect(url_for("login"))
 
 # Create a User model and link it to the admin page
 # TO BE REVIEW AND REWRITTEN!!!
-Import the libraries to use the UUID (Universally Unique Identifier)
+Import the UserMixin and the libraries to use the UUID (Universally Unique Identifier)
 ```
-from sqlalchemy.dialects.postgresql import UUID
+from flask_login import UserMixin
+from sqlalchemy_utild import UUIDType
 import uuid
 ```
 
-Create the model view
+Create the model view.
+It needs to implement the following properties and methods:  
+
+*is_authenticated*  
+    This property should return True if the user is authenticated, i.e. they have provided valid credentials. (Only authenticated users will fulfill the criteria of login_required.)
+
+*is_active*  
+    This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
+
+*get_id()*  
+    This method must return a str that uniquely identifies this user, and can be used to load the user from the user_loader callback. Note that this must be a str - if the ID is natively an int or some other type, you will need to convert it to str.
+
+To make implementing a user class easier, you can inherit from UserMixin, which provides default implementations for all of these properties and methods. (It’s not required, though.)
+
 ```
 class User(db.Model, UserMixin):
     __tablename__ = "user"
@@ -119,7 +133,10 @@ class User(db.Model, UserMixin):
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
+    email = db.Column(db.String(200), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
+    device = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
 ```
 
 Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
@@ -302,4 +319,11 @@ from flask_login import LoginManager
 Create an instance of the login_manager class and link it the login to the app
 ```
 login_manager = LoginManager(app)
+```
+Now, you need to provide *user_loader callback*: this is a function that Flask-Login uses to reload the user object from the user ID stored in the session. It should take the str ID of a user, and return the corresponding user object. 
+
+```
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 ```
