@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash
+from flask import Flask, flash, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_admin import Admin
@@ -72,15 +72,19 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
 
-    @staticmethod
-    def authenticate(username, password):
-        user = User.query.filter_by(username=username).first()
-        if user and user.verify_password(password):
-            return user
-        return None
+    # At the moment, this function has not purpose
+    # However, it should be rewritten and renamed as "is_authenticated"
+    # def authenticate(username, password):
+    #     user = User.query.filter_by(username=username).first()
+    #     if user and user.verify_password(password):
+    #         return user
+    #     return None
 
     def is_admin(self):
         return self.role == "admin"
+    
+    def is_active(self):
+        pass
 
     def get_id(self):
         return str(self.user_id)
