@@ -47,21 +47,30 @@
       <form method="POST" action="{{ url_for('register') }}">
         {{ form.csrf_token }}
         {{ form.hidden_tag() }}
+    
         {{ form.username() }}
         <br/>
+        {% for error in form.username.errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+    
         {{ form.password() }}
         <br/>
+        {% for error in form.password.errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+    
         {{ form.password_2() }}
         <br/>
+    
         {{ form.device() }}
         <br/>
+    
         {{ form.role() }}
         <br/>
+    
         {{ form.submit() }}
-      </form>
-      {% for error in form.username.errors %}
-      <p class="error">{{ error }}</p>
-      {% endfor %}
+    </form>
     </div>
     <script
       src="/admin/static/vendor/jquery.min.js?v=3.5.1"

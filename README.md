@@ -286,43 +286,142 @@ Create a a registration form
 ```
 class RegisterForm(FlaskForm):
     username = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
+        validators=[
+            InputRequired(),
+            Length(min=4, max=20),
+        ],
         render_kw={"placeholder": "Username"},
     )
     password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
+        validators=[
+            InputRequired(),
+            Length(min=8, max=20),
+            EqualTo("password_2", message="Passwords must match!"),
+        ],
         render_kw={"placeholder": "Password"},
     )
-    submit = SubmitField("Register")
-    
-    def validate_username(self, username):
-        existing_user_username = User.query.filter_by(username=username.data).first()
+    password_2 = PasswordField(
+        validators=[InputRequired()],
+        render_kw={"placeholder": "Confirm Password"},
+    )
+
+    device = StringField(
+        render_kw={"placeholder": "Device"},
+    )
+
+    role = SelectField(
+        choices=[("user", "User"), ("admin", "Admin")],
+        validators=[
+            InputRequired(),
+        ],
+        render_kw={"placeholder": "Role"},
+    )
+    submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
+
+    def validate_username(self, field):
+        field.data = field.data.lower()
+
+        existing_user_username = User.query.filter_by(username=field.data).first()
         if existing_user_username:
             raise ValidationError(
                 "This username already exists. Please choose a different one."
             )
 
 ``` 
-Inside the folder "templates", create the subfolder "registration" containing the regiser.html file. It will extend the base.html file. 
+Inside the folder "templates", create the subfolder "registration" containing the fiel **regiser.html**:
 ```
-{% extends 'base.html' %}
-{% block title %}
-<title>Register</title>
-{% endblock %}
-{% block content %}
-<p>
-    Register nere:
-</p>
-<form method="POST" action="">
-    {{ form.csrf_token }}
-    {{ form.hidden_tag() }}
-    {{ form.username }}
-    {{ form.password }}
-    {{ form.submit }}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin - Register</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
 
-    <button class="btn btn-primary" type="submit">Login</button>
-</form>
-{% endblock %}
+    <link
+      href="/admin/static/bootstrap/bootstrap2/swatch/default/bootstrap.min.css?v=2.3.2"
+      rel="stylesheet"
+    />
+    <link
+      href="/admin/static/bootstrap/bootstrap2/css/bootstrap-responsive.css?v=2.3.2"
+      rel="stylesheet"
+    />
+    <link
+      href="/admin/static/admin/css/bootstrap2/admin.css?v=1.1.1"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        padding-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <a class="brand" href="/admin">Admin</a>
+          <ul class="nav">
+            <li class="active">
+              <a href="/admin/">Home</a>
+            </li>
+            <li>
+              <a href="/admin/user/">User</a>
+            </li>
+          </ul>
+          <ul class="nav pull-right"></ul>
+        </div>
+      </div>
+      <p>Register here:</p>
+      <form method="POST" action="{{ url_for('register') }}">
+        {{ form.csrf_token }}
+        {{ form.hidden_tag() }}
+    
+        {{ form.username() }}
+        <br/>
+        {% for error in form.username.errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+    
+        {{ form.password() }}
+        <br/>
+        {% for error in form.password.errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+    
+        {{ form.password_2() }}
+        <br/>
+    
+        {{ form.device() }}
+        <br/>
+    
+        {{ form.role() }}
+        <br/>
+    
+        {{ form.submit() }}
+    </form>
+    </div>
+    <script
+      src="/admin/static/vendor/jquery.min.js?v=3.5.1"
+      type="text/javascript"
+    ></script>
+    <script
+      src="/admin/static/bootstrap/bootstrap2/js/bootstrap.min.js?v=2.3.2"
+      type="text/javascript"
+    ></script>
+    <script
+      src="/admin/static/vendor/moment.min.js?v=2.22.2"
+      type="text/javascript"
+    ></script>
+    <script
+      src="/admin/static/vendor/select2/select2.min.js?v=3.5.2"
+      type="text/javascript"
+    ></script>
+  </body>
+</html>
 ```
 Create its relative route and function:
 ```

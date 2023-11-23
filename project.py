@@ -54,7 +54,7 @@ class User(db.Model, UserMixin):
     )
     username = db.Column(db.String(20), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
-    device = db.Column(db.String(200), nullable=False)
+    device = db.Column(db.String(200), nullable=True)
     role = db.Column(db.String(20), nullable=False)
     # role = db.Column pass # multiple roles
     # region_id = db.Column pass # multiple regions
