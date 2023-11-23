@@ -47,7 +47,7 @@ def home_page():
     return render_template("welcome.html", username=username)
 
 # User has to be plural
-class User(db.Model, UserMixin):
+class Users(db.Model, UserMixin):
     __tablename__ = "users"
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
@@ -121,14 +121,14 @@ class RegisterForm(FlaskForm):
     def validate_username(self, field):
         field.data = field.data.lower()
 
-        existing_user_username = User.query.filter_by(username=field.data).first()
+        existing_user_username = Users.query.filter_by(username=field.data).first()
         if existing_user_username:
             raise ValidationError(
                 "This username already exists. Please choose a different one."
             )
 
 
-@app.route("/admin/user/new/", methods=["GET", "POST"])
+@app.route("/admin/users/new/", methods=["GET", "POST"])
 def custom_register():
     # Redirect to your custom registration page
     return redirect(url_for("register"))
@@ -139,7 +139,7 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        new_user = User(
+        new_user = Users(
             username=form.username.data,
             password=form.password.data,
             device=form.device.data,
@@ -160,7 +160,7 @@ class UserAdminView(ModelView):
     # form_excluded_columns = ["password_hash"]
 
 
-admin.add_view(UserAdminView(User, db.session))
+admin.add_view(UserAdminView(Users, db.session))
 
 
 # Flask_login stuff
@@ -170,7 +170,7 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    return Users.query.get(user_id)
 
 
 class LoginForm(FlaskForm):
@@ -189,7 +189,7 @@ class LoginForm(FlaskForm):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data.lower()).first()
+        user = Users.query.filter_by(username=form.username.data.lower()).first()
         if user:
             if bcrypt.check_password_hash(user.password_hash, form.password.data):
                 login_user(user)
