@@ -129,7 +129,7 @@ It needs to implement the following properties and methods:
     This method must return a str that uniquely identifies this user, and can be used to load the user from the user_loader callback. Note that this must be a str - if the ID is natively an int or some other type, you will need to convert it to str.
 
 ```
-class User(db.Model, UserMixin):
+class Users(db.Model, UserMixin):
     __tablename__ = "user"
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
@@ -170,7 +170,7 @@ from flask_admin.contrib.sqla import ModelView
 
 Add a new view for the Use model to the admin interface
 ```
-admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(Users, db.session))
 ```
 
 
@@ -237,7 +237,7 @@ flask db migrate
 flask db migrate -m "short description..."
 flask db upgrade
 ```
-**DO NOT FORGET**: in case a model is modiefied, for example the "User", you need to update also:
+**DO NOT FORGET**: in case a model is modiefied, for example the "Users", you need to update also:
 - the register form
 - the register route
 - the http template
@@ -321,7 +321,7 @@ class RegisterForm(FlaskForm):
     def validate_username(self, field):
         field.data = field.data.lower()
 
-        existing_user_username = User.query.filter_by(username=field.data).first()
+        existing_user_username = Users.query.filter_by(username=field.data).first()
         if existing_user_username:
             raise ValidationError(
                 "This username already exists. Please choose a different one."
@@ -369,7 +369,7 @@ Inside the folder "templates", create the subfolder "registration" containing th
               <a href="/admin/">Home</a>
             </li>
             <li>
-              <a href="/admin/user/">User</a>
+              <a href="/admin/users/">Users</a>
             </li>
           </ul>
           <ul class="nav pull-right"></ul>
@@ -454,5 +454,5 @@ Now, you need to provide *user_loader callback*: this is a function that Flask-L
 ```
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    return Users.query.get(user_id)
 ```
