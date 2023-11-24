@@ -134,7 +134,7 @@ def custom_register():
     return redirect(url_for("register"))
 
 
-@app.route("/admin/user/register/", methods=["GET", "POST"])
+@app.route("/admin/users/register/", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
 
@@ -149,7 +149,7 @@ def register():
         db.session.commit()
 
         return redirect(
-            url_for("admin.index", _external=True, _scheme="http") + "user/"
+            url_for("admin.index", _external=True, _scheme="http") + "users/"
         )
 
     return render_template("registration/register.html", form=form)
