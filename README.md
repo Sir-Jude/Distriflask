@@ -106,9 +106,18 @@ Or redirect the user to a specific route, identifed by the name of its associatd
 return redirect(url_for("login"))
 ```
 
+# TO BE REVIEW AND REWRITTEN!!!
+Main source for Users and Roles model design:
+(https://ckraczkowsky.medium.com/building-a-secure-admin-interface-with-flask-admin-and-flask-security-13ae81faa05)
+
+UPDATE_1: Flask security library is deprecated  
+--> pip install flask_security_too
+UPDATE_2: before_first_request is deprecated
+--> use before_request (https://github.com/pallets/flask/issues/4605)
+
+
 
 # Create a User model and link it to the admin page
-# TO BE REVIEW AND REWRITTEN!!!
 Import the UserMixin and the libraries to use the UUID (Universally Unique Identifier)
 ```
 from flask_login import UserMixin

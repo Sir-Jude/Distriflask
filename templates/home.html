@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'index.html' %}
 {% block title %}
 <title>Homepage</title>
 {% endblock %}
@@ -10,7 +10,7 @@
       {% if username.is_authenticated %}
       <h3>Welcome, {{ username.capitalize()}}</h3>
       {% else %}
-      <h3>Please, <a href="{{ url_for('login') }}">log in!</h3>      
+      <h3>Please, <a href="{{ url_for('security.login') }}">log in!</h3>      
       {% endif %}
     </div>
   </div>
