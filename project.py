@@ -46,13 +46,15 @@ bcrypt = Bcrypt(app)
 roles_users_table = db.Table(
     'roles_users',
     db.Column('users_id', db.Integer(), 
-    db.ForeignKey('users.id')),
+    db.ForeignKey('users.user_id')),
     db.Column('roles_id', db.Integer(), 
     db.ForeignKey('roles.id'))
 )
 
 class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(
+        UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
+    )
     username = db.Column(db.String(20), unique=True)
     password = db.Column(db.String(80))
     device = db.Column(db.String(200), nullable=True)
