@@ -1,10 +1,10 @@
 from flask import Flask, flash, render_template, redirect, url_for
+from flask_security import RoleMixin, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import (
-    UserMixin,
     LoginManager,
     login_user,
     login_required,
@@ -13,16 +13,18 @@ from flask_login import (
 )
 import os
 from dotenv import load_dotenv
-from sqlalchemy_utils import UUIDType
+from routes import routes
 import uuid
-from flask_wtf import FlaskForm
+from sqlalchemy_utils import UUIDType
 from wtforms import StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+from flask_wtf import FlaskForm
 from flask_bcrypt import Bcrypt
 
 load_dotenv()
 
 app = Flask(__name__)
+app.register_blueprint(routes)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
@@ -31,22 +33,10 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 
-
 @app.route("/")
-@app.route("/home/", methods=["GET"])
 def home_page():
-    """
-    By initializing username as None, it ensures that the "username"
-    variable exists even if the user isn't authenticated. This approach
-    avoids potential errors that might arise if current_user.is_authenticated
-    evaluates to False, and username hasn't been assigned a value yet.
-    """
-    username = None
-    if current_user.is_authenticated:
-        username = current_user.username
-    return render_template("welcome.html", username=username)
+    pass
 
-# User has to be plural
 class Users(db.Model, UserMixin):
     __tablename__ = "users"
     user_id = db.Column(
