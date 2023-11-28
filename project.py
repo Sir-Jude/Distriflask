@@ -38,6 +38,8 @@ app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
 app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 app.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
 app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 admin = Admin(app, name="Admin", base_template="my_master.html", template_mode="bootstrap3")
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -55,7 +57,7 @@ class Users(db.Model, UserMixin):
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
-    username = db.Column(db.String(20), unique=True)
+    email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(80))
     device = db.Column(db.String(200), nullable=True)
     active = db.Column(db.Boolean())
@@ -74,9 +76,9 @@ security = Security(app, user_datastore)
 
 @app.before_request
 def create_user():
-    existing_user = user_datastore.find_user(username='admin')
+    existing_user = user_datastore.find_user(email='admin')
     if not existing_user:
-        first_user = user_datastore.create_user(username='admin', password='12345678')
+        first_user = user_datastore.create_user(email='admin', password='12345678')
         user_datastore.toggle_active(first_user)
         db.session.commit()
 
