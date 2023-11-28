@@ -1,15 +1,20 @@
 from flask import Flask, flash, render_template, redirect, url_for
-from flask_security import RoleMixin, UserMixin
+from flask_security import (
+    RoleMixin,
+    UserMixin,
+    Security,
+    SQLAlchemyUserDatastore,
+    current_user
+)
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_admin import Admin
+from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 from flask_login import (
     LoginManager,
     login_user,
     login_required,
     logout_user,
-    current_user,
 )
 import os
 from dotenv import load_dotenv
@@ -26,191 +31,79 @@ load_dotenv()
 app = Flask(__name__)
 app.register_blueprint(routes)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+app.config['SECURITY_PASSWORD_SALT'] = os.getenv("SECURITY_PASSWORD_SALT")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
-admin = Admin(app, name="Admin", template_mode="bootstrap3")
+app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+app.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
+app.config['SECURITY_REGISTERABLE'] = True
+admin = Admin(app, name="Admin", base_template="my_master.html", template_mode="bootstrap3")
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 
+roles_users_table = db.Table(
+    'roles_users',
+    db.Column('users_id', db.Integer(), 
+    db.ForeignKey('users.id')),
+    db.Column('roles_id', db.Integer(), 
+    db.ForeignKey('roles.id'))
+)
+
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    username = db.Column(db.String(20), unique=True)
+    password = db.Column(db.String(80))
+    device = db.Column(db.String(200), nullable=True)
+    active = db.Column(db.Boolean())
+    roles = db.relationship('Roles', secondary=roles_users_table, backref='user', lazy=True)
+    fs_uniquifier = db.Column(db.String(64), unique=True, name='unique_fs_uniquifier_constraint')
+
+class Roles(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+security = Security(app, user_datastore)
+
+
+@app.before_request
+def create_user():
+    existing_user = user_datastore.find_user(username='admin')
+    if not existing_user:
+        first_user = user_datastore.create_user(username='admin', password='12345678')
+        user_datastore.toggle_active(first_user)
+        db.session.commit()
+
+
+class UserModelView(ModelView):
+    def is_accessible(self):
+        return (
+            current_user.is_active and
+            current_user.is_authenticated
+        )
+        
+    def _handle_view(self, name):
+        if not self.is_accessible():
+            return redirect(url_for('security.login'))
+
+admin.add_view(UserModelView(Users, db.session))
+
+@security.context_processor
+def security_context_processor():
+    return dict(
+        admin_base_template = admin.base_template,
+        admin_view = admin.index_view,
+        get_url = url_for,
+        h = admin_helpers
+    )
+
 @app.route("/")
 def home_page():
     pass
-
-class Users(db.Model, UserMixin):
-    __tablename__ = "users"
-    user_id = db.Column(
-        UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
-    )
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password_hash = db.Column(db.String(200), nullable=False)
-    device = db.Column(db.String(200), nullable=True)
-    role = db.Column(db.String(20), nullable=False)
-    # role = db.Column pass # multiple roles
-    # region_id = db.Column pass # multiple regions
-    # devices = db.Column # Only for customers, just one device (one to one)
-
-    @property
-    def password(self):
-        raise AttributeError("Password is not a readable attribute!")
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-
-    def verify_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, password)
-
-    def is_admin(self):
-        return self.role == "admin"
-    
-    def is_authenticated(self):
-        return True
-    
-    def is_active(self):
-        return True
-
-    def get_id(self):
-        return str(self.user_id)
-
-
-class RegisterForm(FlaskForm):
-    username = StringField(
-        validators=[
-            InputRequired(),
-            Length(min=4, max=20),
-        ],
-        render_kw={"placeholder": "Username"},
-    )
-    password = PasswordField(
-        validators=[
-            InputRequired(),
-            Length(min=8, max=20),
-            EqualTo("password_2", message="Passwords must match!"),
-        ],
-        render_kw={"placeholder": "Password"},
-    )
-    password_2 = PasswordField(
-        validators=[InputRequired()],
-        render_kw={"placeholder": "Confirm Password"},
-    )
-
-    device = StringField(
-        render_kw={"placeholder": "Device"},
-    )
-
-    role = SelectField(
-        choices=[("user", "User"), ("admin", "Admin")],
-        validators=[
-            InputRequired(),
-        ],
-        render_kw={"placeholder": "Role"},
-    )
-    submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
-
-    def validate_username(self, field):
-        field.data = field.data.lower()
-
-        existing_user_username = Users.query.filter_by(username=field.data).first()
-        if existing_user_username:
-            raise ValidationError(
-                "This username already exists. Please choose a different one."
-            )
-
-
-@app.route("/admin/users/new/", methods=["GET", "POST"])
-def custom_register():
-    # Redirect to your custom registration page
-    return redirect(url_for("register"))
-
-
-@app.route("/admin/users/register/", methods=["GET", "POST"])
-def register():
-    form = RegisterForm()
-
-    if form.validate_on_submit():
-        new_user = Users(
-            username=form.username.data,
-            password=form.password.data,
-            device=form.device.data,
-            role=form.role.data,
-        )
-        db.session.add(new_user)
-        db.session.commit()
-
-        return redirect(
-            url_for("admin.index", _external=True, _scheme="http") + "users/"
-        )
-
-    return render_template("registration/register.html", form=form)
-
-
-class UserAdminView(ModelView):
-    column_exclude_list = ["password_hash"]
-    # form_excluded_columns = ["password_hash"]
-
-
-admin.add_view(UserAdminView(Users, db.session))
-
-
-# Flask_login stuff
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Users.query.get(user_id)
-
-
-class LoginForm(FlaskForm):
-    username = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
-        render_kw={"placeholder": "Username"},
-    )
-    password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
-        render_kw={"placeholder": "Password"},
-    )
-    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
-
-
-@app.route("/login/", methods=["GET", "POST"])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(username=form.username.data.lower()).first()
-        if user:
-            if bcrypt.check_password_hash(user.password_hash, form.password.data):
-                login_user(user)
-                flash("Logged in successfully!")
-                return redirect(url_for("user", username=user.username))
-            else:
-                flash("Wrong password - Try Again...")
-        else:
-            flash("This username does not exist - Try again...")
-    return render_template("registration/login.html", form=form)
-
-
-@app.route("/user/<username>/", methods=["GET", "POST"])
-@login_required
-def user(username):
-    if current_user.username != username:
-        return render_template("errors/403.html"), 403
-
-    # To be substituted with a database...
-    devices = current_user.device
-    return render_template("user.html", username=username, devices=devices)
-
-
-@app.route("/logout/", methods=["GET", "POST"])
-@login_required
-def logout():
-    logout_user()
-    
-    flash("You have been logged out.")
-    return redirect(url_for("login"))
-
 
 @app.errorhandler(403)
 def page_not_found(e):
