@@ -9,11 +9,6 @@
               {% if not current_user.is_authenticated %}
               <h3>Please log in to continue</h3>
               <br>
-              <p>You can log in as the default administrator with the following credentials:
-              <ul>
-                  <li>Email: <b>admin</b></li>
-                  <li>Password: <b>12345678</b></li>
-              </ul>
               <p>
                   <a class='btn btn-primary' href="{{ url_for('security.login') }}">login</a>
               </p>
