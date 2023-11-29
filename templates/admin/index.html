@@ -1,7 +1,28 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
-
-<h1>Welcome to the Admin dashboard.</h1>
-
-{% endblock %}
+  {{ super() }}
+  <div class='container'>
+      <div>
+          <div>
+            <h1>Admin</h1>
+              {% if not current_user.is_authenticated %}
+              <h3>Please log in to continue</h3>
+              <br>
+              <p>
+                  <a class='btn btn-primary' href="{{ url_for('security.login') }}">login</a>
+              </p>
+              <br>
+              <p>Alternatively, you can register as a new administrator using the button below.</p>
+              <p>
+                <a class='btn btn-primary' href="{{ url_for('security.register') }}">Register</a>
+              </p>
+              {% endif %}
+              {% if current_user.is_authenticated %}
+              <h3>You have successfully logged in.</h3>
+              <p>You now have access to the Users view.</p>
+              {% endif %}
+          </div>
+      </div>
+  </div>
+{% endblock body %}
