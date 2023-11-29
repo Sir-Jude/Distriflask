@@ -1,15 +1,20 @@
 from flask import Flask, flash, render_template, redirect, url_for
+from flask_security import (
+    RoleMixin,
+    UserMixin,
+    Security,
+    SQLAlchemyUserDatastore,
+    current_user
+)
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_admin import Admin
+from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 from flask_login import (
-    UserMixin,
     LoginManager,
     login_user,
     login_required,
     logout_user,
-    current_user,
 )
 import os
 from dotenv import load_dotenv
@@ -26,6 +31,12 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
+app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+app.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
+app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 admin = Admin(app, name="Admin", template_mode="bootstrap3")
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -152,16 +163,30 @@ def register():
             url_for("admin.index", _external=True, _scheme="http") + "users/"
         )
 
-    return render_template("registration/register.html", form=form)
+    return render_template("security/register_user.html", form=form)
+
+
+security = Security(app)
 
 
 class UserAdminView(ModelView):
     column_exclude_list = ["password_hash"]
-    # form_excluded_columns = ["password_hash"]
-
+    def is_accessible(self):
+        return (
+            current_user.is_active and
+            current_user.is_authenticated
+        )
 
 admin.add_view(UserAdminView(Users, db.session))
 
+@security.context_processor
+def security_context_processor():
+    return dict(
+        admin_base_template = admin.base_template,
+        admin_view = admin.index_view,
+        h = admin_helpers,
+        get_url = url_for
+    )
 
 # Flask_login stuff
 login_manager = LoginManager(app)
@@ -199,7 +224,7 @@ def login():
                 flash("Wrong password - Try Again...")
         else:
             flash("This username does not exist - Try again...")
-    return render_template("registration/login.html", form=form)
+    return render_template("customers/login.html", form=form)
 
 
 @app.route("/user/<username>/", methods=["GET", "POST"])
