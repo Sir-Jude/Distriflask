@@ -1,11 +1,13 @@
 from flask import Flask, flash, render_template, redirect, url_for
 from flask_security import (
+    RegisterForm,
     RoleMixin,
     UserMixin,
     Security,
     SQLAlchemyUserDatastore,
     current_user
 )
+from flask_security.forms import RegisterForm, LoginForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_admin import Admin, helpers as admin_helpers
@@ -21,15 +23,21 @@ from dotenv import load_dotenv
 from routes import routes
 import uuid
 from sqlalchemy_utils import UUIDType
-from wtforms import StringField, PasswordField, SelectField, SubmitField
+from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from flask_wtf import FlaskForm
 from flask_bcrypt import Bcrypt
+import bleach
 
 load_dotenv()
 
+def uia_username_mapper(identity):
+    # we allow pretty much anything - but we bleach it.
+    return bleach.clean(identity, strip=True)
+
 app = Flask(__name__)
 app.register_blueprint(routes)
+app.config['SECURITY_USER_IDENTITY_ATTRIBUTES'] = {"username": {"mapper": uia_username_mapper, "case_insensitive": True}},
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config['SECURITY_PASSWORD_SALT'] = os.getenv("SECURITY_PASSWORD_SALT")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
@@ -63,11 +71,11 @@ class Users(db.Model, UserMixin):
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
-    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(100), unique=True, index=True)
     password = db.Column(db.String(80))
     device = db.Column(db.String(200), nullable=True)
     active = db.Column(db.Boolean())
-    roles = db.relationship('Roles', secondary=roles_users_table, backref='user', lazy=True)
+    roles = db.relationship('Roles', secondary=roles_users_table, backref='users', lazy=True)
     fs_uniquifier = db.Column(db.String(64), unique=True, nullable=True, name='unique_fs_uniquifier_constraint')
 
 class Roles(db.Model, RoleMixin):
@@ -76,8 +84,57 @@ class Roles(db.Model, RoleMixin):
     description = db.Column(db.String(255))
 
 
+class ExtendedRegisterForm(RegisterForm):
+    email = StringField("Username", [InputRequired(), Length(min=4, max=20)])
+    password = PasswordField("Password", [InputRequired(),Length(min=8, max=20)])
+    device = StringField("Device")
+    active = BooleanField("Active")
+    role = SelectField("Role",
+        choices=[("user", "User"), ("admin", "Admin")],
+        validators=[InputRequired()]
+    )
+    submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
+
+    def validate_username(self, field):
+        field.data = field.data.lower()
+
+        existing_user_username = Users.query.filter_by(username=field.data).first()
+        if existing_user_username:
+            raise ValidationError(
+                "This username already exists. Please choose a different one."
+            )
+
+class ExtendedLoginForm(LoginForm):
+    email = StringField('Username', [InputRequired()])
+
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
-security = Security(app, user_datastore)
+security = Security(app, user_datastore, register_form=ExtendedRegisterForm, login_form=ExtendedLoginForm)
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        new_user = Users(
+            username=form.username.data,
+            password=form.password.data,
+            device=form.device.data,
+            active=form.active.data,
+            role=form.role.data,
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(
+            url_for("admin.index", _external=True, _scheme="http") + "users/"
+        )
+
+    return render_template("registration/register.html", form=form)
+
+
+
+
 
 # @app.before_request
 # def create_user():
