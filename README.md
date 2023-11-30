@@ -465,3 +465,16 @@ Now, you need to provide *user_loader callback*: this is a function that Flask-L
 def load_user(user_id):
     return Users.query.get(user_id)
 ```
+
+
+
+# How to overwrite the form...
+https://flask-security-too.readthedocs.io/en/stable/customizing.html
+
+https://flask-security-too.readthedocs.io/en/stable/configuration.html#SECURITY_USER_IDENTITY_ATTRIBUTES
+
+https://stackoverflow.com/questions/30827696/flask-security-login-via-username-and-not-email
+
+https://github.com/Flask-Middleware/flask-security/issues/466
+
+https://www.google.com/search?q=%22Flask+Security+too%22+%22SECURITY_USER_IDENTITY_ATTRIBUTES%22&sca_esv=586607062&sxsrf=AM9HkKkJD5bjQxKvGsvu3LOrabDnDcwJ2w%3A1701362547996&ei=c7toZd2vPKGL9u8P3byCwAY&ved=0ahUKEwidtbqyleyCAxWhhf0HHV2eAGgQ4dUDCBA&uact=5&oq=%22Flask+Security+too%22+%22SECURITY_USER_IDENTITY_ATTRIBUTES%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiOCJGbGFzayBTZWN1cml0eSB0b28iICJTRUNVUklUWV9VU0VSX0lERU5USVRZX0FUVFJJQlVURVMiSABQAFgAcAB4AJABAJgBAKABAKoBALgBA8gBAPgBAeIDBBgAIEE&sclient=gws-wiz-serp
