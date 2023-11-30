@@ -35,6 +35,8 @@ app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
 app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 app.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
 app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 admin = Admin(app, name="Admin", template_mode="bootstrap3")
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -55,7 +57,16 @@ def home_page():
         username = current_user.username
     return render_template("welcome.html", username=username)
 
-# User has to be plural
+
+roles_users_table = db.Table(
+    'roles_users',
+    db.Column('users_id', db.Integer(), 
+    db.ForeignKey('users.user_id')),
+    db.Column('roles_id', db.Integer(), 
+    db.ForeignKey('roles.id'))
+)
+
+
 class Users(db.Model, UserMixin):
     __tablename__ = "users"
     user_id = db.Column(
@@ -64,33 +75,15 @@ class Users(db.Model, UserMixin):
     username = db.Column(db.String(20), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
     device = db.Column(db.String(200), nullable=True)
-    role = db.Column(db.String(20), nullable=False)
-    # role = db.Column pass # multiple roles
-    # region_id = db.Column pass # multiple regions
-    # devices = db.Column # Only for customers, just one device (one to one)
+    active = db.Column(db.Boolean())
+    role = db.relationship('Roles', secondary=roles_users_table, backref='user', lazy=True)
+    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=True, name='unique_fs_uniquifier_constraint')
 
-    @property
-    def password(self):
-        raise AttributeError("Password is not a readable attribute!")
 
-    @password.setter
-    def password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-
-    def verify_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, password)
-
-    def is_admin(self):
-        return self.role == "admin"
-    
-    def is_authenticated(self):
-        return True
-    
-    def is_active(self):
-        return True
-
-    def get_id(self):
-        return str(self.user_id)
+class Roles(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
 
 class RegisterForm(FlaskForm):
@@ -118,6 +111,10 @@ class RegisterForm(FlaskForm):
         render_kw={"placeholder": "Device"},
     )
 
+    active = BooleanField(
+        render_kw={"placeholder": "Device"},
+    )
+    
     role = SelectField(
         choices=[("user", "User"), ("admin", "Admin")],
         validators=[
@@ -152,6 +149,7 @@ def register():
             username=form.username.data,
             password=form.password.data,
             device=form.device.data,
+            active=form.active.data,
             role=form.role.data,
         )
         db.session.add(new_user)
@@ -161,21 +159,31 @@ def register():
             url_for("admin.index", _external=True, _scheme="http") + "users/"
         )
 
-    return render_template("registration/register.html", form=form)
+    return render_template("security/register_user.html", form=form)
+
+
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+security = Security(app, user_datastore)
 
 
 class UserAdminView(ModelView):
-    column_exclude_list = ["password_hash"]
-    # form_excluded_columns = ["password_hash"]
+    column_exclude_list = ["password_hash", "fs_uniquifier"]
     def is_accessible(self):
         return (
             current_user.is_active and
             current_user.is_authenticated
         )
 
-
 admin.add_view(UserAdminView(Users, db.session))
 
+@security.context_processor
+def security_context_processor():
+    return dict(
+        admin_base_template = admin.base_template,
+        admin_view = admin.index_view,
+        h = admin_helpers,
+        get_url = url_for
+    )
 
 # Flask_login stuff
 login_manager = LoginManager(app)
@@ -213,7 +221,7 @@ def login():
                 flash("Wrong password - Try Again...")
         else:
             flash("This username does not exist - Try again...")
-    return render_template("registration/login.html", form=form)
+    return render_template("customers/login.html", form=form)
 
 
 @app.route("/user/<username>/", methods=["GET", "POST"])
