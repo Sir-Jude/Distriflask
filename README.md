@@ -1,3 +1,8 @@
+# To search something accross the files (including the .venv)
+```
+rg -u. <whatever>
+```
+
 # Create a virtual env
 ```
 python3 -m venv .venv
