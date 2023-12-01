@@ -102,28 +102,19 @@ class Roles(db.Model, RoleMixin):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    email = StringField(
-        "Username", [InputRequired(), username_validator, unique_identity_attribute]
-    )
-    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    device = StringField("Device")
-    active = BooleanField("Active")
-    role = SelectField(
-        "Role",
-        choices=[("user", "User"), ("admin", "Admin")],
-        validators=[InputRequired()],
-    )
-    # submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
-
-    # def validate_username(self, field):
-    #     field.data = field.data.lower()
-
-    #     existing_user_username = Users.query.filter_by(username=field.data).first()
-    #     if existing_user_username:
-    #         raise ValidationError(
-    #             "This username already exists. Please choose a different one."
-    #         )
-
+    # # BUG: This code is completely useless and is not seen at all!!!
+    # email = StringField(
+    #     "Username", [InputRequired(), username_validator, unique_identity_attribute]
+    # )
+    # password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
+    # device = StringField("Device")
+    # active = BooleanField("Active")
+    # role = SelectField(
+    #     "Role",
+    #     choices=[("user", "User"), ("admin", "Admin")],
+    #     validators=[InputRequired()],
+    # )
+    pass
 
 class ExtendedLoginForm(LoginForm):
     email = StringField("Username", [InputRequired()])
@@ -151,7 +142,7 @@ security = Security(
 )
 
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/admin/users/register", methods=["GET", "POST"])
 def register():
     form = ExtendedRegisterForm(RegisterForm)
 
@@ -256,13 +247,13 @@ def security_context_processor():
 #     return render_template("user.html", username=username, devices=devices)
 
 
-@app.route("/logout/", methods=["GET", "POST"])
-@login_required
-def logout():
-    logout_user()
+# @app.route("/logout/", methods=["GET", "POST"])
+# @login_required
+# def logout():
+#     logout_user()
 
-    flash("You have been logged out.")
-    return redirect(url_for("security/login_user.html"))
+#     flash("You have been logged out.")
+#     return redirect(url_for("security/login_user.html"))
 
 
 @app.errorhandler(403)
