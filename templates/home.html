@@ -8,7 +8,7 @@
     <div class="col">
       <h1 class="display-6">Welcome to YourCompany!</h1>
       {% if current_user.is_authenticated %}
-      <h3>Welcome, {{ current_user.capitalize()}}</h3>
+      <h3>Welcome, {{ current_user.username.capitalize()}}</h3>
       {% else %}
       <h3>Please, <a href="{{ url_for('security.login') }}">log in!</h3>      
       {% endif %}
