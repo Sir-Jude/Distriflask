@@ -24,6 +24,7 @@ from flask_login import (
 import os
 from dotenv import load_dotenv
 from models import db, Users, Roles
+from errors import register_error_handlers
 import uuid
 from sqlalchemy_utils import UUIDType
 from werkzeug.local import LocalProxy
@@ -35,6 +36,7 @@ from flask_bcrypt import Bcrypt
 
 
 load_dotenv()
+
 
 
 app = Flask(__name__)
@@ -69,6 +71,8 @@ def username_validator(form, field):
 @app.route("/home/", methods=["GET"])
 def home_page():
     return render_template('home.html')
+
+register_error_handlers(app)
 
 
 
@@ -227,18 +231,3 @@ def security_context_processor():
 
 #     flash("You have been logged out.")
 #     return redirect(url_for("security/login_user.html"))
-
-
-@app.errorhandler(403)
-def forbidden(e):
-    return render_template("errors/403.html"), 403
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("errors/404.html"), 404
-
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template("errors/500.html"), 500
