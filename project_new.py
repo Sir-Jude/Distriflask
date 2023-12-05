@@ -239,13 +239,13 @@ def user(username):
 @login_required
 def logout():
     logout_user()
-    
+
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
 
 @app.errorhandler(403)
-def page_not_found(e):
+def forbidden(e):
     return render_template("errors/403.html"), 403
 
 
@@ -255,5 +255,5 @@ def page_not_found(e):
 
 
 @app.errorhandler(500)
-def page_not_found(e):
+def internal_server_error(e):
     return render_template("errors/500.html"), 500
