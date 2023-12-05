@@ -118,7 +118,7 @@ class ExtendedRegisterForm(RegisterForm):
 
 class ExtendedLoginForm(LoginForm):
     email = StringField("Username", [InputRequired()])
-    
+
     def validate(self, **kwargs):
             self.user = lookup_identity(self.email.data)
             # Setting 'ifield' informs the default login form validation
@@ -257,7 +257,7 @@ def security_context_processor():
 
 
 @app.errorhandler(403)
-def page_not_found(e):
+def forbidden(e):
     return render_template("errors/403.html"), 403
 
 
@@ -267,5 +267,5 @@ def page_not_found(e):
 
 
 @app.errorhandler(500)
-def page_not_found(e):
+def internal_server_error(e):
     return render_template("errors/500.html"), 500
