@@ -1,4 +1,4 @@
-from flask import Flask, flash, render_template, redirect, url_for
+from flask import Flask, flash, redirect, render_template, url_for
 
 # Imports for Flask security
 from flask_security import (
@@ -9,19 +9,11 @@ from flask_security import (
     Security,
     SQLAlchemyUserDatastore,
     uia_username_mapper,
-    unique_identity_attribute,
-    UserMixin,
 )
 
 
 # Imports for Flask login
-from flask_login import (
-    LoginManager,
-    login_user,
-    login_required,
-    logout_user,
-    current_user,
-)
+from flask_login import LoginManager, logout_user, login_required
 
 
 from flask_migrate import Migrate
@@ -45,7 +37,7 @@ from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 # Imports from otehr files
 from models import db, Users, Roles
 from errors import register_error_handlers
-from admin_routes import admin_routes
+from routes_customers import routes_customers
 
 # Imports for bcrypt
 from flask_bcrypt import Bcrypt
@@ -57,7 +49,7 @@ load_dotenv()
 
 
 app = Flask(__name__)
-app.register_blueprint(admin_routes, url_prefix="/admin")
+app.register_blueprint(routes_customers)
 
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = {
     "username": {"mapper": uia_username_mapper, "case_insensitive": True}
@@ -84,12 +76,6 @@ def username_validator(form, field):
     msg, field.data = _security._username_util.validate(field.data)
     if msg:
         raise ValidationError(msg)
-
-
-@app.route("/")
-@app.route("/home/", methods=["GET"])
-def home_page():
-    return render_template("home.html")
 
 
 register_error_handlers(app)
@@ -137,28 +123,6 @@ security = Security(
 )
 
 
-@app.route("/admin/users/new", methods=["GET", "POST"])
-def register():
-    form = ExtendedRegisterForm(RegisterForm)
-
-    if form.validate_on_submit():
-        new_user = Users(
-            username=form.username.data,
-            password=form.password.data,
-            device=form.device.data,
-            active=form.active.data,
-            role=form.role.data,
-        )
-        db.session.add(new_user)
-        db.session.commit()
-
-        return redirect(
-            url_for("admin.index", _external=True, _scheme="http") + "users/"
-        )
-
-    return render_template("security/register_user.html", form=form)
-
-
 @app.before_request
 def create_user():
     existing_user = user_datastore.find_user(username="admin")
@@ -202,32 +166,6 @@ def load_user(user_id):
     return Users.query.get(user_id)
 
 
-class LoginForm(FlaskForm):
-    email = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
-        render_kw={"placeholder": "Username"},
-    )
-    password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
-        render_kw={"placeholder": "Password"},
-    )
-    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
-
-
-@app.route("/customer_login", methods=["GET", "POST"])
-def customer_login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(username=form.email.data.lower()).first()
-        if user and user.is_active:
-            login_user(user)
-            flash("Logged in successfully!")
-            return redirect(url_for("user", username=user.username))
-        else:
-            flash("Invalid username or password")
-    return render_template("customers/customer_login.html", form=form)
-
-
 @app.route("/user/<username>/", methods=["GET", "POST"])
 @login_required
 def user(username):
@@ -245,6 +183,5 @@ def user(username):
 @login_required
 def logout():
     logout_user()
-
     flash("You have been logged out.")
-    return redirect(url_for("customer_login"))
+    return redirect(url_for("routes_customers.customer_login"))
