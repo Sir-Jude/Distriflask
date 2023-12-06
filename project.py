@@ -37,7 +37,7 @@ from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 # Imports from otehr files
 from models import db, Users, Roles
 from errors import register_error_handlers
-from routes_customers import routes_customers
+from views.customers import customers
 
 # Imports for bcrypt
 from flask_bcrypt import Bcrypt
@@ -49,7 +49,9 @@ load_dotenv()
 
 
 app = Flask(__name__)
-app.register_blueprint(routes_customers)
+app.register_blueprint(customers)
+register_error_handlers(app)
+
 
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = {
     "username": {"mapper": uia_username_mapper, "case_insensitive": True}
@@ -76,9 +78,6 @@ def username_validator(form, field):
     msg, field.data = _security._username_util.validate(field.data)
     if msg:
         raise ValidationError(msg)
-
-
-register_error_handlers(app)
 
 
 class ExtendedRegisterForm(RegisterForm):
@@ -166,7 +165,7 @@ def load_user(user_id):
     return Users.query.get(user_id)
 
 
-@app.route("/user/<username>/", methods=["GET", "POST"])
+@app.route("/customer/<username>/", methods=["GET", "POST"])
 @login_required
 def user(username):
     if current_user.username != username:
@@ -175,7 +174,7 @@ def user(username):
     # To be substituted with a database...
     devices = current_user.device
     return render_template(
-        "customers/customer_view.html", username=username, devices=devices
+        "customers/profile.html", username=username, devices=devices
     )
 
 
@@ -184,4 +183,4 @@ def user(username):
 def logout():
     logout_user()
     flash("You have been logged out.")
-    return redirect(url_for("routes_customers.customer_login"))
+    return redirect(url_for("customers.login"))
