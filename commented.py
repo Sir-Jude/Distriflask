@@ -37,6 +37,28 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
 
+@app.route("/admin/users/new", methods=["GET", "POST"])
+def register():
+    form = ExtendedRegisterForm(RegisterForm)
+
+    if form.validate_on_submit():
+        new_user = Users(
+            username=form.username.data,
+            password=form.password.data,
+            device=form.device.data,
+            active=form.active.data,
+            role=form.role.data,
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(
+            url_for("admin.index", _external=True, _scheme="http") + "users/"
+        )
+
+    return render_template("security/register_user.html", form=form)
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = ExtendedLoginForm()

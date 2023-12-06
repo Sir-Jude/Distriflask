@@ -1,0 +1,15 @@
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import InputRequired, Length
+
+
+class LoginForm(FlaskForm):
+    email = StringField(
+        validators=[InputRequired(), Length(min=4, max=20)],
+        render_kw={"placeholder": "Username"},
+    )
+    password = PasswordField(
+        validators=[InputRequired(), Length(min=8, max=20)],
+        render_kw={"placeholder": "Password"},
+    )
+    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})

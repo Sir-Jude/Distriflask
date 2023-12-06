@@ -12,7 +12,7 @@
 <p>
     Please, insert your username and password:
 </p>
-<form method="POST" action="{{ url_for('customer_login') }}">
+<form method="POST" action="{{ url_for('routes_customers.customer_login') }}">
   {{ form.csrf_token }}
   {{ form.hidden_tag() }}
   {{ form.email() }}
