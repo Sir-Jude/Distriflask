@@ -1,47 +1,66 @@
 from flask import Flask, flash, render_template, redirect, url_for
+
+# Imports for Flask security
 from flask_security import (
     current_user,
     lookup_identity,
     LoginForm,
     RegisterForm,
-    RoleMixin,
     Security,
     SQLAlchemyUserDatastore,
     uia_username_mapper,
     unique_identity_attribute,
     UserMixin,
 )
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_admin import Admin, helpers as admin_helpers
-from flask_admin.contrib.sqla import ModelView
+
+
+# Imports for Flask login
 from flask_login import (
     LoginManager,
     login_user,
     login_required,
     logout_user,
+    current_user,
 )
+
+
+from flask_migrate import Migrate
+
+# Imports for Admin page
+from flask_admin import Admin, helpers as admin_helpers
+from flask_admin.contrib.sqla import ModelView
+
+# Imports for .env file
 import os
 from dotenv import load_dotenv
-from models import db, Users, Roles
-from errors import register_error_handlers
-import uuid
-from sqlalchemy_utils import UUIDType
+
+
 from werkzeug.local import LocalProxy
+
+# Imports for WTF
+from flask_wtf import FlaskForm
 from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
-from flask_wtf import FlaskForm
+
+# Imports from otehr files
+from models import db, Users, Roles
+from errors import register_error_handlers
+from admin_routes import admin_routes
+
+# Imports for bcrypt
 from flask_bcrypt import Bcrypt
-#from admin_routes import admin_routes
+bcrypt = Bcrypt()
 
 
 load_dotenv()
 
 
-
 app = Flask(__name__)
-#app.register_blueprint(admin_routes)
-app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = ({"username": {"mapper": uia_username_mapper, "case_insensitive": True}})
+app.register_blueprint(admin_routes, url_prefix="/admin")
+
+app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = {
+    "username": {"mapper": uia_username_mapper, "case_insensitive": True}
+}
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
@@ -51,11 +70,10 @@ app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
 app.config["SECURITY_REGISTERABLE"] = True
 admin = Admin(
-    app, name="Admin", base_template="my_master.html", template_mode="bootstrap3"
+    app, name="Admin", base_template="master.html", template_mode="bootstrap3"
 )
 db.init_app(app)
 migrate = Migrate(app, db)
-bcrypt = Bcrypt(app)
 
 
 def username_validator(form, field):
@@ -70,12 +88,10 @@ def username_validator(form, field):
 @app.route("/")
 @app.route("/home/", methods=["GET"])
 def home_page():
-    return render_template('home.html')
+    return render_template("home.html")
+
 
 register_error_handlers(app)
-
-
-
 
 
 class ExtendedRegisterForm(RegisterForm):
@@ -93,17 +109,18 @@ class ExtendedRegisterForm(RegisterForm):
     # )
     pass
 
+
 class ExtendedLoginForm(LoginForm):
     email = StringField("Username", [InputRequired()])
 
     def validate(self, **kwargs):
-            self.user = lookup_identity(self.email.data)
-            # Setting 'ifield' informs the default login form validation
-            # handler that the identity has already been confirmed.
-            self.ifield = self.email
-            if not super().validate(**kwargs):
-                return False
-            return True
+        self.user = lookup_identity(self.email.data)
+        # Setting 'ifield' informs the default login form validation
+        # handler that the identity has already been confirmed.
+        self.ifield = self.email
+        if not super().validate(**kwargs):
+            return False
+        return True
 
 
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = (
@@ -119,7 +136,7 @@ security = Security(
 )
 
 
-@app.route("/admin/users/register", methods=["GET", "POST"])
+@app.route("/admin/users/new", methods=["GET", "POST"])
 def register():
     form = ExtendedRegisterForm(RegisterForm)
 
@@ -174,60 +191,60 @@ def security_context_processor():
     )
 
 
-# # Flask_login stuff
-# login_manager = LoginManager(app)
-# login_manager.login_view = "login"
+# Flask_login stuff
+login_manager = LoginManager()
+login_manager.login_view = "login"
 
 
-# @login_manager.user_loader
-# def load_user(user_id):
-#     return Users.query.get(user_id)
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(user_id)
 
 
-# class LoginForm(FlaskForm):
-#     email = StringField(
-#         validators=[InputRequired(), Length(min=4, max=20)],
-#         render_kw={"placeholder": "Username"},
-#     )
-#     password = PasswordField(
-#         validators=[InputRequired(), Length(min=8, max=20)],
-#         render_kw={"placeholder": "Password"},
-#     )
-#     submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
+class LoginForm(FlaskForm):
+    email = StringField(
+        validators=[InputRequired(), Length(min=4, max=20)],
+        render_kw={"placeholder": "Username"},
+    )
+    password = PasswordField(
+        validators=[InputRequired(), Length(min=8, max=20)],
+        render_kw={"placeholder": "Password"},
+    )
+    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
 
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     form = ExtendedLoginForm()
-#     if form.validate_on_submit():
-#         user = Users.query.filter_by(username=form.username.data.lower()).first()
-#         if user:
-#             if bcrypt.check_password(user.password, form.password.data):
-#                 login_user(user)
-#                 flash("Logged in successfully!")
-#                 return redirect(url_for("user", username=user.username))
-#             else:
-#                 flash("Wrong password - Try Again...")
-#         else:
-#             flash("This username does not exist - Try again...")
-#     return render_template("security/login_user.html", form=form)
+@app.route("/customer_login", methods=["GET", "POST"])
+def customer_login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Users.query.filter_by(username=form.email.data.lower()).first()
+        if user:
+            if bcrypt.check_password(user.password, form.password.data):
+                login_user(user)
+                flash("Logged in successfully!")
+                return redirect(url_for("user", username=user.username))
+            else:
+                flash("Wrong password - Try Again...")
+        else:
+            flash("This username does not exist - Try again...")
+    return render_template("customers/customer_login.html", form=form)
 
 
-# @app.route("/user/<username>/", methods=["GET", "POST"])
-# @login_required
-# def user(username):
-#     if current_user.username != username:
-#         return render_template("errors/403.html"), 403
+@app.route("/user/<username>/", methods=["GET", "POST"])
+@login_required
+def user(username):
+    if current_user.username != username:
+        return render_template("errors/403.html"), 403
 
-#     # To be substituted with a database...
-#     devices = current_user.device
-#     return render_template("user.html", username=username, devices=devices)
+    # To be substituted with a database...
+    devices = current_user.device
+    return render_template("customers/user.html", username=username, devices=devices)
 
 
-# @app.route("/logout/", methods=["GET", "POST"])
-# @login_required
-# def logout():
-#     logout_user()
+@app.route("/logout/", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
 
-#     flash("You have been logged out.")
-#     return redirect(url_for("security/login_user.html"))
+    flash("You have been logged out.")
+    return redirect(url_for("customers/customer_login.html"))

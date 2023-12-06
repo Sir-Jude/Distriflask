@@ -8,13 +8,34 @@
         <h1>Register</h1>
         <div class="well">
             <form action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
+                {{ register_user_form.csrf_token }}
                 {{ register_user_form.hidden_tag() }}
-                {{ render_field_with_errors(register_user_form.email) }}
-                {{ render_field_with_errors(register_user_form.password) }}
-                {% if register_user_form.password_confirm %}
-                {{ render_field_with_errors(register_user_form.password_confirm) }}
-                {% endif %}
-                {{ render_field(register_user_form.submit, class="btn btn-primary") }}
+            
+                {{ register_user_form.username() }}
+                <br/>
+                {% for error in register_user_form.username.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+            
+                {{ register_user_form.password() }}
+                <br/>
+                {% for error in register_user_form.password.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+            
+                {{ register_user_form.password_2() }}
+                <br/>
+            
+                {{ register_user_form.device() }}
+                <br/>
+      
+                <label for="active">Active</label>{{ register_user_form.active() }}
+                <br/>
+            
+                {{ register_user_form.role() }}
+                <br/>
+            
+                {{ register_user_form.submit() }}
             </form>
         </div>
     </div>
