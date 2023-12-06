@@ -49,6 +49,7 @@ from admin_routes import admin_routes
 
 # Imports for bcrypt
 from flask_bcrypt import Bcrypt
+
 bcrypt = Bcrypt()
 
 
@@ -168,7 +169,7 @@ def create_user():
 
 
 class UserAdminView(ModelView):
-    column_exclude_list = ["password", "fs_uniquifier"]
+    column_exclude_list = ["fs_uniquifier"]
 
     def is_accessible(self):
         return current_user.is_active and current_user.is_authenticated
@@ -218,15 +219,12 @@ def customer_login():
     form = LoginForm()
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.email.data.lower()).first()
-        if user:
-            if bcrypt.check_password(user.password, form.password.data):
-                login_user(user)
-                flash("Logged in successfully!")
-                return redirect(url_for("user", username=user.username))
-            else:
-                flash("Wrong password - Try Again...")
+        if user and user.is_active:
+            login_user(user)
+            flash("Logged in successfully!")
+            return redirect(url_for("user", username=user.username))
         else:
-            flash("This username does not exist - Try again...")
+            flash("Invalid username or password")
     return render_template("customers/customer_login.html", form=form)
 
 
@@ -238,7 +236,9 @@ def user(username):
 
     # To be substituted with a database...
     devices = current_user.device
-    return render_template("customers/user.html", username=username, devices=devices)
+    return render_template(
+        "customers/customer_view.html", username=username, devices=devices
+    )
 
 
 @app.route("/logout/", methods=["GET", "POST"])
@@ -247,4 +247,4 @@ def logout():
     logout_user()
 
     flash("You have been logged out.")
-    return redirect(url_for("customers/customer_login.html"))
+    return redirect(url_for("customer_login"))
