@@ -1,127 +1,191 @@
-from flask import Flask, render_template, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_admin import Admin
-from flask_login import LoginManager, current_user, login_user
+from flask import Flask, flash, redirect, render_template, url_for
+
+# Imports for Flask security
+from flask_security import (
+    current_user,
+    lookup_identity,
+    LoginForm,
+    RegisterForm,
+    Security,
+    SQLAlchemyUserDatastore,
+    uia_username_mapper,
+    unique_identity_attribute
+)
+
+# Imports for Flask login
+from flask_login import LoginManager, logout_user, login_required
+
+
+from flask_migrate import Migrate
+
+# Imports for Admin page
+from flask_admin import Admin, helpers as admin_helpers
+from flask_admin.contrib.sqla import ModelView
+
+# Imports for .env file
 import os
 from dotenv import load_dotenv
 
-# Import the libraries to use UUID (Universal Unique Identifier)
-from sqlalchemy_utils import UUIDType
-import uuid
-from flask_admin.contrib.sqla import ModelView
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError
+
+from werkzeug.local import LocalProxy
+
+# Imports for WTF
+from flask_wtf import Form
+from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
+from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+
+# Imports from otehr files
+from models import db, Users, Roles
+from errors import register_error_handlers
+from views.customers import customers
+
+# Imports for bcrypt
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()
 
 
 load_dotenv()
 
+
 app = Flask(__name__)
+app.register_blueprint(customers)
+register_error_handlers(app)
+
+
+app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = {
+    "username": {"mapper": uia_username_mapper, "case_insensitive": True}
+}
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
-db = SQLAlchemy(app)
-admin = Admin(app)
-login_manager = LoginManager(app)
+app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
+app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
+app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
+app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
+app.config["SECURITY_REGISTERABLE"] = True
+admin = Admin(
+    app, name="Admin", base_template="master.html", template_mode="bootstrap3"
+)
+db.init_app(app)
+migrate = Migrate(app, db)
+
+
+def username_validator(form, field):
+    # Side-effect - field.data is updated to normalized value.
+    # Use proxy to we can declare this prior to initializing Security.
+    _security = LocalProxy(lambda: app.extensions["security"])
+    msg, field.data = _security._username_util.validate(field.data)
+    if msg:
+        raise ValidationError(msg)
+
+
+class ExtendedRegisterForm(RegisterForm):
+    email = StringField(
+        "Username", [InputRequired(), username_validator, unique_identity_attribute]
+    )
+    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
+    device = StringField("Device")
+    active = BooleanField("Active")
+    role = SelectField(
+        "Role",
+        choices=[("user", "User"), ("admin", "Admin")],
+        validators=[InputRequired()],
+    )
+
+
+class ExtendedLoginForm(LoginForm):
+    email = StringField("Username", [InputRequired()])
+
+    def validate(self, **kwargs):
+        self.user = lookup_identity(self.email.data)
+        # Setting 'ifield' informs the default login form validation
+        # handler that the identity has already been confirmed.
+        self.ifield = self.email
+        if not super().validate(**kwargs):
+            return False
+        return True
+
+
+app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = (
+    {"username": {"mapper": uia_username_mapper, "case_insensitive": True}},
+)
+
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+security = Security(
+    app,
+    user_datastore,
+    register_form=ExtendedRegisterForm,
+    login_form=ExtendedLoginForm,
+)
+
+
+@app.before_request
+def create_user():
+    existing_user = user_datastore.find_user(username="admin")
+    if not existing_user:
+        first_user = user_datastore.create_user(username="admin", password="12345678")
+        user_datastore.activate_user(first_user)
+        db.session.commit()
+
+
+class UserAdminView(ModelView):
+    column_exclude_list = ["fs_uniquifier", "password"]
+
+    def is_accessible(self):
+        return current_user.is_active and current_user.is_authenticated
+
+    def _handle_view(self, name):
+        if not self.is_accessible():
+            return redirect(url_for("security.login"))
+
+
+admin.add_view(UserAdminView(Users, db.session))
+
+
+@security.context_processor
+def security_context_processor():
+    return dict(
+        admin_base_template=admin.base_template,
+        admin_view=admin.index_view,
+        h=admin_helpers,
+        get_url=url_for,
+    )
+    
+@security.register_context_processor
+def security_register_processor():
+    return dict(register_user_form=ExtendedLoginForm)
+
+
+# Flask_login stuff
+login_manager = LoginManager()
+login_manager.login_view = "login"
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return Users.query.get(user_id)
 
 
-class User(db.Model):
-    __tablename__ = "user"
-    user_id = db.Column(
-        UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
-    )
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password = db.Column(db.String(50), nullable=False)
-    # role = db.Column pass # multiple roles
-    # region_id = db.Column pass # multiple regions
-    # devices = db.Column # Only for customers, just one device (one to one)
-
-@app.route("/")
-@app.route("/home/", methods=["GET"])
-def home_page():
-    username = None
-    if current_user.is_authenticated:
-        username = current_user.username
-    return render_template("welcome.html", username=username)
-
-admin.add_view(ModelView(User, db.session))
-
-
-class RegisterForm(FlaskForm):
-    username = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
-        render_kw={"placeholder": "Username"},
-    )
-    password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
-        render_kw={"placeholder": "Password"},
-    )
-    submit = SubmitField("Register", render_kw={"class": "btn btn-primary"})
-    
-    def validate_username(self, field):
-        existing_user_username = User.query.filter_by(username=field.data).first()
-        if existing_user_username:
-            raise ValidationError(
-                "This username already exists. Please choose a different one."
-            )
-
-
-@app.route("/register/", methods=["GET", "POST"])
+@app.route("/admin/users/new/", methods=["GET", "POST"])
 def register():
-    form = RegisterForm()
-    
+    form = ExtendedRegisterForm(RegisterForm)
+
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, password=form.password.data)
+        new_user = Users(
+            username=form.username.data,
+            password=form.password.data,
+            device=form.device.data,
+            active=form.active.data,
+            role=form.role.data,
+        )
         db.session.add(new_user)
         db.session.commit()
-        
-        return redirect(url_for ("login"))
-    
-    return render_template("registration/register.html", form=form)
+
+        return redirect(
+            url_for("admin.index", _external=True, _scheme="http") + "users/"
+        )
+
+    return render_template("security/register_user.html", form=form)
 
 
-class LoginForm(FlaskForm):
-    username = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
-        render_kw={"placeholder": "Username"},
-    )
-    password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
-        render_kw={"placeholder": "Password"},
-    )
-    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
-    
-    def validate_username(self, username):
-        existing_user_username = User.query.filter_by(username=username.data).first()
-        if existing_user_username:
-            raise ValidationError(
-                "This username already exists. Please choose a different one."
-            )
-
-@app.route("/login/", methods=["GET", "POST"])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        # Assuming User.authenticate is a method that checks the username and password
-        user = User.authenticate(username=form.username.data, password=form.password.data)
-
-        if user:
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))  # Redirect to the dashboard or another page
-        else:
-            flash('Invalid username or password', 'danger')
-
-    return render_template("registration/login.html", form=form)
-    return render_template("registration/login.html", form=form)
-
-
-@app.route("/user/<name>/")
-def user(name):
-    # To be substituted with a database...
-    devices = ["device_1", "device_2", "device_3", "device_4", "..."]
-    return render_template("user.html", username=name, devices=devices)
