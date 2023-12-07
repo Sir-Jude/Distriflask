@@ -19,7 +19,7 @@ from flask_login import LoginManager, logout_user, login_required
 from flask_migrate import Migrate
 
 # Imports for Admin page
-from flask_admin import Admin, helpers as admin_helpers
+from flask_admin import BaseView, expose, Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 
 # Imports for .env file
@@ -52,18 +52,16 @@ app = Flask(__name__)
 app.register_blueprint(customers)
 register_error_handlers(app)
 
-
-app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = {
-    "username": {"mapper": uia_username_mapper, "case_insensitive": True}
-}
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
 app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
 app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
-app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/users/"
 app.config["SECURITY_REGISTERABLE"] = True
+
+
 admin = Admin(
     app, name="Admin", base_template="master.html", template_mode="bootstrap3"
 )
@@ -78,20 +76,6 @@ def username_validator(form, field):
     msg, field.data = _security._username_util.validate(field.data)
     if msg:
         raise ValidationError(msg)
-
-
-class ExtendedRegisterForm(RegisterForm):
-    email = StringField(
-        "Username", [InputRequired(), username_validator, unique_identity_attribute]
-    )
-    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    device = StringField("Device")
-    active = BooleanField("Active")
-    role = SelectField(
-        "Role",
-        choices=[("user", "User"), ("admin", "Admin")],
-        validators=[InputRequired()],
-    )
 
 
 class ExtendedLoginForm(LoginForm):
@@ -110,6 +94,60 @@ class ExtendedLoginForm(LoginForm):
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = (
     {"username": {"mapper": uia_username_mapper, "case_insensitive": True}},
 )
+
+
+class ExtendedRegisterForm(RegisterForm):
+    email = StringField(
+        "Username", [InputRequired(), username_validator, unique_identity_attribute]
+    )
+    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
+    device = StringField("Device")
+    active = BooleanField("Active")
+    role = SelectField(
+        "Role",
+        choices=[
+            ("customer", "Customer"),
+            ("administration", "Administration"),
+            ("sales", "Sales"),
+            ("production", "Production"),
+            ("application", "Application"),
+            ("software", "Software"),  
+        ],
+        validators=[InputRequired()],
+    )
+    
+    def validate(self, **kwargs):
+        self.user = lookup_identity(self.email.data)
+        # Setting 'ifield' informs the default login form validation
+        # handler that the identity has already been confirmed.
+        self.ifield = self.email
+        if not super().validate(**kwargs):
+            return False
+        return True
+    
+    
+    
+@app.route("/admin/users/new/", methods=["GET", "POST"])
+def register():
+    form = ExtendedRegisterForm()
+
+    if form.validate_on_submit():
+        new_user = Users(
+            username=form.username.data,
+            password=form.password.data,
+            device=form.device.data,
+            active=form.active.data,
+            role=form.role.data,
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(
+            url_for("admin.index", _external=True, _scheme="http") + "users/"
+        )
+
+    return render_template("security/register_user.html", form=form)
+
 
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 security = Security(
@@ -154,12 +192,11 @@ def security_context_processor():
     
 @security.register_context_processor
 def security_register_processor():
-    return dict(register_user_form=ExtendedLoginForm)
+    return dict(register_user_form=ExtendedRegisterForm)
 
 
 # Flask_login stuff
 login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = "login"
 
 @login_manager.user_loader
@@ -167,25 +204,6 @@ def load_user(user_id):
     return Users.query.get(user_id)
 
 
-@app.route("/admin/users/new/", methods=["GET", "POST"])
-def register():
-    form = ExtendedRegisterForm(RegisterForm)
 
-    if form.validate_on_submit():
-        new_user = Users(
-            username=form.username.data,
-            password=form.password.data,
-            device=form.device.data,
-            active=form.active.data,
-            role=form.role.data,
-        )
-        db.session.add(new_user)
-        db.session.commit()
-
-        return redirect(
-            url_for("admin.index", _external=True, _scheme="http") + "users/"
-        )
-
-    return render_template("security/register_user.html", form=form)
 
 
