@@ -1,7 +1,15 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, login_required, current_user, logout_user
-from forms_customers import LoginForm
 from models import Users
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import InputRequired, Length
+
+
+class LoginForm(FlaskForm):
+    email = StringField("Username", [InputRequired(), Length(min=4, max=20)])
+    password = PasswordField("Password",[InputRequired(), Length(min=8, max=20)])
+    submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
 
 customers = Blueprint("customers", __name__)
@@ -36,6 +44,7 @@ def login():
             Otherwise the application will be vulnerable to open redirects
             INFO: flask-login.readthedocs.io/en/latest/#login-example
             """
+            
             return redirect(url_for("customers.profile", username=user.username))
         else:
             flash("Invalid username or password")
