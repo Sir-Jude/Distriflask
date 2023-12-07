@@ -1,42 +1,24 @@
-{% extends 'admin/master.html' %}
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
 
-{% block body %}
-{{ super() }}
-<div class="container">
-    <div>
-        <h1>Register</h1>
-        <div class="well">
-            <form action="{{ url_for_security('register_user') }}" method="POST" name="form">
-                {{ form.csrf_token }}
-                {{ form.hidden_tag() }}
-            
-                {{ form.username() }}
-                <br/>
-                {% for error in form.username.errors %}
-                    <p class="error">{{ error }}</p>
-                {% endfor %}
-            
-                {{ form.password() }}
-                <br/>
-                {% for error in form.password.errors %}
-                    <p class="error">{{ error }}</p>
-                {% endfor %}
-            
-                {{ form.password_2() }}
-                <br/>
-            
-                {{ form.device() }}
-                <br/>
-      
-                <label for="active">Active</label>{{ form.active() }}
-                <br/>
-            
-                {{ form.role() }}
-                <br/>
-            
-                {{ form.submit() }}
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock body %}
+{% block content %}
+  {% include "security/_messages.html" %}
+  <h1>{{ _fsdomain('Register') }}</h1>
+  <form action="{{ url_for_security('register') }}" method="post" name="form">
+    {{ form.hidden_tag() }}
+    {{ render_form_errors(form) }}
+    {{ render_field_with_errors(form.email) }}
+    {% if security.username_enable %}
+      {{ render_field_with_errors(form.username) }}
+    {% endif %}
+    {{ render_field_with_errors(form.password) }}
+    {% if form.password_confirm %}
+      {{ render_field_with_errors(form.password_confirm) }}
+    {% endif %}
+    {{ render_field_with_errors(form.device) }}
+    {{ render_field_with_errors(form.active) }}
+    {{ render_field_with_errors(form.role) }}  
+    {{ render_field(form.submit) }}
+  </form>
+  {% include "security/_menu.html" %}
+{% endblock content %}
