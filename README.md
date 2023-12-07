@@ -473,7 +473,7 @@ def load_user(user_id):
 
 
 
-# How to overwrite the form...
+# How to overwrite the login form...
 https://flask-security-too.readthedocs.io/en/stable/customizing.html
 
 https://flask-security-too.readthedocs.io/en/stable/configuration.html#SECURITY_USER_IDENTITY_ATTRIBUTES
