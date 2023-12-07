@@ -9,8 +9,8 @@ from flask_security import (
     Security,
     SQLAlchemyUserDatastore,
     uia_username_mapper,
+    unique_identity_attribute
 )
-
 
 # Imports for Flask login
 from flask_login import LoginManager, logout_user, login_required
@@ -30,7 +30,7 @@ from dotenv import load_dotenv
 from werkzeug.local import LocalProxy
 
 # Imports for WTF
-from flask_wtf import FlaskForm
+from flask_wtf import Form
 from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 
@@ -61,7 +61,7 @@ app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
 app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
-# app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
 app.config["SECURITY_REGISTERABLE"] = True
 admin = Admin(
@@ -81,19 +81,17 @@ def username_validator(form, field):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    # # BUG: This code is completely useless and is not seen at all!!!
-    # email = StringField(
-    #     "Username", [InputRequired(), username_validator, unique_identity_attribute]
-    # )
-    # password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    # device = StringField("Device")
-    # active = BooleanField("Active")
-    # role = SelectField(
-    #     "Role",
-    #     choices=[("user", "User"), ("admin", "Admin")],
-    #     validators=[InputRequired()],
-    # )
-    pass
+    email = StringField(
+        "Username", [InputRequired(), username_validator, unique_identity_attribute]
+    )
+    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
+    device = StringField("Device")
+    active = BooleanField("Active")
+    role = SelectField(
+        "Role",
+        choices=[("user", "User"), ("admin", "Admin")],
+        validators=[InputRequired()],
+    )
 
 
 class ExtendedLoginForm(LoginForm):
@@ -132,7 +130,7 @@ def create_user():
 
 
 class UserAdminView(ModelView):
-    column_exclude_list = ["fs_uniquifier"]
+    column_exclude_list = ["fs_uniquifier", "password"]
 
     def is_accessible(self):
         return current_user.is_active and current_user.is_authenticated
@@ -153,6 +151,10 @@ def security_context_processor():
         h=admin_helpers,
         get_url=url_for,
     )
+    
+@security.register_context_processor
+def security_register_processor():
+    return dict(register_user_form=ExtendedLoginForm)
 
 
 # Flask_login stuff
@@ -165,22 +167,25 @@ def load_user(user_id):
     return Users.query.get(user_id)
 
 
-@app.route("/customer/<username>/", methods=["GET", "POST"])
-@login_required
-def user(username):
-    if current_user.username != username:
-        return render_template("errors/403.html"), 403
+@app.route("/admin/users/new/", methods=["GET", "POST"])
+def register():
+    form = ExtendedRegisterForm(RegisterForm)
 
-    # To be substituted with a database...
-    devices = current_user.device
-    return render_template(
-        "customers/profile.html", username=username, devices=devices
-    )
+    if form.validate_on_submit():
+        new_user = Users(
+            username=form.username.data,
+            password=form.password.data,
+            device=form.device.data,
+            active=form.active.data,
+            role=form.role.data,
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(
+            url_for("admin.index", _external=True, _scheme="http") + "users/"
+        )
+
+    return render_template("security/register_user.html", form=form)
 
 
-@app.route("/logout/", methods=["GET", "POST"])
-@login_required
-def logout():
-    logout_user()
-    flash("You have been logged out.")
-    return redirect(url_for("customers.login"))

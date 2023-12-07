@@ -1,5 +1,4 @@
 {% extends 'admin/master.html' %}
-{% from "security/_macros.html" import render_field_with_errors, render_field %}
 
 {% block body %}
 {{ super() }}
@@ -7,35 +6,35 @@
     <div>
         <h1>Register</h1>
         <div class="well">
-            <form action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
-                {{ register_user_form.csrf_token }}
-                {{ register_user_form.hidden_tag() }}
+            <form action="{{ url_for_security('register_user') }}" method="POST" name="form">
+                {{ form.csrf_token }}
+                {{ form.hidden_tag() }}
             
-                {{ register_user_form.username() }}
+                {{ form.username() }}
                 <br/>
-                {% for error in register_user_form.username.errors %}
+                {% for error in form.username.errors %}
                     <p class="error">{{ error }}</p>
                 {% endfor %}
             
-                {{ register_user_form.password() }}
+                {{ form.password() }}
                 <br/>
-                {% for error in register_user_form.password.errors %}
+                {% for error in form.password.errors %}
                     <p class="error">{{ error }}</p>
                 {% endfor %}
             
-                {{ register_user_form.password_2() }}
+                {{ form.password_2() }}
                 <br/>
             
-                {{ register_user_form.device() }}
+                {{ form.device() }}
                 <br/>
       
-                <label for="active">Active</label>{{ register_user_form.active() }}
+                <label for="active">Active</label>{{ form.active() }}
                 <br/>
             
-                {{ register_user_form.role() }}
+                {{ form.role() }}
                 <br/>
             
-                {{ register_user_form.submit() }}
+                {{ form.submit() }}
             </form>
         </div>
     </div>

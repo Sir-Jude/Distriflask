@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
-from flask_login import login_user
+from flask_login import login_user, login_required, current_user, logout_user
 from forms_customers import LoginForm
 from models import Users
 
@@ -36,7 +36,27 @@ def login():
             Otherwise the application will be vulnerable to open redirects
             INFO: flask-login.readthedocs.io/en/latest/#login-example
             """
-            return redirect(url_for("user", username=user.username))
+            return redirect(url_for("customers.profile", username=user.username))
         else:
             flash("Invalid username or password")
     return render_template("customers/login.html", form=form)
+
+@customers.route("/customer/<username>/", methods=["GET", "POST"])
+@login_required
+def profile(username):
+    if current_user.username != username:
+        return render_template("errors/403.html"), 403
+
+    # To be substituted with a database...
+    devices = current_user.device
+    return render_template(
+        "customers/profile.html", username=username, devices=devices
+    )
+
+
+@customers.route("/logout/", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.")
+    return redirect(url_for("customers.login"))
