@@ -123,58 +123,47 @@ UPDATE_2: before_first_request is deprecated
 
 
 # Create a User model and link it to the admin page
-Import the UserMixin and the libraries to use the UUID (Universally Unique Identifier)
 ```
-from flask_login import UserMixin
-from sqlalchemy_utild import UUIDType
+from flask_sqlalchemy import SQLAlchemy
+from flask_security import RoleMixin, UserMixin
+from sqlalchemy_utils import UUIDType
 import uuid
-```
 
-Create the model view.
-It needs to implement the following properties and methods:  
 
-*is_authenticated*  
-    This property should return True if the user is authenticated, i.e. they have provided valid credentials. (Only authenticated users will fulfill the criteria of login_required.)
+db = SQLAlchemy()
 
-*is_active*  
-    This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
 
-*get_id()*  
-    This method must return a str that uniquely identifies this user, and can be used to load the user from the user_loader callback. Note that this must be a str - if the ID is natively an int or some other type, you will need to convert it to str.
+roles_users_table = db.Table(
+    "roles_users",
+    db.Column("users_id", db.Integer(), db.ForeignKey("users.user_id")),
+    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.id")),
+)
 
-```
+
 class Users(db.Model, UserMixin):
-    __tablename__ = "user"
     user_id = db.Column(
         UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
     )
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password_hash = db.Column(db.String(200), nullable=False)
-    device = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(20), nullable=False)
+    username = db.Column(db.String(100), unique=True, index=True)
+    password = db.Column(db.String(80))
+    device = db.Column(db.String(200), nullable=True)
+    active = db.Column(db.Boolean())
+    roles = db.relationship(
+        "Roles", secondary=roles_users_table, backref="users", lazy=True
+    )
+    fs_uniquifier = db.Column(
+        db.String(64),
+        unique=True,
+        nullable=True,
+        name="unique_fs_uniquifier_constraint",
+    )
 
-    @property
-    def password(self):
-        raise AttributeError("Password is not a readable attribute!")
 
-    @password.setter
-    def password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+class Roles(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
-    def verify_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, password)
-
-    def is_admin(self):
-        return self.role == "admin"
-    
-    def is_authenticated(self):
-        return True
-    
-    def is_active(self):
-        return True
-
-    def get_id(self):
-        return str(self.user_id)
 ```
 
 Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
