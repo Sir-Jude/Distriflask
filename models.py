@@ -15,9 +15,7 @@ roles_users_table = db.Table(
 
 
 class Users(db.Model, UserMixin):
-    user_id = db.Column(
-        UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
-    )
+    user_id = db.Column(db.Integer(), primary_key=True)
     username = db.Column(db.String(100), unique=True, index=True)
     password = db.Column(db.String(80))
     device = db.Column(db.String(200), nullable=True)

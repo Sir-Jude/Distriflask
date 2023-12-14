@@ -88,12 +88,12 @@ class ExtendedRegisterForm(RegisterForm):
     role = SelectField(
         "Role",
         choices=[
-            ("customer", "Customer"),
-            ("administration", "Administration"),
-            ("sales", "Sales"),
-            ("production", "Production"),
-            ("application", "Application"),
-            ("software", "Software"),  
+            ("customer"),
+            ("administration"),
+            ("sales"),
+            ("production"),
+            ("application"),
+            ("software"),  
         ],
         validators=[InputRequired()],
     )
@@ -129,15 +129,25 @@ def register():
             device=form.device.data,
             active=form.active.data,
         )
-        db.session.add(new_user)
-        db.session.commit()
+        
+        # Fetch the selected role name from the form
+        selected_role_name = form.role.data
 
-        return redirect(
-            url_for("admin.index", _external=True, _scheme="http") + "users/"
-        )
+        # Query the role based on the selected role name
+        existing_role = Roles.query.filter_by(name=selected_role_name).first()
+
+        if existing_role:
+            new_user.roles.append(existing_role)
+            # Add the new user to the database
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for("admin.index", _external=True, _scheme="http") + "users/")
+        else:
+            # Handle case where the selected role doesn't exist
+            flash(f"Role '{selected_role_name}' does not exist.", 'error')
+            return render_template("security/register_user.html", form=form)
 
     return render_template("security/register_user.html", form=form)
-
 
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 security = Security(
@@ -149,26 +159,43 @@ security = Security(
 
 @security.register_context_processor
 def security_register_processor():
-    return dict(register_user_form=ExtendedRegisterForm())
+    return dict(
+        user_datastore=user_datastore,
+        roles=Roles.query.all(),
+        register_user_form=ExtendedRegisterForm()
+)
 
 @app.before_request
 def create_user():
     existing_user = user_datastore.find_user(username="admin")
     if not existing_user:
-        first_user = user_datastore.create_user(username="admin", password="12345678")
+        first_user = user_datastore.create_user(
+            username="admin",
+            password="12345678",
+            roles = [user_datastore.find_role("administration")]
+        )
         user_datastore.activate_user(first_user)
         db.session.commit()
 
 
 class UserAdminView(ModelView):
-    column_exclude_list = ["fs_uniquifier"]
-
+    column_list = ('username', 'password', 'device', 'active', 'roles')
+    column_sortable_list = ('username', 'device', 'active', ('roles', 'roles.name')) # Make 'roles' sortable
+    
     def is_accessible(self):
         return current_user.is_active and current_user.is_authenticated
 
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
+    
+    @staticmethod
+    def _display_roles(view, context, model, name):
+        return ', '.join([role.name.capitalize() for role in model.roles])
+    
+    column_formatters = {
+        'roles': _display_roles
+    }
 
 
 admin.add_view(UserAdminView(Users, db.session))
