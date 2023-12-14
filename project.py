@@ -169,20 +169,33 @@ def security_register_processor():
 def create_user():
     existing_user = user_datastore.find_user(username="admin")
     if not existing_user:
-        first_user = user_datastore.create_user(username="admin", password="12345678")
+        first_user = user_datastore.create_user(
+            username="admin",
+            password="12345678",
+            roles = [user_datastore.find_role("administration")]
+        )
         user_datastore.activate_user(first_user)
         db.session.commit()
 
 
 class UserAdminView(ModelView):
     column_list = ('username', 'password', 'device', 'active', 'roles')
-
+    column_sortable_list = ('username', 'device', 'active', ('roles', 'roles.name')) # Make 'roles' sortable
+    
     def is_accessible(self):
         return current_user.is_active and current_user.is_authenticated
 
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
+    
+    @staticmethod
+    def _display_roles(view, context, model, name):
+        return ', '.join([role.name.capitalize() for role in model.roles])
+    
+    column_formatters = {
+        'roles': _display_roles
+    }
 
 
 admin.add_view(UserAdminView(Users, db.session))
