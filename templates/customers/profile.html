@@ -1,0 +1,22 @@
+{% extends 'index.html' %}
+{% block title %}
+<title>Users</title>
+{% endblock %}
+{% block content %}
+{% for message in get_flashed_messages() %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endfor %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-6">Welcome, {{ current_user.username.capitalize() }}!</h1>
+    </div>
+    <div>
+      <p>{{ devices }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
