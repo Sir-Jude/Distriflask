@@ -3,6 +3,7 @@ from flask import Flask, flash, redirect, render_template, url_for
 # Imports for Flask security
 from flask_security import (
     current_user,
+    hash_password,
     lookup_identity,
     LoginForm,
     RegisterForm,
@@ -21,6 +22,8 @@ from flask_migrate import Migrate
 # Imports for Admin page
 from flask_admin import BaseView, expose, Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.form import Select2Widget
+
 
 # Imports for .env file
 import os
@@ -33,6 +36,7 @@ from werkzeug.local import LocalProxy
 from flask_wtf import Form
 from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+
 
 # Imports from otehr files
 from models import db, Users, Roles
@@ -125,7 +129,7 @@ def register():
     if form.validate_on_submit():
         new_user = Users(
             username=form.email.data,
-            password=form.password.data,
+            password=hash_password(form.password.data),
             device=form.device.data,
             active=form.active.data,
         )
@@ -176,14 +180,22 @@ def create_user():
 
 class UserAdminView(ModelView):
     column_list = ('username', 'password', 'device', 'active', 'roles')
-
+    column_sortable_list = ('username', 'device', 'active', ('roles', 'roles.name')) # Make 'roles' sortable
+    
     def is_accessible(self):
         return current_user.is_active and current_user.is_authenticated
 
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
-
+    
+    @staticmethod
+    def _display_roles(view, context, model, name):
+        return ', '.join([role.name.capitalize() for role in model.roles])
+    
+    column_formatters = {
+        'roles': _display_roles
+    }
 
 admin.add_view(UserAdminView(Users, db.session))
 
