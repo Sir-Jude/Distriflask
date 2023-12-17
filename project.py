@@ -177,6 +177,16 @@ def create_user():
         user_datastore.activate_user(first_user)
         db.session.commit()
 
+     # Create the 'administrator' role if it doesn't exist
+        admin_role = Roles.query.filter_by(name='administrator').first()
+        if not admin_role:
+            admin_role = Roles(name='administrator')
+            db.session.add(admin_role)
+            db.session.commit()
+
+        # Assign the 'administrator' role to the 'admin' user
+        user_datastore.add_role_to_user(first_user, admin_role)
+        db.session.commit()
 
 class UserAdminView(ModelView):
     column_list = ('username', 'password', 'device', 'active', 'roles')
