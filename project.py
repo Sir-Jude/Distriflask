@@ -1,3 +1,7 @@
+# TASKS:
+# - Try to add db and all the related files to view/customer.py 
+# - Add a button in the homepage to redirect users to their profile page
+
 from flask import Flask, flash, redirect, render_template, url_for
 
 # Imports for Flask security
