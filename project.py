@@ -3,8 +3,8 @@ from flask import Flask, flash, redirect, render_template, url_for
 # Imports for Flask security
 from flask_security import (
     current_user,
-    lookup_identity,
     hash_password,
+    lookup_identity,
     LoginForm,
     RegisterForm,
     Security,
@@ -20,8 +20,10 @@ from flask_login import LoginManager, logout_user, login_required
 from flask_migrate import Migrate
 
 # Imports for Admin page
-from flask_admin import BaseView, expose, Admin, helpers as admin_helpers
+from flask_admin import BaseView, expose, Admin, helpers as admin_helpers, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.form import Select2Widget
+
 
 # Imports for .env file
 import os
@@ -32,8 +34,9 @@ from werkzeug.local import LocalProxy
 
 # Imports for WTF
 from flask_wtf import Form
-from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
+from wtforms import BooleanField, StringField, PasswordField, BooleanField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+
 
 # Imports from otehr files
 from models import db, Users, Roles
@@ -57,6 +60,10 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
+app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+app.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
+app.config['SECURITY_REGISTERABLE'] = True
 app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
 app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
@@ -174,7 +181,7 @@ def create_user():
         user_datastore.activate_user(first_user)
         db.session.commit()
 
-    # Create the 'administrator' role if it doesn't exist
+     # Create the 'administrator' role if it doesn't exist
         admin_role = Roles.query.filter_by(name='administrator').first()
         if not admin_role:
             admin_role = Roles(name='administrator')
@@ -184,7 +191,6 @@ def create_user():
         # Assign the 'administrator' role to the 'admin' user
         user_datastore.add_role_to_user(first_user, admin_role)
         db.session.commit()
-
 
 class UserAdminView(ModelView):
     column_list = ('username', 'password', 'device', 'active', 'roles')
@@ -204,7 +210,6 @@ class UserAdminView(ModelView):
     column_formatters = {
         'roles': _display_roles
     }
-
 
 admin.add_view(UserAdminView(Users, db.session))
 
