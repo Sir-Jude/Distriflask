@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import RoleMixin, UserMixin
-from sqlalchemy_utils import UUIDType
+from sqlalchemy import event
 import uuid
 
 
@@ -26,7 +26,7 @@ class Users(db.Model, UserMixin):
     fs_uniquifier = db.Column(
         db.String(64),
         unique=True,
-        nullable=True,
+        nullable=False,
         name="unique_fs_uniquifier_constraint",
     )
 
@@ -38,3 +38,8 @@ class Roles(db.Model, RoleMixin):
     
     def __str__(self):
         return self.name
+
+@event.listens_for(Users, 'before_insert')
+def before_insert_listener(mapper, connection, target):
+    if target.fs_uniquifier is None:
+        target.fs_uniquifier = str(uuid.uuid4())
