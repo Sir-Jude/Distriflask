@@ -8,7 +8,7 @@ from wtforms.validators import InputRequired, Length
 
 class LoginForm(FlaskForm):
     email = StringField("Username", [InputRequired(), Length(min=4, max=20)])
-    password = PasswordField("Password",[InputRequired(), Length(min=8, max=20)])
+    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
     submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
 
@@ -44,11 +44,12 @@ def login():
             Otherwise the application will be vulnerable to open redirects
             INFO: flask-login.readthedocs.io/en/latest/#login-example
             """
-            
+
             return redirect(url_for("customers.profile", username=user.username))
         else:
             flash("Invalid username or password")
     return render_template("customers/login.html", form=form)
+
 
 @customers.route("/customer/<username>/", methods=["GET", "POST"])
 @login_required
@@ -58,9 +59,7 @@ def profile(username):
 
     # To be substituted with a database...
     devices = current_user.device
-    return render_template(
-        "customers/profile.html", username=username, devices=devices
-    )
+    return render_template("customers/profile.html", username=username, devices=devices)
 
 
 @customers.route("/logout/", methods=["GET", "POST"])

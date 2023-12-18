@@ -1,54 +1,24 @@
 {% extends "security/base.html" %}
-{% from "security/_macros.html" import render_signup_login_field_w_errors %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
 
 {% block content %}
-<div class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-  <div class="w-full max-w-md space-y-8">
-    <div>
-      <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Create your account</h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        Or
-        <a href="{{ url_for_security('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500">log in instead?</a>
-      </p>
-    </div>
-    <form action="{{ url_for_security('register') }}" method="POST" class="mt-8 space-y-6">
-      {{ form.csrf_token }}
-      {{ form.hidden_tag() }}
-  
-      {{ form.username() }}
-      <br/>
-      {% for error in form.username.errors %}
-          <p class="error">{{ error }}</p>
-      {% endfor %}
-  
-      {{ form.password() }}
-      <br/>
-      {% for error in form.password.errors %}
-          <p class="error">{{ error }}</p>
-      {% endfor %}
-  
-      {{ form.password_2() }}
-      <br/>
-  
-      {{ form.device() }}
-      <br/>
-
-      <label for="active">Active</label>{{ form.active() }}
-      <br/>
-  
-      {{ form.role() }}
-      <br/>
-  
-      <div>
-        <button
-          type="submit"
-          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Create your account
-        </button>
-        <p class="mt-3 text-center text-sm text-slate-700">By creating an account, you agree to our <a class="font-semibold" href="{{ url_for('resource_page', page_slug='terms-of-service') }}">Terms of Service</a> and <a class="font-semibold" href="{{ url_for('resource_page', page_slug='privacy-policy') }}">Privacy Policy</a>.</p>
-      </div>
-    </form>
-  </div>
-</div>
-{% endblock %}
+  {% include "security/_messages.html" %}
+  <h1>{{ _fsdomain('Register') }}</h1>
+  <form action="{{ url_for_security('register') }}" method="post" name="form">
+    {{ form.hidden_tag() }}
+    {{ render_form_errors(form) }}
+    {{ render_field_with_errors(form.email) }}
+    {% if security.username_enable %}
+      {{ render_field_with_errors(form.username) }}
+    {% endif %}
+    {{ render_field_with_errors(form.password) }}
+    {% if form.password_confirm %}
+      {{ render_field_with_errors(form.password_confirm) }}
+    {% endif %}
+    {{ render_field_with_errors(form.device) }}
+    {{ render_field_with_errors(form.active) }}
+    {{ render_field_with_errors(form.role) }}  
+    {{ render_field(form.submit) }}
+  </form>
+  {% include "security/_menu.html" %}
+{% endblock content %}

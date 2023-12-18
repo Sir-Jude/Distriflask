@@ -10,7 +10,7 @@ from flask_security import (
     Security,
     SQLAlchemyUserDatastore,
     uia_username_mapper,
-    unique_identity_attribute
+    unique_identity_attribute,
 )
 
 # Imports for Flask login
@@ -20,9 +20,8 @@ from flask_login import LoginManager, logout_user, login_required
 from flask_migrate import Migrate
 
 # Imports for Admin page
-from flask_admin import BaseView, expose, Admin, helpers as admin_helpers, helpers as admin_helpers
+from flask_admin import BaseView, expose, Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
-from flask_admin.form import Select2Widget
 
 
 # Imports for .env file
@@ -34,7 +33,7 @@ from werkzeug.local import LocalProxy
 
 # Imports for WTF
 from flask_wtf import Form
-from wtforms import BooleanField, StringField, PasswordField, BooleanField, SelectField, SubmitField
+from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 
 
@@ -60,15 +59,11 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
 app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
-app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
-app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
-app.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
-app.config['SECURITY_REGISTERABLE'] = True
 app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
-app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+app.config["SECURITY_POST_LOGOUT_VIEW"] = "/admin/"
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
 app.config["SECURITY_REGISTERABLE"] = True
-app.config['SECURITY_REGISTER_URL'] = "/admin/users/new/"
+app.config["SECURITY_REGISTER_URL"] = "/admin/users/new/"
 
 admin = Admin(
     app, name="Admin", base_template="master.html", template_mode="bootstrap3"
@@ -101,7 +96,7 @@ class ExtendedRegisterForm(RegisterForm):
             ("sales"),
             ("production"),
             ("application"),
-            ("software"),  
+            ("software"),
         ],
         validators=[InputRequired()],
     )
@@ -123,9 +118,9 @@ class ExtendedLoginForm(LoginForm):
 # Allow registration with email, but login only with username
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
     {"username": {"mapper": uia_username_mapper}}
-] 
-    
-    
+]
+
+
 @app.route("/admin/users/new/", methods=["GET", "POST"])
 def register():
     form = ExtendedRegisterForm()
@@ -137,7 +132,7 @@ def register():
             device=form.device.data,
             active=form.active.data,
         )
-        
+
         # Fetch the selected role name from the form
         selected_role_name = form.role.data
 
@@ -149,13 +144,16 @@ def register():
             # Add the new user to the database
             db.session.add(new_user)
             db.session.commit()
-            return redirect(url_for("admin.index", _external=True, _scheme="http") + "users/")
+            return redirect(
+                url_for("admin.index", _external=True, _scheme="http") + "users/"
+            )
         else:
             # Handle case where the selected role doesn't exist
-            flash(f"Role '{selected_role_name}' does not exist.", 'error')
+            flash(f"Role '{selected_role_name}' does not exist.", "error")
             return render_template("security/register_user.html", form=form)
 
     return render_template("security/register_user.html", form=form)
+
 
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 security = Security(
@@ -165,13 +163,15 @@ security = Security(
     login_form=ExtendedLoginForm,
 )
 
+
 @security.register_context_processor
 def security_register_processor():
     return dict(
         user_datastore=user_datastore,
         roles=Roles.query.all(),
-        register_user_form=ExtendedRegisterForm()
-)
+        register_user_form=ExtendedRegisterForm(),
+    )
+
 
 @app.before_request
 def create_user():
@@ -181,10 +181,10 @@ def create_user():
         user_datastore.activate_user(first_user)
         db.session.commit()
 
-     # Create the 'administrator' role if it doesn't exist
-        admin_role = Roles.query.filter_by(name='administrator').first()
+        # Create the 'administrator' role if it doesn't exist
+        admin_role = Roles.query.filter_by(name="administrator").first()
         if not admin_role:
-            admin_role = Roles(name='administrator')
+            admin_role = Roles(name="administrator")
             db.session.add(admin_role)
             db.session.commit()
 
@@ -192,24 +192,29 @@ def create_user():
         user_datastore.add_role_to_user(first_user, admin_role)
         db.session.commit()
 
+
 class UserAdminView(ModelView):
-    column_list = ('username', 'password', 'device', 'active', 'roles')
-    column_sortable_list = ('username', 'device', 'active', ('roles', 'roles.name')) # Make 'roles' sortable
-    
+    column_list = ("username", "password", "device", "active", "roles")
+    column_sortable_list = (
+        "username",
+        "device",
+        "active",
+        ("roles", "roles.name"),
+    )  # Make 'roles' sortable
+
     def is_accessible(self):
         return current_user.is_active and current_user.is_authenticated
 
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
-    
+
     @staticmethod
     def _display_roles(view, context, model, name):
-        return ', '.join([role.name.capitalize() for role in model.roles])
-    
-    column_formatters = {
-        'roles': _display_roles
-    }
+        return ", ".join([role.name.capitalize() for role in model.roles])
+
+    column_formatters = {"roles": _display_roles}
+
 
 admin.add_view(UserAdminView(Users, db.session))
 
@@ -228,11 +233,7 @@ def security_context_processor():
 login_manager = LoginManager()
 login_manager.login_view = "login"
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return Users.query.get(user_id)
-
-
-
-
-
