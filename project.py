@@ -4,6 +4,7 @@ from flask import Flask, flash, redirect, render_template, url_for
 from flask_security import (
     current_user,
     lookup_identity,
+    hash_password,
     LoginForm,
     RegisterForm,
     Security,
@@ -125,7 +126,7 @@ def register():
     if form.validate_on_submit():
         new_user = Users(
             username=form.email.data,
-            password=form.password.data,
+            password=hash_password(form.password.data),
             device=form.device.data,
             active=form.active.data,
         )
@@ -169,12 +170,19 @@ def security_register_processor():
 def create_user():
     existing_user = user_datastore.find_user(username="admin")
     if not existing_user:
-        first_user = user_datastore.create_user(
-            username="admin",
-            password="12345678",
-            roles = [user_datastore.find_role("administration")]
-        )
+        first_user = user_datastore.create_user(username="admin", password="12345678")
         user_datastore.activate_user(first_user)
+        db.session.commit()
+
+    # Create the 'administrator' role if it doesn't exist
+        admin_role = Roles.query.filter_by(name='administrator').first()
+        if not admin_role:
+            admin_role = Roles(name='administrator')
+            db.session.add(admin_role)
+            db.session.commit()
+
+        # Assign the 'administrator' role to the 'admin' user
+        user_datastore.add_role_to_user(first_user, admin_role)
         db.session.commit()
 
 
