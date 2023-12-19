@@ -197,7 +197,11 @@ class UserAdminView(ModelView):
     column_sortable_list = ('username', 'device', 'active', ('roles', 'roles.name')) # Make 'roles' sortable
     
     def is_accessible(self):
-        return current_user.is_active and current_user.is_authenticated
+        return (
+            current_user.is_active
+            and current_user.is_authenticated
+            and any(role.name == "administrator" for role in current_user.roles)
+        )
 
     def _handle_view(self, name):
         if not self.is_accessible():
