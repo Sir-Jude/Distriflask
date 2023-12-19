@@ -140,6 +140,7 @@ def register():
         existing_role = Roles.query.filter_by(name=selected_role_name).first()
 
         if existing_role:
+            user_datastore.add_role_to_user(new_user, existing_role)
             new_user.roles.append(existing_role)
             # Add the new user to the database
             db.session.add(new_user)
