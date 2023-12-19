@@ -94,3 +94,6 @@ def logout():
 
     flash("You have been logged out.")
     return redirect(url_for("security/login_user.html"))
+
+
+# <li><h6>Logged in as: {{ current_user.username.capitalize() }}</h6></li>
