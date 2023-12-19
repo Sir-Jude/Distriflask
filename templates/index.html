@@ -34,7 +34,7 @@
               {% if 'home_page' in request.endpoint %}
               <!-- If on home page, link to profile -->
               <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('customers.profile', username=current_user.username) }}">Personal page</a>
+                  <a class="nav-link" href="{{ url_for('customers.profile', username=current_user.username) }}">Profile</a>
               </li>
               {% else %}
               <!-- If on profile page, link to home -->
