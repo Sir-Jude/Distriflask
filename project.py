@@ -195,7 +195,7 @@ def create_user():
 
 
 class UserAdminView(ModelView):
-    column_list = ("username", "password", "device", "active", "roles")
+    column_list = ("username", "device", "active", "roles")
     column_sortable_list = (
         "username",
         "device",
