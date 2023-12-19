@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, login_required, current_user, logout_user
+from flask_security import verify_password
 from models import Users
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
@@ -29,28 +30,31 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = Users.query.filter_by(username=form.email.data.lower()).first()
+        user = Users.query.filter_by(username=form.email.data).first()
         if user and user.is_active:
-            login_user(user)
-            flash("Logged in successfully!")
-            """
-            IMPORTANT!!!
-            The documentation advises to add this snippet:
-            
-            next = flask.request.args.get('next')
-            # url_has_allowed_host_and_scheme should check if the url is safe
-            # for redirects, meaning it matches the request host.
-            # See Django's url_has_allowed_host_and_scheme for an example.
-            if not url_has_allowed_host_and_scheme(next, request.host):
-                return flask.abort(400)
-            return redirect(next or url_for("user", username=user.username))
-            
-            Otherwise the application will be vulnerable to open redirects
-            INFO: flask-login.readthedocs.io/en/latest/#login-example
-            """
-            return redirect(url_for("customers.profile", username=user.username))
+            if verify_password(form.password.data, user.password):
+                login_user(user)
+                flash("Logged in successfully!")
+                """
+                IMPORTANT!!!
+                The documentation advises to add this snippet:
+                
+                next = flask.request.args.get('next')
+                # url_has_allowed_host_and_scheme should check if the url is safe
+                # for redirects, meaning it matches the request host.
+                # See Django's url_has_allowed_host_and_scheme for an example.
+                if not url_has_allowed_host_and_scheme(next, request.host):
+                    return flask.abort(400)
+                return redirect(next or url_for("user", username=user.username))
+                
+                Otherwise the application will be vulnerable to open redirects
+                INFO: flask-login.readthedocs.io/en/latest/#login-example
+                """
+                return redirect(url_for("customers.profile", username=user.username))
+            else:
+                flash("Wrong password - Try Again...")
         else:
-            flash("Invalid username or password")
+            flash("Invalid username")
     return render_template("customers/login.html", form=form)
 
 
