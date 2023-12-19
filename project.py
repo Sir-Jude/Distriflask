@@ -200,8 +200,8 @@ class UserAdminView(ModelView):
         "username",
         "device",
         "active",
-        ("roles", "roles.name"),
-    )  # Make 'roles' sortable
+        ("roles", "roles.name"), # Make 'roles' sortable
+    )  
 
     def is_accessible(self):
         return (

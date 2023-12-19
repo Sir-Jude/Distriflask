@@ -6,10 +6,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length
 
-# Imports for bcrypt
-from flask_bcrypt import Bcrypt
-
-bcrypt = Bcrypt()
 
 class LoginForm(FlaskForm):
     email = StringField("Username", [InputRequired(), Length(min=4, max=20)])
