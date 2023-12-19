@@ -44,7 +44,6 @@ def login():
             Otherwise the application will be vulnerable to open redirects
             INFO: flask-login.readthedocs.io/en/latest/#login-example
             """
-
             return redirect(url_for("customers.profile", username=user.username))
         else:
             flash("Invalid username or password")

@@ -39,6 +39,8 @@ class Roles(db.Model, RoleMixin):
     def __str__(self):
         return self.name
 
+# Generate a random fs_uniquifier
+# Without it, users cannot login into admin panel
 @event.listens_for(Users, 'before_insert')
 def before_insert_listener(mapper, connection, target):
     if target.fs_uniquifier is None:
