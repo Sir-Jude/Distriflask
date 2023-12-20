@@ -21,7 +21,7 @@ class Users(db.Model, UserMixin):
     device = db.Column(db.String(200), nullable=True)
     active = db.Column(db.Boolean())
     roles = db.relationship(
-        "Roles", secondary=roles_users_table, backref="users", lazy=True
+        "Roles", cascade="all,delete",secondary=roles_users_table, backref="users", lazy=True
     )
     fs_uniquifier = db.Column(
         db.String(64),
