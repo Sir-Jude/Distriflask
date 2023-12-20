@@ -92,7 +92,7 @@ class ExtendedRegisterForm(RegisterForm):
         "Role",
         choices=[
             ("customer"),
-            ("administration"),
+            ("administrator"),
             ("sales"),
             ("production"),
             ("application"),
@@ -183,7 +183,7 @@ def create_user():
         db.session.commit()
 
         # Create the 'administrator' role if it doesn't exist
-        admin_role = Roles.query.filter_by(name="administrator").first()
+        admin_role = Roles.query.filter_by(name="administrator", description="administrator role").first()
         if not admin_role:
             admin_role = Roles(name="administrator")
             db.session.add(admin_role)
