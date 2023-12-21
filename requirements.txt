@@ -11,6 +11,7 @@ cryptography==41.0.7
 dnspython==2.4.2
 email-validator==2.1.0.post1
 exceptiongroup==1.2.0
+Faker==21.0.0
 Flask==3.0.0
 Flask-Admin==1.6.1
 Flask-BabelEx==0.9.4
@@ -43,6 +44,7 @@ pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pycparser==2.19
 pytest==7.4.3
+python-dateutil==2.8.2
 python-dotenv==1.0.0
 python-ldap==3.4.3
 pytz==2023.3.post1
