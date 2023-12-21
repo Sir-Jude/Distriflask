@@ -46,7 +46,7 @@ code .env
 Add the following environmental variables
 ```
 FLASK_ENV=development
-FLASK_APP=project.py
+FLASK_APP=app.py
 SECRET_KEY =<a_secure_secret_key>
 SECURITY_PASSWORD_SALT=<a_secure_salt_key>
 ```
@@ -59,14 +59,14 @@ The **SECRET_KEY** is a crucial configuration variable used for security-related
 
 The **SECURITY_PASSWORD_SALT** is a variable used in combination with the SECRET_KEY to enhance the security of password hashing, especially when working with user authentication systems.
 
-Finally, in the main project file, import the libraries which allows to use the .env file
+Finally, in the main app file, import the libraries which allows to use the .env file
 ```
 import os
 from dotenv import load_dotenv
 ```
 
 
-# Create the project.py file and set it up to use Flask
+# Create the app.py file and set it up to use Flask
 Import the libraries
 ```
 from flask import Flask, flash, render_template, redirect, url_for
@@ -77,7 +77,7 @@ Initialize a Flask application instance
 app = Flask(__name__)
 ```
 
-Link the *SECRET_KEY* and the *SECURITY_PASSWORD_SALT* to the project through the Flask's config and .env files: 
+Link the *SECRET_KEY* and the *SECURITY_PASSWORD_SALT* to the app through the Flask's config and .env files: 
 ```
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
@@ -85,6 +85,10 @@ app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 
 
 # Start the Flask application in debug mode
+Run the command
+```
+export FLASK_APP=app.py
+```
 ```
 flask run --debug
 ```
@@ -221,7 +225,7 @@ flask shell
 
 ...and create the actual DB typing the following commands:
 ```
-from project import db
+from app import db
 db.create_all()
 exit()
 ```
@@ -241,7 +245,7 @@ PRAGMA table_info(table_name);
 ```
 
 
-Set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a project.
+Set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a app.
 ```
 flask db init
 flask db migrate

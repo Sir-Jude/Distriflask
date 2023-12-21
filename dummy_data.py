@@ -1,4 +1,4 @@
-from project import app
+from app import app
 from models import db, Users, Roles
 from sqlalchemy import text
 from flask_security import SQLAlchemyUserDatastore, hash_password
