@@ -92,7 +92,7 @@ class ExtendedRegisterForm(RegisterForm):
         "Role",
         choices=[
             ("customer"),
-            ("administration"),
+            ("administrator"),
             ("sales"),
             ("production"),
             ("application"),
@@ -182,14 +182,8 @@ def create_user():
         user_datastore.activate_user(first_user)
         db.session.commit()
 
-        # Create the 'administrator' role if it doesn't exist
-        admin_role = Roles.query.filter_by(name="administrator").first()
-        if not admin_role:
-            admin_role = Roles(name="administrator")
-            db.session.add(admin_role)
-            db.session.commit()
-
         # Assign the 'administrator' role to the 'admin' user
+        admin_role = Roles.query.filter_by(name="administrator").first()
         user_datastore.add_role_to_user(first_user, admin_role)
         db.session.commit()
 
@@ -200,8 +194,8 @@ class UserAdminView(ModelView):
         "username",
         "device",
         "active",
-        ("roles", "roles.name"),  # Make 'roles' sortable
-    )
+        ("roles", "roles.name"), # Make 'roles' sortable
+    )  
 
     def is_accessible(self):
         return (
@@ -209,7 +203,7 @@ class UserAdminView(ModelView):
             and current_user.is_authenticated
             and any(role.name == "administrator" for role in current_user.roles)
         )
-
+        
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
