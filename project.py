@@ -185,11 +185,12 @@ def create_user():
         # Create the 'administrator' role if it doesn't exist
         admin_role = Roles.query.filter_by(name="administrator", description="administrator role").first()
         if not admin_role:
-            admin_role = Roles(name="administrator")
+            admin_role = Roles(name="administrator", description="administrator role")
             db.session.add(admin_role)
             db.session.commit()
 
         # Assign the 'administrator' role to the 'admin' user
+        admin_role = Roles.query.filter_by(name="administrator").first()
         user_datastore.add_role_to_user(first_user, admin_role)
         db.session.commit()
 
