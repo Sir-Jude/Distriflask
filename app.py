@@ -28,6 +28,9 @@ from flask_admin.contrib.sqla import ModelView
 import os
 from dotenv import load_dotenv
 
+# Import the config file
+from config import Config
+
 
 from werkzeug.local import LocalProxy
 
@@ -42,11 +45,6 @@ from models import db, Users, Roles
 from errors import register_error_handlers
 from views.customers import customers
 
-# Imports for bcrypt
-from flask_bcrypt import Bcrypt
-
-bcrypt = Bcrypt()
-
 
 load_dotenv()
 
@@ -55,15 +53,9 @@ app = Flask(__name__)
 app.register_blueprint(customers)
 register_error_handlers(app)
 
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
-app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
-app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
-app.config["SECURITY_POST_LOGOUT_VIEW"] = "/admin/"
-app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
-app.config["SECURITY_REGISTERABLE"] = True
-app.config["SECURITY_REGISTER_URL"] = "/admin/users/new/"
+config_class = Config
+app.config.from_object(config_class)
+
 
 admin = Admin(
     app, name="Admin", base_template="master.html", template_mode="bootstrap3"
