@@ -1,6 +1,7 @@
 from app import app
 from models import db, Users, Roles
-from sqlalchemy import text
+import subprocess
+import shutil
 from flask_security import SQLAlchemyUserDatastore, hash_password
 from random import choice
 from faker import Faker
@@ -16,6 +17,32 @@ ROLES=[
     "application",
     "software",
 ]
+
+
+# Function to delete folders
+def delete_folders():
+    folders_to_delete = ["instance", "migrations"]
+    for folder in folders_to_delete:
+        try:
+            shutil.rmtree(folder)
+            print(f"Folder '{folder}' deleted.")
+        except FileNotFoundError:
+            print(f"Folder '{folder}' not found.")
+
+# Function to perform database setup tasks
+def setup_database():
+    
+    # Log into the shell and execute commands
+    subprocess.run(
+        ["flask", "shell"],
+        input="from models import db\n" "db.create_all()\n" "exit()\n",
+        text=True
+    )
+    
+    # Initiating and migrating the database
+    subprocess.run(["flask", "db", "init"])
+    subprocess.run(["flask", "db", "migrate"])
+
 
 def roles_creation():
     with app.app_context():
@@ -52,5 +79,7 @@ def dummy_users():
         db.session.commit()    
 
 if __name__ == "__main__":
+    delete_folders()
+    setup_database()
     roles_creation()
     dummy_users()

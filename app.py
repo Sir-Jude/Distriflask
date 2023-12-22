@@ -1,3 +1,4 @@
+# Basic flask imports 
 from flask import Flask, flash, redirect, render_template, url_for
 
 # Imports for Flask security
@@ -31,8 +32,8 @@ from config import Config
 from werkzeug.local import LocalProxy
 
 # Imports for WTF
-from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+from wtforms import BooleanField, StringField, PasswordField, SelectField
+from wtforms.validators import InputRequired, Length, ValidationError
 
 
 # Imports from otehr files
