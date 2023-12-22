@@ -1,3 +1,4 @@
+# Basic flask imports 
 from flask import Flask, flash, redirect, render_template, url_for
 
 # Imports for Flask security
@@ -14,27 +15,25 @@ from flask_security import (
 )
 
 # Imports for Flask login
-from flask_login import LoginManager, logout_user, login_required
+from flask_login import LoginManager
 
 
 from flask_migrate import Migrate
 
 # Imports for Admin page
-from flask_admin import BaseView, expose, Admin, helpers as admin_helpers
+from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 
 
-# Imports for .env file
-import os
-from dotenv import load_dotenv
+# Import the config file
+from config import Config
 
 
 from werkzeug.local import LocalProxy
 
 # Imports for WTF
-from flask_wtf import Form
-from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
+from wtforms import BooleanField, StringField, PasswordField, SelectField
+from wtforms.validators import InputRequired, Length, ValidationError
 
 
 # Imports from otehr files
@@ -42,28 +41,14 @@ from models import db, Users, Roles
 from errors import register_error_handlers
 from views.customers import customers
 
-# Imports for bcrypt
-from flask_bcrypt import Bcrypt
-
-bcrypt = Bcrypt()
-
-
-load_dotenv()
-
 
 app = Flask(__name__)
 app.register_blueprint(customers)
 register_error_handlers(app)
 
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db_1.sqlite3"
-app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
-app.config["SECURITY_POST_LOGIN_VIEW"] = "/admin/"
-app.config["SECURITY_POST_LOGOUT_VIEW"] = "/admin/"
-app.config["SECURITY_POST_REGISTER_VIEW"] = "/admin/"
-app.config["SECURITY_REGISTERABLE"] = True
-app.config["SECURITY_REGISTER_URL"] = "/admin/users/new/"
+config_class = Config
+app.config.from_object(config_class)
+
 
 admin = Admin(
     app, name="Admin", base_template="master.html", template_mode="bootstrap3"
