@@ -14,19 +14,15 @@ from flask_security import (
 )
 
 # Imports for Flask login
-from flask_login import LoginManager, logout_user, login_required
+from flask_login import LoginManager
 
 
 from flask_migrate import Migrate
 
 # Imports for Admin page
-from flask_admin import BaseView, expose, Admin, helpers as admin_helpers
+from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 
-
-# Imports for .env file
-import os
-from dotenv import load_dotenv
 
 # Import the config file
 from config import Config
@@ -35,7 +31,6 @@ from config import Config
 from werkzeug.local import LocalProxy
 
 # Imports for WTF
-from flask_wtf import Form
 from wtforms import BooleanField, StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 
@@ -44,9 +39,6 @@ from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
 from models import db, Users, Roles
 from errors import register_error_handlers
 from views.customers import customers
-
-
-load_dotenv()
 
 
 app = Flask(__name__)

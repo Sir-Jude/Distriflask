@@ -85,8 +85,6 @@ Finally, use a class called **Config** and set configuration values using class 
 
 ```
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY")
-    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SECURITY_POST_LOGIN_VIEW = "/admin/"
     SECURITY_POST_LOGOUT_VIEW = "/admin/"
@@ -110,8 +108,17 @@ app = Flask(__name__)
 
 Link the *SECRET_KEY* and the *SECURITY_PASSWORD_SALT* to the app through the Flask's config and .env files: 
 ```
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
+    SECURITY_POST_LOGIN_VIEW = "/admin/"
+    SECURITY_POST_LOGOUT_VIEW = "/admin/"
+    SECURITY_POST_REGISTER_VIEW = "/admin/"
+    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTER_URL = "/admin/users/new/"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    FLASK_ADMIN_SWATCH = "cerulean"
 ```
 
 
@@ -120,8 +127,9 @@ Run the command
 ```
 export FLASK_APP=app.py
 ```
+Launch the app
 ```
-flask run --debug
+flask --app app run --debug
 ```
 The "--debug" option provide:
 - the continuous synchronization of the code after every modification, so that the application has not to be retart to be updated
