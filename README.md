@@ -49,6 +49,7 @@ FLASK_ENV=development
 FLASK_APP=app.py
 SECRET_KEY =<a_secure_secret_key>
 SECURITY_PASSWORD_SALT=<a_secure_salt_key>
+SQLALCHEMY_DATABASE_URI=sqlite:///db_1.sqlite3
 ```
 
 The **FLASK_ENV** variable is used to set the Flask environment and determines the behavior of the app: it can have values like "development", "testing" or "production".
@@ -59,12 +60,42 @@ The **SECRET_KEY** is a crucial configuration variable used for security-related
 
 The **SECURITY_PASSWORD_SALT** is a variable used in combination with the SECRET_KEY to enhance the security of password hashing, especially when working with user authentication systems.
 
+The **SQLALCHEMY_DATABASE_URI** specifies the name of the database connected to the project while using SQLAlchemy.
+
 Finally, in the main app file, import the libraries which allows to use the .env file
 ```
 import os
 from dotenv import load_dotenv
 ```
 
+# Create a configuration file
+Create a file called config.py
+```
+code config.py
+```
+
+Import the os library to access to the .env file and establish the base directory with *os.path.abspath(os.path.dirname(__file__))* to correctly set up the path of the database file.
+```
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+```
+
+Finally, use a class called **Config** and set configuration values using class variables
+
+```
+class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SECURITY_POST_LOGIN_VIEW = "/admin/"
+    SECURITY_POST_LOGOUT_VIEW = "/admin/"
+    SECURITY_POST_REGISTER_VIEW = "/admin/"
+    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTER_URL = "/admin/users/new/"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    FLASK_ADMIN_SWATCH = "cerulean"
+```
 
 # Create the app.py file and set it up to use Flask
 Import the libraries
