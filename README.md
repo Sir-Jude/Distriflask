@@ -1,8 +1,3 @@
-# To search something accross the files (including the .venv)
-```
-rg -u. <whatever>
-```
-
 # Create a virtual env
 ```
 python3 -m venv .venv
@@ -12,12 +7,19 @@ Type "deactivate " to go out of the virtual environment.
 
 
 # Installation of the requirements
+For general web development using Flask, **libldap2-dev** and **libsasl2-dev** might not be essential: Flask itself doesn't directly rely on these libraries for its core functionality.
+
+However, their importance might arise if you need to implement certain features within your Flask application that require interaction with LDAP for user authentication or if you're integrating SASL for security-related functionalities.
 ```
 sudo apt-get install libldap2-dev
 sudo apt-get install libsasl2-dev
-pip install -r requirements.txt
 ```
-To update requirements file, type this:
+Copy and paste the **requirements.txt** file and install the libraries
+```
+pip install -r requirements.txt
+
+```
+In order not to forget to update the requirements.txt file, it is highly recommended to run the following command after installing a new library:
 ```
 pip freeze > requirements.txt
 ```
@@ -43,25 +45,57 @@ code .env
 ```
 Add the following environmental variables
 ```
-SECRET_KEY = <a_secure_secret_key>
 FLASK_ENV=development
-FLASK_APP=project.py
+FLASK_APP=app.py
+SECRET_KEY =<a_secure_secret_key>
+SECURITY_PASSWORD_SALT=<a_secure_salt_key>
+SQLALCHEMY_DATABASE_URI=sqlite:///db_1.sqlite3
 ```
-
-The **SECRET_KEY** is a crucial configuration variable used for security-related purposes, especially for cryptographic functions and session management
 
 The **FLASK_ENV** variable is used to set the Flask environment and determines the behavior of the app: it can have values like "development", "testing" or "production".
 
 The **FLASK_APP** variable is used by Flask to locate the app and it is used as its entry point.
 
-Finally, in the main project file, import the libraries which allows to use the .env file
+The **SECRET_KEY** is a crucial configuration variable used for security-related purposes, especially for cryptographic functions and session management
+
+The **SECURITY_PASSWORD_SALT** is a variable used in combination with the SECRET_KEY to enhance the security of password hashing, especially when working with user authentication systems.
+
+The **SQLALCHEMY_DATABASE_URI** specifies the name of the database connected to the project while using SQLAlchemy.
+
+Finally, in the main app file, import the libraries which allows to use the .env file
 ```
 import os
 from dotenv import load_dotenv
 ```
 
+# Create a configuration file
+Create a file called config.py
+```
+code config.py
+```
 
-# Create the project.py file and set it up to use Flask
+Import the os library to access to the .env file and establish the base directory with *os.path.abspath(os.path.dirname(__file__))* to correctly set up the path of the database file.
+```
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+```
+
+Finally, use a class called **Config** and set configuration values using class variables
+
+```
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SECURITY_POST_LOGIN_VIEW = "/admin/"
+    SECURITY_POST_LOGOUT_VIEW = "/admin/"
+    SECURITY_POST_REGISTER_VIEW = "/admin/"
+    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTER_URL = "/admin/users/new/"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    FLASK_ADMIN_SWATCH = "cerulean"
+```
+
+# Create the app.py file and set it up to use Flask
 Import the libraries
 ```
 from flask import Flask, flash, render_template, redirect, url_for
@@ -72,20 +106,34 @@ Initialize a Flask application instance
 app = Flask(__name__)
 ```
 
-Link the SECRET_KEY to the project through the .env file 
+Link the *SECRET_KEY* and the *SECURITY_PASSWORD_SALT* to the app through the Flask's config and .env files: 
 ```
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
+    SECURITY_POST_LOGIN_VIEW = "/admin/"
+    SECURITY_POST_LOGOUT_VIEW = "/admin/"
+    SECURITY_POST_REGISTER_VIEW = "/admin/"
+    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTER_URL = "/admin/users/new/"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    FLASK_ADMIN_SWATCH = "cerulean"
 ```
 
 
 # Start the Flask application in debug mode
+Run the command
 ```
-flask run --debug
+export FLASK_APP=app.py
+```
+Launch the app
+```
+flask --app app run --debug
 ```
 The "--debug" option provide:
 - the continuous synchronization of the code after every modification, so that the application has not to be retart to be updated
 - the interactive debugger, which highlights the errors in the code
-
 
 
 # Create a "*templates*" folder
@@ -111,7 +159,10 @@ Or redirect the user to a specific route, identifed by the name of its associatd
 return redirect(url_for("login"))
 ```
 
-# TO BE REVIEW AND REWRITTEN!!!
+
+
+# Create a User model and link it to the admin page
+## TO BE REVIEW AND REWRITTEN!!!
 Main source for Users and Roles model design:
 (https://ckraczkowsky.medium.com/building-a-secure-admin-interface-with-flask-admin-and-flask-security-13ae81faa05)
 
@@ -119,14 +170,10 @@ UPDATE_1: Flask security library is deprecated
 --> pip install flask_security_too
 UPDATE_2: before_first_request is deprecated
 --> use before_request (https://github.com/pallets/flask/issues/4605)
-
-
-
-# Create a User model and link it to the admin page
 ```
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import RoleMixin, UserMixin
-from sqlalchemy_utils import UUIDType
+from sqlalchemy import event
 import uuid
 
 
@@ -141,9 +188,7 @@ roles_users_table = db.Table(
 
 
 class Users(db.Model, UserMixin):
-    user_id = db.Column(
-        UUIDType(binary=False), primary_key=True, default=uuid.uuid4, unique=True
-    )
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, index=True)
     password = db.Column(db.String(80))
     device = db.Column(db.String(200), nullable=True)
@@ -154,7 +199,7 @@ class Users(db.Model, UserMixin):
     fs_uniquifier = db.Column(
         db.String(64),
         unique=True,
-        nullable=True,
+        nullable=False,
         name="unique_fs_uniquifier_constraint",
     )
 
@@ -164,6 +209,16 @@ class Roles(db.Model, RoleMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
+    def __str__(self):
+        return self.name
+
+
+# Generate a random fs_uniquifier
+# Without it, users cannot login into admin panel
+@event.listens_for(Users, "before_insert")
+def before_insert_listener(mapper, connection, target):
+    if target.fs_uniquifier is None:
+        target.fs_uniquifier = str(uuid.uuid4())
 ```
 
 Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
@@ -209,7 +264,7 @@ flask shell
 
 ...and create the actual DB typing the following commands:
 ```
-from project import db
+from app import db
 db.create_all()
 exit()
 ```
@@ -229,7 +284,7 @@ PRAGMA table_info(table_name);
 ```
 
 
-Set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a project.
+Set up the migrations directory structure with the necessary files for managing future migrations. This step is necessary only the first time you set up Flask-Migrate in a app.
 ```
 flask db init
 flask db migrate
@@ -331,100 +386,28 @@ class RegisterForm(FlaskForm):
             )
 
 ``` 
-Inside the folder "templates", create the subfolder "registration" containing the fiel **regiser.html**:
+Inside the folder "templates", create the subfolder "security" containing the files **login_user.html**...
 ```
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Admin - Register</title>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+{% extends 'admin/master.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
 
-    <link
-      href="/admin/static/bootstrap/bootstrap2/swatch/default/bootstrap.min.css?v=2.3.2"
-      rel="stylesheet"
-    />
-    <link
-      href="/admin/static/bootstrap/bootstrap2/css/bootstrap-responsive.css?v=2.3.2"
-      rel="stylesheet"
-    />
-    <link
-      href="/admin/static/admin/css/bootstrap2/admin.css?v=1.1.1"
-      rel="stylesheet"
-    />
-
-    <style>
-      body {
-        padding-top: 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="navbar">
-        <div class="navbar-inner">
-          <a class="brand" href="/admin">Admin</a>
-          <ul class="nav">
-            <li class="active">
-              <a href="/admin/">Home</a>
-            </li>
-            <li>
-              <a href="/admin/users/">Users</a>
-            </li>
-          </ul>
-          <ul class="nav pull-right"></ul>
+{% block body %}
+{{ super() }}
+<div class="container">
+    <div>
+        <h1>Login</h1>
+        <div class="well">
+            <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+                {{ login_user_form.hidden_tag() }}
+                {{ render_field_with_errors(login_user_form.email) }}
+                {{ render_field_with_errors(login_user_form.password) }}
+                {{ render_field(login_user_form.next) }}
+                {{ render_field(login_user_form.submit, class="btn btn-primary") }}
+            </form>
         </div>
-      </div>
-      <p>Register here:</p>
-      <form method="POST" action="{{ url_for('register') }}">
-        {{ form.csrf_token }}
-        {{ form.hidden_tag() }}
-    
-        {{ form.username() }}
-        <br/>
-        {% for error in form.username.errors %}
-            <p class="error">{{ error }}</p>
-        {% endfor %}
-    
-        {{ form.password() }}
-        <br/>
-        {% for error in form.password.errors %}
-            <p class="error">{{ error }}</p>
-        {% endfor %}
-    
-        {{ form.password_2() }}
-        <br/>
-    
-        {{ form.device() }}
-        <br/>
-    
-        {{ form.role() }}
-        <br/>
-    
-        {{ form.submit() }}
-    </form>
     </div>
-    <script
-      src="/admin/static/vendor/jquery.min.js?v=3.5.1"
-      type="text/javascript"
-    ></script>
-    <script
-      src="/admin/static/bootstrap/bootstrap2/js/bootstrap.min.js?v=2.3.2"
-      type="text/javascript"
-    ></script>
-    <script
-      src="/admin/static/vendor/moment.min.js?v=2.22.2"
-      type="text/javascript"
-    ></script>
-    <script
-      src="/admin/static/vendor/select2/select2.min.js?v=3.5.2"
-      type="text/javascript"
-    ></script>
-  </body>
-</html>
+</div>
+{% endblock %}
 ```
 Create its relative route and function:
 ```
@@ -433,13 +416,32 @@ def register():
     form = RegisterForm()
     return render_template("registration/register.html", form=form)
 ```
-
-
-
-Finally, link the register function to the navbar
+...and **register_user.html**
 ```
-<li class="nav-item">
-  <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
+
+{% block content %}
+  {% include "security/_messages.html" %}
+  <h1>{{ _fsdomain('Register') }}</h1>
+  <form action="{{ url_for_security('register') }}" method="post" name="form">
+    {{ form.hidden_tag() }}
+    {{ render_form_errors(form) }}
+    {{ render_field_with_errors(form.email) }}
+    {% if security.username_enable %}
+      {{ render_field_with_errors(form.username) }}
+    {% endif %}
+    {{ render_field_with_errors(form.password) }}
+    {% if form.password_confirm %}
+      {{ render_field_with_errors(form.password_confirm) }}
+    {% endif %}
+    {{ render_field_with_errors(form.device) }}
+    {{ render_field_with_errors(form.active) }}
+    {{ render_field_with_errors(form.role) }}  
+    {{ render_field(form.submit) }}
+  </form>
+  {% include "security/_menu.html" %}
+{% endblock content %}
 ```
 
 
@@ -461,8 +463,14 @@ def load_user(user_id):
 ```
 
 
+# Resources
 
-# How to overwrite the login form...
+## To search something accross the files (including the .venv)
+```
+rg -u. <whatever>
+```
+
+## How to overwrite the login form...
 https://flask-security-too.readthedocs.io/en/stable/customizing.html
 
 https://flask-security-too.readthedocs.io/en/stable/configuration.html#SECURITY_USER_IDENTITY_ATTRIBUTES
