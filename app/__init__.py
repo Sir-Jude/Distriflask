@@ -22,12 +22,14 @@ from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 
 
-# Import the config file
+# Import app's configurations
 from config import Config
 
+# Import the db from the extension file
+from app.extensions import db
 
 # Imports from otehr files
-from models import db, Users, Roles
+from models import Users, Roles
 from errors import register_error_handlers
 from views.customers import customers
 from forms import ExtendedRegisterForm, ExtendedLoginForm
@@ -36,13 +38,14 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    # Initialize Flask extensions here
+    db.init_app(app)
+    migrate = Migrate(app, db)
 
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
-    db.init_app(app)
-    migrate = Migrate(app, db)
-
+    
 
     # Allow registration with email, but login only with username
     app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
