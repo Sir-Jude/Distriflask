@@ -1,11 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
+from app.extensions import db
 from flask_security import RoleMixin, UserMixin
 from sqlalchemy import event
 import uuid
-
-
-db = SQLAlchemy()
-
 
 roles_users_table = db.Table(
     "roles_users",
