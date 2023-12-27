@@ -5,14 +5,11 @@ from flask import Flask, flash, redirect, render_template, url_for
 from flask_security import (
     current_user,
     hash_password,
-    lookup_identity,
-    LoginForm,
-    RegisterForm,
     Security,
     SQLAlchemyUserDatastore,
     uia_username_mapper,
-    unique_identity_attribute,
 )
+
 
 # Imports for Flask login
 from flask_login import LoginManager
@@ -29,17 +26,11 @@ from flask_admin.contrib.sqla import ModelView
 from config import Config
 
 
-from werkzeug.local import LocalProxy
-
-# Imports for WTF
-from wtforms import BooleanField, StringField, PasswordField, SelectField
-from wtforms.validators import InputRequired, Length, ValidationError
-
-
 # Imports from otehr files
 from models import db, Users, Roles
 from errors import register_error_handlers
 from views.customers import customers
+from forms import ExtendedRegisterForm, ExtendedLoginForm
 
 
 app = Flask(__name__)
@@ -55,49 +46,6 @@ admin = Admin(
 )
 db.init_app(app)
 migrate = Migrate(app, db)
-
-
-def username_validator(form, field):
-    # Side-effect - field.data is updated to normalized value.
-    # Use proxy to we can declare this prior to initializing Security.
-    _security = LocalProxy(lambda: app.extensions["security"])
-    msg, field.data = _security._username_util.validate(field.data)
-    if msg:
-        raise ValidationError(msg)
-
-
-class ExtendedRegisterForm(RegisterForm):
-    email = StringField(
-        "Username", [InputRequired(), username_validator, unique_identity_attribute]
-    )
-    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    device = StringField("Device")
-    active = BooleanField("Active")
-    role = SelectField(
-        "Role",
-        choices=[
-            ("customer"),
-            ("administrator"),
-            ("sales"),
-            ("production"),
-            ("application"),
-            ("software"),
-        ],
-        validators=[InputRequired()],
-    )
-
-
-class ExtendedLoginForm(LoginForm):
-    email = StringField("Username", [InputRequired()])
-
-    def validate(self, **kwargs):
-        self.user = lookup_identity(self.email.data)
-        # Setting 'ifield' informs the default login form validation
-        # handler that the identity has already been confirmed.
-        self.ifield = self.email
-        if not super().validate(**kwargs):
-            return False
-        return True
 
 
 # Allow registration with email, but login only with username
