@@ -1,4 +1,4 @@
-# Basic flask imports 
+# Basic flask imports
 from flask import Flask, flash, redirect, render_template, url_for
 
 # Imports for Flask security
@@ -9,6 +9,10 @@ from flask_security import (
     SQLAlchemyUserDatastore,
     uia_username_mapper,
 )
+
+
+# Import app's configurations
+from config import Config
 
 
 # Imports for Flask login
@@ -22,17 +26,15 @@ from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 
 
-# Import app's configurations
-from config import Config
-
 # Import the db from the extension file
 from app.extensions import db
 
 # Imports from otehr files
-from models import Users, Roles
-from errors import register_error_handlers
-from views.customers import customers
-from forms import ExtendedRegisterForm, ExtendedLoginForm
+from app.errors import register_error_handlers
+from app.models import Users, Roles
+from app.views.customers import customers
+from app.forms import ExtendedRegisterForm, ExtendedLoginForm
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -45,7 +47,6 @@ def create_app(config_class=Config):
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
-    
 
     # Allow registration with email, but login only with username
     app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
@@ -89,7 +90,6 @@ def create_app(config_class=Config):
 
         return render_template("security/register_user.html", form=form)
 
-
     user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
     security = Security(
         app,
@@ -97,7 +97,6 @@ def create_app(config_class=Config):
         register_form=ExtendedRegisterForm,
         login_form=ExtendedLoginForm,
     )
-
 
     @security.register_context_processor
     def security_register_processor():
@@ -107,12 +106,13 @@ def create_app(config_class=Config):
             register_user_form=ExtendedRegisterForm(),
         )
 
-
     @app.before_request
     def create_user():
         existing_user = user_datastore.find_user(username="admin")
         if not existing_user:
-            first_user = user_datastore.create_user(username="admin", password="12345678")
+            first_user = user_datastore.create_user(
+                username="admin", password="12345678"
+            )
             user_datastore.activate_user(first_user)
             db.session.commit()
 
@@ -121,15 +121,14 @@ def create_app(config_class=Config):
             user_datastore.add_role_to_user(first_user, admin_role)
             db.session.commit()
 
-
     class UserAdminView(ModelView):
         column_list = ("username", "device", "active", "roles")
         column_sortable_list = (
             "username",
             "device",
             "active",
-            ("roles", "roles.name"), # Make 'roles' sortable
-        )  
+            ("roles", "roles.name"),  # Make 'roles' sortable
+        )
 
         def is_accessible(self):
             return (
@@ -137,7 +136,7 @@ def create_app(config_class=Config):
                 and current_user.is_authenticated
                 and any(role.name == "administrator" for role in current_user.roles)
             )
-            
+
         def _handle_view(self, name):
             if not self.is_accessible():
                 return redirect(url_for("security.login"))
@@ -148,9 +147,7 @@ def create_app(config_class=Config):
 
         column_formatters = {"roles": _display_roles}
 
-
     admin.add_view(UserAdminView(Users, db.session))
-
 
     @security.context_processor
     def security_context_processor():
@@ -161,11 +158,9 @@ def create_app(config_class=Config):
             get_url=url_for,
         )
 
-
     # Flask_login stuff
     login_manager = LoginManager()
     login_manager.login_view = "login"
-
 
     @login_manager.user_loader
     def load_user(user_id):
