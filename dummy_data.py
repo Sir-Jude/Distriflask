@@ -1,4 +1,4 @@
-from app import app
+from app import create_app
 from models import db, Users, Roles
 import subprocess
 import shutil
@@ -45,6 +45,7 @@ def setup_database():
 
 
 def roles_creation():
+    app = create_app()
     with app.app_context():
         for role_name in ROLES:
             existing_role = Roles.query.filter_by(name=role_name).first()
@@ -60,6 +61,7 @@ def roles_creation():
         
 
 def dummy_users():
+    app = create_app()
     with app.app_context():
         for number in range(N_USERS):
             new_user = Users(
