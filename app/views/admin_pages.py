@@ -7,6 +7,7 @@ from app.extensions import db
 
 admin_pages = Blueprint("admin_pages", __name__)
 
+
 @admin_pages.route("/admin/users/new/", methods=["GET", "POST"])
 def register():
     form = ExtendedRegisterForm()
