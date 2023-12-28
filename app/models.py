@@ -1,5 +1,5 @@
 from app.extensions import db
-from flask_security import RoleMixin, UserMixin
+from flask_security import RoleMixin, UserMixin, SQLAlchemyUserDatastore
 from sqlalchemy import event
 import uuid
 
@@ -42,3 +42,6 @@ class Roles(db.Model, RoleMixin):
 def before_insert_listener(mapper, connection, target):
     if target.fs_uniquifier is None:
         target.fs_uniquifier = str(uuid.uuid4())
+
+
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)

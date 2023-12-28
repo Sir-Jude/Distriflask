@@ -1,4 +1,5 @@
 import os
+from flask_security import uia_username_mapper
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -14,3 +15,7 @@ class Config:
     SECURITY_POST_REGISTER_VIEW = "/admin/"
     SECURITY_REGISTERABLE = True
     SECURITY_REGISTER_URL = "/admin/users/new/"
+    # Allow registration with email, but login only with username
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [
+        {"username": {"mapper": uia_username_mapper}}
+    ]
