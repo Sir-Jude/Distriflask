@@ -19,7 +19,7 @@ customers = Blueprint("customers", __name__)
 @customers.route("/home")
 @customers.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("home/home.html")
 
 
 @customers.route("/customer_login", methods=["GET", "POST"])
