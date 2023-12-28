@@ -7,7 +7,8 @@ from config import Config
 
 
 # Import Flask's extensions
-from app.extensions import db, login_manager, Migrate
+from app.extensions import db, login_manager
+from flask_migrate import Migrate
 
 
 # Imports for Flask security
@@ -48,9 +49,6 @@ def create_app(config_class=Config):
     app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
         {"username": {"mapper": uia_username_mapper}}
     ]
-
-    app.register_blueprint(customers)
-    register_error_handlers(app)
 
     @app.route("/admin/users/new/", methods=["GET", "POST"])
     def register():
@@ -160,5 +158,8 @@ def create_app(config_class=Config):
     @login_manager.user_loader
     def load_user(user_id):
         return Users.query.get(user_id)
+
+    app.register_blueprint(customers)
+    register_error_handlers(app)
 
     return app
