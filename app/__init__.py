@@ -1,6 +1,15 @@
 # Basic flask imports
 from flask import Flask, flash, redirect, render_template, url_for
 
+
+# Import app's configurations
+from config import Config
+
+
+# Import Flask's extensions
+from app.extensions import db, login_manager, Migrate
+
+
 # Imports for Flask security
 from flask_security import (
     current_user,
@@ -11,23 +20,10 @@ from flask_security import (
 )
 
 
-# Import app's configurations
-from config import Config
-
-
-# Imports for Flask login
-from flask_login import LoginManager
-
-
-from flask_migrate import Migrate
-
 # Imports for Admin page
 from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 
-
-# Import the db from the extension file
-from app.extensions import db
 
 # Imports from otehr files
 from app.errors import register_error_handlers
@@ -159,7 +155,6 @@ def create_app(config_class=Config):
         )
 
     # Flask_login stuff
-    login_manager = LoginManager()
     login_manager.login_view = "login"
 
     @login_manager.user_loader
