@@ -1,5 +1,5 @@
 # Basic flask imports
-from flask import Flask, flash, redirect, render_template, url_for
+from flask import Flask, redirect, url_for
 
 
 # Import app's configurations
@@ -7,8 +7,7 @@ from config import Config
 
 
 # Import Flask's extensions
-from app.extensions import db, login_manager
-from flask_migrate import Migrate
+from app.extensions import db, migrate, login_manager
 
 
 # Imports for Flask security
@@ -16,8 +15,6 @@ from flask_security import (
     current_user,
     hash_password,
     Security,
-    SQLAlchemyUserDatastore,
-    uia_username_mapper,
 )
 
 
@@ -40,54 +37,33 @@ def create_app(config_class=Config):
 
     # Initialize Flask extensions here
     db.init_app(app)
-    migrate = Migrate(app, db)
+    migrate.init_app(app)
+    login_manager.init_app(app)
 
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
-    
 
-    @app.route("/admin/users/new/", methods=["GET", "POST"])
-    def register():
-        form = ExtendedRegisterForm()
+    app.register_blueprint(customers)
+    app.register_blueprint(admin_pages)
+    register_error_handlers(app)
 
-        if form.validate_on_submit():
-            new_user = Users(
-                username=form.email.data,
-                password=hash_password(form.password.data),
-                device=form.device.data,
-                active=form.active.data,
-            )
-
-            # Fetch the selected role name from the form
-            selected_role_name = form.role.data
-
-            # Query the role based on the selected role name
-            existing_role = Roles.query.filter_by(name=selected_role_name).first()
-
-            if existing_role:
-                user_datastore.add_role_to_user(new_user, existing_role)
-                new_user.roles.append(existing_role)
-                # Add the new user to the database
-                db.session.add(new_user)
-                db.session.commit()
-                return redirect(
-                    url_for("admin.index", _external=True, _scheme="http") + "users/"
-                )
-            else:
-                # Handle case where the selected role doesn't exist
-                flash(f"Role '{selected_role_name}' does not exist.", "error")
-                return render_template("security/register_user.html", form=form)
-
-        return render_template("security/register_user.html", form=form)
-
-
+    # This snippet MUST stay after app.register_blueprint(admin_pages)
     security = Security(
         app,
         user_datastore,
         register_form=ExtendedRegisterForm,
         login_form=ExtendedLoginForm,
     )
+
+    @security.context_processor
+    def security_context_processor():
+        return dict(
+            admin_base_template=admin.base_template,
+            admin_view=admin.index_view,
+            h=admin_helpers,
+            get_url=url_for,
+        )
 
     @security.register_context_processor
     def security_register_processor():
@@ -96,7 +72,6 @@ def create_app(config_class=Config):
             roles=Roles.query.all(),
             register_user_form=ExtendedRegisterForm(),
         )
-
 
     @app.before_request
     def create_user():
@@ -112,7 +87,6 @@ def create_app(config_class=Config):
             admin_role = Roles.query.filter_by(name="administrator").first()
             user_datastore.add_role_to_user(first_user, admin_role)
             db.session.commit()
-
 
     class UserAdminView(ModelView):
         column_list = ("username", "device", "active", "roles")
@@ -142,24 +116,12 @@ def create_app(config_class=Config):
 
     admin.add_view(UserAdminView(Users, db.session))
 
-    @security.context_processor
-    def security_context_processor():
-        return dict(
-            admin_base_template=admin.base_template,
-            admin_view=admin.index_view,
-            h=admin_helpers,
-            get_url=url_for,
-        )
-
+    
     # Flask_login stuff
     login_manager.login_view = "login"
 
     @login_manager.user_loader
     def load_user(user_id):
         return Users.query.get(user_id)
-
-    app.register_blueprint(customers)
-    # app.register_blueprint(admin_pages)
-    register_error_handlers(app)
 
     return app
