@@ -160,7 +160,6 @@ return redirect(url_for("login"))
 ```
 
 
-
 # Create a User model and link it to the admin page
 ## TO BE REVIEW AND REWRITTEN!!!
 Main source for Users and Roles model design:
@@ -463,6 +462,35 @@ def load_user(user_id):
 ```
 
 
+# Testing
+Create a folder *next* (not inside) the main project folder (app) called **tests**
+Create inside this folder two files:
+- conftest.py
+- test_project
+
+**conftest**, is a special file for pytest, where you can set up your test environment and everything which needs to be caled before every test.
+
+**test_project**, is the actual file which you write the tests in and it must start with the word *test*.
+
+### conftest
+Define a **fixture**, which in pytest will create a consistent set up for each test you write.
+```
+@pytest.fixture()
+def app():
+    app = create_app()
+
+    with app.app_context():
+        db.create_all()
+        
+    yield app
+    
+    
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+```
+
+
 # Resources
 
 ## To search something accross the files (including the .venv)
@@ -480,3 +508,4 @@ https://stackoverflow.com/questions/30827696/flask-security-login-via-username-a
 https://github.com/Flask-Middleware/flask-security/issues/466
 
 https://www.google.com/search?q=%22Flask+Security+too%22+%22SECURITY_USER_IDENTITY_ATTRIBUTES%22&sca_esv=586607062&sxsrf=AM9HkKkJD5bjQxKvGsvu3LOrabDnDcwJ2w%3A1701362547996&ei=c7toZd2vPKGL9u8P3byCwAY&ved=0ahUKEwidtbqyleyCAxWhhf0HHV2eAGgQ4dUDCBA&uact=5&oq=%22Flask+Security+too%22+%22SECURITY_USER_IDENTITY_ATTRIBUTES%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiOCJGbGFzayBTZWN1cml0eSB0b28iICJTRUNVUklUWV9VU0VSX0lERU5USVRZX0FUVFJJQlVURVMiSABQAFgAcAB4AJABAJgBAKABAKoBALgBA8gBAPgBAeIDBBgAIEE&sclient=gws-wiz-serp
+
