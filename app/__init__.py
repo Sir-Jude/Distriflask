@@ -28,8 +28,9 @@ from flask_admin.contrib.sqla import ModelView
 
 # Imports from otehr files
 from app.errors import register_error_handlers
-from app.models import Users, Roles
+from app.models import Users, Roles, user_datastore
 from app.views.customers import customers
+from app.views.admin_pages import admin_pages
 from app.forms import ExtendedRegisterForm, ExtendedLoginForm
 
 
@@ -44,11 +45,7 @@ def create_app(config_class=Config):
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
-
-    # Allow registration with email, but login only with username
-    app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
-        {"username": {"mapper": uia_username_mapper}}
-    ]
+    
 
     @app.route("/admin/users/new/", methods=["GET", "POST"])
     def register():
@@ -84,7 +81,7 @@ def create_app(config_class=Config):
 
         return render_template("security/register_user.html", form=form)
 
-    user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+
     security = Security(
         app,
         user_datastore,
@@ -100,6 +97,7 @@ def create_app(config_class=Config):
             register_user_form=ExtendedRegisterForm(),
         )
 
+
     @app.before_request
     def create_user():
         existing_user = user_datastore.find_user(username="admin")
@@ -114,6 +112,7 @@ def create_app(config_class=Config):
             admin_role = Roles.query.filter_by(name="administrator").first()
             user_datastore.add_role_to_user(first_user, admin_role)
             db.session.commit()
+
 
     class UserAdminView(ModelView):
         column_list = ("username", "device", "active", "roles")
@@ -160,6 +159,7 @@ def create_app(config_class=Config):
         return Users.query.get(user_id)
 
     app.register_blueprint(customers)
+    # app.register_blueprint(admin_pages)
     register_error_handlers(app)
 
     return app
