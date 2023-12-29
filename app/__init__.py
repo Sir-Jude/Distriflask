@@ -7,7 +7,8 @@ from config import Config
 
 
 # Import Flask's extensions
-from app.extensions import db, migrate, login_manager
+from app.extensions import db, login_manager
+from flask_migrate import Migrate
 
 
 # Imports for Flask security
@@ -37,9 +38,10 @@ def create_app(config_class=Config):
 
     # Initialize Flask extensions here
     db.init_app(app)
-    migrate.init_app(app)
     login_manager.init_app(app)
-
+    migrate = Migrate(app, db)
+    
+    
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
