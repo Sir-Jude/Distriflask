@@ -1,0 +1,18 @@
+{% extends 'home/index.html' %}
+{% block title %}
+<title>Homepage</title>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      {% if current_user.is_authenticated %}
+      <h3 class="display-6">Welcome, {{ current_user.username.capitalize()}}!</h3>
+      {% else %}
+      <h1 class="display-6">Welcome to YourCompany!</h1>
+      <h3>Please, <a href="{{ url_for('customers.login') }}">log in!</h3>      
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
