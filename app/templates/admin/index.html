@@ -1,0 +1,23 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+  {{ super() }}
+  <div class='container'>
+      <div>
+          <div>
+            {% if not current_user.is_authenticated %}
+            <h3>Please log in to continue</h3>
+            <br>
+            <p>
+                <a class='btn btn-primary' href="{{ url_for('security.login') }}">login</a>
+            </p>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <h2>Welcome, {{ current_user.username.capitalize() }}!</h1>
+            <h3>You have successfully logged in.</h3>
+            <p>You now have access to the Users view.</p>
+            {% endif %}
+          </div>
+      </div>
+  </div>
+{% endblock body %}
