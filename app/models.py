@@ -6,11 +6,13 @@ import uuid
 roles_users_table = db.Table(
     "roles_users",
     db.Column("users_id", db.Integer(), db.ForeignKey("users.user_id")),
-    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.id")),
+    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.role_id")),
 )
 
 
 class Users(db.Model, UserMixin):
+    __tablename__ = "users"
+    
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, index=True)
     password = db.Column(db.String(80))
@@ -28,12 +30,45 @@ class Users(db.Model, UserMixin):
 
 
 class Roles(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
+    """The role of a user.
+
+    E.g. customer, administrator, sales.
+
+    """
+    
+    __tablename__ = "roles"
+    
+    role_id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
-    def __str__(self):
-        return self.name
+    def __repr__(self):
+        return f"Role(role_id={self.role_id}, name={self.name}"
+
+
+class Device(db.Model):
+    """A device, like dev01234 or C15."""
+
+    __tablename__ = "devices"
+
+    device_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), unique=True)
+    country = db.Column(db.String(3), nullable=True)
+
+    def __repr__(self):
+        return f"Device(device_id={self.device_id}, name={self.name}"
+    
+
+class Release(db.Model):
+    __tablename__ = "releases"
+
+    release_id = db.Column(db.Integer, primary_key=True)
+    main_version = db.Column(db.String(20))  # e.g. 8.0.122
+    device_id = db.Column(db.Integer)
+    flag_visible = db.Column(db.Boolean())
+
+    def __repr__(self):
+        return f"Release(release_id={self.id}, name={self.name}"
 
 
 # Generate a random fs_uniquifier
