@@ -1,7 +1,10 @@
 import os
+from dotenv import load_dotenv
 from flask_security import uia_username_mapper
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+load_dotenv()
 
 
 class Config:
