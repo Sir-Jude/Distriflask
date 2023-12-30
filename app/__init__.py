@@ -40,8 +40,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
     migrate = Migrate(app, db)
-    
-    
+
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
@@ -118,7 +117,6 @@ def create_app(config_class=Config):
 
     admin.add_view(UserAdminView(Users, db.session))
 
-    
     # Flask_login stuff
     login_manager.login_view = "login"
 
