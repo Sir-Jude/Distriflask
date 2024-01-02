@@ -1,10 +1,11 @@
 import os
 from dotenv import load_dotenv
+
+# Use this function to map a username to an identity
 from flask_security import uia_username_mapper
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-
 load_dotenv()
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
@@ -19,5 +20,5 @@ class Config:
     SECURITY_REGISTERABLE = True
     # NOT remove! Flask is not able to create new users without
     SECURITY_REGISTER_URL = "/admin/users/new/"
-    # Allow registration with email, but login only with username
+    # Allow registration and login by username
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper}}]
