@@ -27,7 +27,7 @@ class ExtendedRegisterForm(RegisterForm):
         "Username", [InputRequired(), username_validator, unique_identity_attribute]
     )
     password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    device = StringField("Device")
+    devices = StringField("Devices")
     active = BooleanField("Active")
     role = SelectField(
         "Role",
