@@ -101,7 +101,7 @@ Add the following environmental variables
 ```
 FLASK_ENV=development
 FLASK_APP=app.py
-SECRET_KEY =<a_secure_secret_key>
+SECRET_KEY=<a_secure_secret_key>
 SECURITY_PASSWORD_SALT=<a_secure_salt_key>
 SQLALCHEMY_DATABASE_URI=sqlite:///db_1.sqlite3
 ```
