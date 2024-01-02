@@ -65,7 +65,6 @@ def dummy_users():
             new_user = Users(
                 username=fake.name(),
                 password=hash_password("12345678"),
-                device=f"Software {number} - Mod. 1.0",
                 active=True,
             )
             db.session.add(new_user)

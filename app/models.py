@@ -1,78 +1,78 @@
 from app.extensions import db
 from flask_security import RoleMixin, UserMixin, SQLAlchemyUserDatastore
-from sqlalchemy import event
+from sqlalchemy import Boolean, Column, event, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship, backref
 import uuid
 
-roles_users_table = db.Table(
-    "roles_users",
-    db.Column("users_id", db.Integer(), db.ForeignKey("users.user_id")),
-    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.role_id")),
-)
+
+class RolesUsers(db.Model):
+    __tablename__ = "roles_users"
+    id = Column(Integer(), primary_key=True)
+    user_id = Column("users_id", Integer(), ForeignKey("users.user_id"))
+    role_id = Column("roles_id", Integer(), ForeignKey("roles.role_id"))
 
 
 class Users(db.Model, UserMixin):
     __tablename__ = "users"
-    
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, index=True)
-    password = db.Column(db.String(80))
-    device = db.Column(db.String(200), nullable=True)
-    active = db.Column(db.Boolean())
-    roles = db.relationship(
-        "Roles", secondary=roles_users_table, backref="users", lazy=True
+    user_id = Column(Integer, primary_key=True)
+    username = Column(String(100), unique=True, index=True)
+    password = Column(String(80))
+    device_id = Column(Integer, ForeignKey("devices.device_id"))
+    main_version = Column(String, ForeignKey("releases.main_version"))
+    active = Column(Boolean())
+    roles = relationship(
+        "Roles", secondary="roles_users", backref=backref("users", lazy=True)
     )
-    fs_uniquifier = db.Column(
-        db.String(64),
+    fs_uniquifier = Column(
+        String(255),
         unique=True,
         nullable=False,
+        # Line below necessary to avoid "ValueError: Constraint must have a name"
         name="unique_fs_uniquifier_constraint",
     )
 
+    devices = relationship("Devices", backref=backref("users", lazy=True))
+    releases = relationship("Releases", backref=backref("users", lazy=True))
+    
+    def __repr__(self):
+        return self.username
+
 
 class Roles(db.Model, RoleMixin):
-    """The role of a user.
-
-    E.g. customer, administrator, sales.
-
-    """
-    
     __tablename__ = "roles"
-    
-    role_id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
+    role_id = Column(Integer(), primary_key=True)
+    name = Column(String(80), unique=True)
+    description = Column(String(255))
 
     def __repr__(self):
-        return f"Role(role_id={self.role_id}, name={self.name}"
+        return f"{self.name.capitalize()} (role_id={self.role_id})"
 
 
-class Device(db.Model):
-    """A device, like dev01234 or C15."""
-
+class Devices(db.Model):
     __tablename__ = "devices"
-
-    device_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20), unique=True)
-    country = db.Column(db.String(3), nullable=True)
+    device_id = Column(Integer, primary_key=True)
+    name = Column(String(20), unique=True)
+    country = Column(String(3), nullable=True)
 
     def __repr__(self):
-        return f"Device(device_id={self.device_id}, name={self.name}"
-    
+        return f"{self.name.capitalize()} (from {self.country.capitalize()})"
 
-class Release(db.Model):
+
+class Releases(db.Model):
     __tablename__ = "releases"
-
-    release_id = db.Column(db.Integer, primary_key=True)
-    main_version = db.Column(db.String(20))  # e.g. 8.0.122
-    device_id = db.Column(db.Integer)
-    flag_visible = db.Column(db.Boolean())
+    release_id = Column(Integer, primary_key=True)
+    main_version = Column(String(20))  # e.g. 8.0.122
+    # Foreign key referencing Device table
+    device_id = Column(Integer, ForeignKey("devices.device_id"))
+    flag_visible = Column(Boolean())
+    
+    devices = relationship("Devices", backref=backref("releases", lazy=True))
 
     def __repr__(self):
-        return f"Release(release_id={self.id}, name={self.name}"
+        return self.main_version
 
 
-# Generate a random fs_uniquifier
-# Without it, users cannot login into admin panel
+# Generate a random fs_uniquifier: users cannot login without it
 @event.listens_for(Users, "before_insert")
 def before_insert_listener(mapper, connection, target):
     if target.fs_uniquifier is None:
