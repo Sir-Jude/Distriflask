@@ -61,7 +61,7 @@ def profile(username):
         return render_template("errors/403.html"), 403
 
     # To be substituted with a database...
-    devices = current_user.device
+    devices = current_user.devices
     return render_template("customers/profile.html", username=username, devices=devices)
 
 

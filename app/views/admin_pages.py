@@ -16,7 +16,7 @@ def register():
         new_user = Users(
             username=form.email.data,
             password=hash_password(form.password.data),
-            device=form.device.data,
+            devices=form.devices.data,
             active=form.active.data,
         )
 

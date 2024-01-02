@@ -1,20 +1,74 @@
-# Create a virtual env
+# Introduction
+In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of this Markdown file.
+
+The app is splitted into chunks to improve its redability, debugging and further extensibility .
+```
+.
+├── app
+│   ├── errors.py
+│   ├── extensions.py
+│   ├── forms.py
+│   ├── __init__.py
+│   ├── models.py
+│   ├── static
+│   │   └── images
+│   │       └── bruker.png
+│   ├── templates
+│   │   ├── admin
+│   │   │   ├── index.html
+│   │   │   └── master.html
+│   │   ├── customers
+│   │   │   ├── login.html
+│   │   │   └── profile.html
+│   │   ├── errors
+│   │   │   ├── 403.html
+│   │   │   ├── 404.html
+│   │   │   └── 500.html
+│   │   ├── home
+│   │   │   ├── home.html
+│   │   │   └── index.html
+│   │   └── security
+│   │       ├── login_user.html
+│   │       └── register_user.html
+│   └── views
+│       ├── admin_pages.py
+│       └── customers.py
+├── config.py
+├── instance
+│   └── db.sqlite3
+├── migrations
+├── README.md
+├── requirements.txt
+└── tests
+    ├── conftest.py
+    ├── __init__.py
+    └── test_html.py
+```
+These goals are reached also thanks to the implementation of the [Flask's Blueprint](https://exploreflask.com/en/latest/blueprints.html) architecture.
+
+The project comes with a dummy_data script, which:
+- erases any pre-existing database
+- sets a new one
+- populates it with dummy users
+
+
+## Create a virtual env
 ```
 python3 -m venv .venv
 source .venv/bin/activate
 ```
-Type "deactivate " to go out of the virtual environment.
+**TIP**: in the terminal, type "*deactivate*" to switch off the virtual environment.
 
 
-# Installation of the requirements
+## Installation of the requirements
 For general web development using Flask, **libldap2-dev** and **libsasl2-dev** might not be essential: Flask itself doesn't directly rely on these libraries for its core functionality.
 
-However, their importance might arise if you need to implement certain features within your Flask application that require interaction with LDAP for user authentication or if you're integrating SASL for security-related functionalities.
+However, their importance might arise if it's necessary to implement certain features within the Flask application that require interaction with LDAP for user authentication or to integrate SASL for security-related functionalities.
 ```
 sudo apt-get install libldap2-dev
 sudo apt-get install libsasl2-dev
 ```
-Copy and paste the **requirements.txt** file and install the libraries
+Install the libraries listed inside the **requirements.txt** file:
 ```
 pip install -r requirements.txt
 
@@ -25,7 +79,7 @@ pip freeze > requirements.txt
 ```
 
 
-# Create the .gitignore file
+## Create the .gitignore file
 ```
 .env
 .venv
@@ -38,7 +92,7 @@ request.http
 ```
 
 
-# Set the environmental variables
+## Set the environmental variables
 Create a .env file
 ```
 code .env
@@ -62,68 +116,192 @@ The **SECURITY_PASSWORD_SALT** is a variable used in combination with the SECRET
 
 The **SQLALCHEMY_DATABASE_URI** specifies the name of the database connected to the project while using SQLAlchemy.
 
-Finally, in the main app file, import the libraries which allows to use the .env file
+
+## Create a configuration file
+Create a file called config.py and import the [**os**](https://docs.python.org/3/library/os.html) library to get ""*a portable way of using operating system dependent functionality*".
+
+Use the functions **load_dotenv** and **getenv** to access to the .env file.
+
+Create the basedir variable to set the application's root directory and use:
+- **os.path.dirname(\_\_file__)**, to get the relative path to the directory which contains the application's script, rappresented by the Python special variable *\_\_file__*
+- **os.path.abspath()**, to convert the relative path just created into an absolute path
+
 ```
 import os
 from dotenv import load_dotenv
-```
+# Use this function to map a username to an identity
+from flask_security import uia_username_mapper
 
-# Create a configuration file
-Create a file called config.py
-```
-code config.py
-```
-
-Import the os library to access to the .env file and establish the base directory with *os.path.abspath(os.path.dirname(__file__))* to correctly set up the path of the database file.
-```
-import os
-
+load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
 ```
 
-Finally, use a class called **Config** and set configuration values using class variables
+Finally, create a class called **Config** and set the app's configuration values:
 
 ```
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
-    SECURITY_POST_LOGIN_VIEW = "/admin/"
-    SECURITY_POST_LOGOUT_VIEW = "/admin/"
-    SECURITY_POST_REGISTER_VIEW = "/admin/"
-    SECURITY_REGISTERABLE = True
-    SECURITY_REGISTER_URL = "/admin/users/new/"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    FLASK_ADMIN_SWATCH = "cerulean"
-```
-
-# Create the app.py file and set it up to use Flask
-Import the libraries
-```
-from flask import Flask, flash, render_template, redirect, url_for
-```
-
-Initialize a Flask application instance
-```
-app = Flask(__name__)
-```
-
-Link the *SECRET_KEY* and the *SECURITY_PASSWORD_SALT* to the app through the Flask's config and .env files: 
-```
-class Config:
-    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SECRET_KEY = os.getenv("SECRET_KEY")
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    FLASK_ADMIN_SWATCH = "cerulean"
     SECURITY_POST_LOGIN_VIEW = "/admin/"
     SECURITY_POST_LOGOUT_VIEW = "/admin/"
     SECURITY_POST_REGISTER_VIEW = "/admin/"
     SECURITY_REGISTERABLE = True
+    # NOT remove! Flask is not able to create new users without
     SECURITY_REGISTER_URL = "/admin/users/new/"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    FLASK_ADMIN_SWATCH = "cerulean"
+    # Allow registration and login by username
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper}}]
 ```
 
 
-# Start the Flask application in debug mode
-Run the command
+## Store in a file the flask extensions
+Create the **extensions.py** file and initiate the flask extensions:
+```
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+
+
+db = SQLAlchemy()
+login_manager = LoginManager()
+```
+
+
+# Create the models
+Link to the tutorial for the Flask's [models creation](https://blog.teclado.com/user-authentication-flask-security-too/).
+
+Create a medels.py file and import all the necessary libraries
+```
+from app.extensions import db
+from flask_security import RoleMixin, UserMixin, SQLAlchemyUserDatastore
+from sqlalchemy import event
+import uuid
+```
+
+roles_users_table = db.Table(
+    "roles_users",
+    db.Column("users_id", db.Integer(), db.ForeignKey("users.user_id")),
+    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.role_id")),
+)
+
+
+class Users(db.Model, UserMixin):
+    __tablename__ = "users"
+
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, index=True)
+    password = db.Column(db.String(80))
+    device = db.Column(db.String(200), nullable=True)
+    active = db.Column(db.Boolean())
+    roles = db.relationship(
+        "Roles", secondary=roles_users_table, backref="users", lazy=True
+    )
+    fs_uniquifier = db.Column(
+        db.String(64),
+        unique=True,
+        nullable=False,
+        name="unique_fs_uniquifier_constraint",
+    )
+
+
+class Roles(db.Model, RoleMixin):
+    """The role of a user.
+
+    E.g. customer, administrator, sales.
+
+    """
+
+    __tablename__ = "roles"
+
+    role_id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+    def __repr__(self):
+        return f"Role(role_id={self.role_id}, name={self.name})"
+
+
+class Device(db.Model):
+    """A device, like JPK01234 or C15."""
+
+    __tablename__ = "devices"
+
+    device_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), unique=True)
+    country = db.Column(db.String(3), nullable=True)
+
+    def __repr__(self):
+        return f"Device(device_id={self.device_id}, name={self.name})"
+
+
+class Release(db.Model):
+    __tablename__ = "releases"
+
+    release_id = db.Column(db.Integer, primary_key=True)
+    main_version = db.Column(db.String(20))  # e.g. 8.0.122
+    device_id = db.Column(db.Integer)
+    flag_visible = db.Column(db.Boolean())
+
+    def __repr__(self):
+        return f"Release(release_id={self.id}, name={self.name})"
+
+
+# Generate a random fs_uniquifier: users cannot login without it
+@event.listens_for(Users, "before_insert")
+def before_insert_listener(mapper, connection, target):
+    if target.fs_uniquifier is None:
+        target.fs_uniquifier = str(uuid.uuid4())
+
+
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+```
+
+Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
+```
+from flask_admin.contrib.sqla import ModelView
+```
+
+Add a new view for the Use model to the admin interface
+```
+admin.add_view(ModelView(Users, db.session))
+```
+
+
+
+## Create and launch the application 
+Create a folder called **app**, the file app/**\_\_init__.py** and import the following libraries:
+```
+# Basic flask imports
+from flask import Flask, redirect, url_for
+
+
+# Import app's configurations
+from config import Config
+
+
+# Import Flask's extensions
+from app.extensions import db, login_manager
+from flask_migrate import Migrate
+
+
+# Imports from otehr files
+from app.errors import register_error_handlers
+from app.models import Users, Roles, user_datastore
+from app.views.customers import customers
+from app.views.admin_pages import admin_pages
+from app.forms import ExtendedRegisterForm, ExtendedLoginForm
+```
+
+Create an [application factory]( https://flask.palletsprojects.com/en/2.2.x/patterns/appfactories/) and initiate the Flask application instance.
+
+```
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+```
+
+In the terminal, run the command
 ```
 export FLASK_APP=app.py
 ```
@@ -131,13 +309,39 @@ Launch the app
 ```
 flask --app app run --debug
 ```
-The "--debug" option provide:
+The "**--debug**" option provides:
 - the continuous synchronization of the code after every modification, so that the application has not to be retart to be updated
 - the interactive debugger, which highlights the errors in the code
 
 
-# Create a "*templates*" folder
-It will store the files with the code for the html pages
+## Create the "*templates*" and the "*static*" folder
+The **templates** folder is going to store the files with the code for the html pages:
+
+```app/templates
+├── admin
+│   ├── index.html
+│   └── master.html
+├── customers
+│   ├── login.html
+│   └── profile.html
+├── errors
+│   ├── 403.html
+│   ├── 404.html
+│   └── 500.html
+├── home
+│   ├── home.html
+│   └── index.html
+└── security
+    ├── login_user.html
+    └── register_user.html
+```
+
+The **static** folder is going to store static assets like CSS files, JavaScript files, images, fonts, etc.
+ 
+app/static
+└── images
+    └── bruker.png
+
 
 
 # Create a route to a web page and its logic
@@ -160,75 +364,6 @@ return redirect(url_for("login"))
 ```
 
 
-# Create a User model and link it to the admin page
-## TO BE REVIEW AND REWRITTEN!!!
-Main source for Users and Roles model design:
-(https://ckraczkowsky.medium.com/building-a-secure-admin-interface-with-flask-admin-and-flask-security-13ae81faa05)
-
-UPDATE_1: Flask security library is deprecated  
---> pip install flask_security_too
-UPDATE_2: before_first_request is deprecated
---> use before_request (https://github.com/pallets/flask/issues/4605)
-```
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import RoleMixin, UserMixin
-from sqlalchemy import event
-import uuid
-
-
-db = SQLAlchemy()
-
-
-roles_users_table = db.Table(
-    "roles_users",
-    db.Column("users_id", db.Integer(), db.ForeignKey("users.user_id")),
-    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.id")),
-)
-
-
-class Users(db.Model, UserMixin):
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, index=True)
-    password = db.Column(db.String(80))
-    device = db.Column(db.String(200), nullable=True)
-    active = db.Column(db.Boolean())
-    roles = db.relationship(
-        "Roles", secondary=roles_users_table, backref="users", lazy=True
-    )
-    fs_uniquifier = db.Column(
-        db.String(64),
-        unique=True,
-        nullable=False,
-        name="unique_fs_uniquifier_constraint",
-    )
-
-
-class Roles(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-    def __str__(self):
-        return self.name
-
-
-# Generate a random fs_uniquifier
-# Without it, users cannot login into admin panel
-@event.listens_for(Users, "before_insert")
-def before_insert_listener(mapper, connection, target):
-    if target.fs_uniquifier is None:
-        target.fs_uniquifier = str(uuid.uuid4())
-```
-
-Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
-```
-from flask_admin.contrib.sqla import ModelView
-```
-
-Add a new view for the Use model to the admin interface
-```
-admin.add_view(ModelView(Users, db.session))
-```
 
 
 # Initiate the database
@@ -461,8 +596,11 @@ def load_user(user_id):
     return Users.query.get(user_id)
 ```
 
+# Populate the database with some dummy data
+Script already created  
+Relative documentation is still a working in progress...
 
-# Testing
+# Test the app
 Create a folder *next* (not inside) the main project folder (app) called **tests**
 Create inside this folder two files:
 - conftest.py
@@ -490,6 +628,25 @@ def client(app):
     return app.test_client()
 ```
 
+
+## Store in a file the errors handlers functions
+```
+from flask import render_template
+
+
+def register_error_handlers(app):
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template("errors/500.html"), 500
+```
 
 # Resources
 

@@ -11,10 +11,17 @@ from app.extensions import db, login_manager
 from flask_migrate import Migrate
 
 
+# Imports from otehr files
+from app.errors import register_error_handlers
+from app.models import Users, Roles, user_datastore
+from app.views.customers import customers
+from app.views.admin_pages import admin_pages
+from app.forms import ExtendedRegisterForm, ExtendedLoginForm
+
+
 # Imports for Flask security
 from flask_security import (
     current_user,
-    hash_password,
     Security,
 )
 
@@ -22,14 +29,6 @@ from flask_security import (
 # Imports for Admin page
 from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
-
-
-# Imports from otehr files
-from app.errors import register_error_handlers
-from app.models import Users, Roles, Device, Release, user_datastore
-from app.views.customers import customers
-from app.views.admin_pages import admin_pages
-from app.forms import ExtendedRegisterForm, ExtendedLoginForm
 
 
 def create_app(config_class=Config):
@@ -40,7 +39,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
     migrate = Migrate(app, db)
-    
+
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
@@ -90,10 +89,11 @@ def create_app(config_class=Config):
             db.session.commit()
 
     class UserAdminView(ModelView):
-        column_list = ("username", "device", "release", "active", "roles")
+        column_list = ("username", "devices", "version", "active", "roles")
         column_sortable_list = (
             "username",
-            "device",
+            "devices",
+            ("version", "releases.main_version"),
             "active",
             ("roles", "roles.name"),  # Make 'roles' sortable
         )
@@ -114,12 +114,9 @@ def create_app(config_class=Config):
             return ", ".join([role.name.capitalize() for role in model.roles])
 
         column_formatters = {"roles": _display_roles}
-        
-        
 
     admin.add_view(UserAdminView(Users, db.session))
 
-    
     # Flask_login stuff
     login_manager.login_view = "login"
 
