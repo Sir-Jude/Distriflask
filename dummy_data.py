@@ -1,6 +1,8 @@
+import random
+
 from app import create_app
 from app.extensions import db
-from app.models import Users, Roles
+from app.models import Users, Roles, Devices, Releases
 import subprocess
 import shutil
 from flask_security import SQLAlchemyUserDatastore, hash_password
@@ -58,6 +60,85 @@ def roles_creation():
         db.session.commit()
 
 
+def populate_tables(devices, releases):
+    random.seed(22)
+
+    device_map = {}
+    for dev_name in devices:
+        device = Devices(name=dev_name, country=None)
+        db.session.add(device)
+        device_map[dev_name] = device
+
+    # Finalize device entries, so the objects get a device_id
+    db.session.commit()
+    
+    for rel_number in releases:
+        # Hide one out of 5 releases
+        visible = random.randint(1, 5) > 1
+        for dev_name in devices:
+            # Include only every 4th combination
+            if random.randint(1, 4) == 1:
+                release = Releases(
+                    main_version=rel_number,
+                    device_id=device_map[dev_name].device_id,
+                    flag_visible=visible,
+                )
+                db.session.add(release)
+
+
+def create_sample_devices():
+    random.seed(42)
+
+    devices = set()
+
+    devices.add("c15")
+    devices.add("c24")
+    for n in range(200):
+        devices.add(f"dev0{random.randint(10,2500):04d}")
+    for n in range(20):
+        devices.add(f"dev100{random.randint(10,70):02d}")
+    return devices
+
+
+def create_sample_releases():
+    random.seed(17)
+
+    releases = set()
+
+    for main, max in [
+        ("8.1", 12),
+        ("8.0", 125),
+        ("7.0", 105),
+        ("6.4", 88),
+        ("6.1", 220),
+    ]:
+        for i in range(1, max + 1):
+            # Include only every 3rd possible release
+            if random.randint(1, 3) == 1:
+                releases.add(f"{main}.{i}")
+                # Add A (and maybe B and C) variants for some of the releases
+                if random.randint(1, 50) == 1:
+                    releases.add(f"{main}.{i}A")
+                    releases.add(f"{main}.{i}B")
+                    releases.add(f"{main}.{i}C")
+                elif random.randint(1, 30) == 1:
+                    releases.add(f"{main}.{i}A")
+                    releases.add(f"{main}.{i}B")
+                elif random.randint(1, 10) == 1:
+                    releases.add(f"{main}.{i}A")
+    return releases
+
+
+def devices_and_releases():
+    app = create_app()
+    with app.app_context():
+        
+        devices = create_sample_devices()
+        releases = create_sample_releases()
+        populate_tables(devices, releases)
+        db.session.commit()
+
+
 def dummy_users():
     app = create_app()
     with app.app_context():
@@ -65,7 +146,6 @@ def dummy_users():
             new_user = Users(
                 username=fake.name(),
                 password=hash_password("12345678"),
-                device=f"Software {number} - Mod. 1.0",
                 active=True,
             )
             db.session.add(new_user)
@@ -83,4 +163,5 @@ if __name__ == "__main__":
     delete_folders()
     setup_database()
     roles_creation()
+    devices_and_releases()
     dummy_users()
