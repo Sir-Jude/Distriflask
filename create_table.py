@@ -1,46 +1,5 @@
 #! /usr/bin/env python3
 
-"""Create and populate a dummy table in SQLAlchemy"""
-
-# Live Hacks:
-#
-# * Setup
-#
-#   export FLASK_ENV=development FLASK_APP=project.py
-#   export SECRET_KEY=a_secure_secret_key SECURITY_PASSWORD_SALT=a_secure_salt_key
-#   sudo apt install python3-venv libldap2-dev libsasl2-dev sqlite3-pcre
-#   python3 -m venv .venv
-#   source .venv/bin/activate
-#   python3 -mpip install --no-user -r requirements.txt
-#
-#
-# * Interact with the data base
-#
-#   $ source .venv/bin/activate
-#
-# ** Dump content of database
-#   $ sqlite3 instance/project.db .dump
-#   or maybe even
-#   $ sqlite3_analyzer instance/project.db
-#
-# ** Command-line tool
-#   $ sudo apt install litecli sqlite3-tools
-#   # Or, if this version throws the error
-#   #   AttributeError: module 'click' has no attribute 'get_terminal_size'
-#   # Download litecli_1.10.0-1_all.deb and install that.
-#
-#   $ litecli instance/project.db
-#   -- Make REGEXP available:
-#   litecli>  .load /usr/lib/sqlite3/pcre.so
-#
-#   litecli>  .tables  -- show tables
-#   litecli>  help     -- show all commands
-#   litecli>  select * from users
-#   litecli>  select * from releases, devices \
-#                 where releases.device_id = devices.device_id \
-#                 order by main_version, name
-
-
 import random
 
 from app import create_app
@@ -74,9 +33,8 @@ def main():
         roles_creation()
         devices = create_sample_devices()
         releases = create_sample_releases()
-        dummy_users(devices, releases)
         populate_tables(devices, releases)
-        
+        dummy_users()
         db.session.commit()
 
 
@@ -182,9 +140,9 @@ def populate_tables(devices, releases):
                     flag_visible=visible,
                 )
                 db.session.add(release)
-                
+    db.session.commit()
 
-def dummy_users(devices, releases):
+def dummy_users():
     app = create_app()
     with app.app_context():
         for number in range(N_USERS):
