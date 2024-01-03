@@ -43,125 +43,77 @@
 
 import random
 
-from flask import Flask
-from flask_security import RoleMixin, SQLAlchemyUserDatastore, UserMixin
-from flask_sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
-
-db = SQLAlchemy()
-db.init_app(app)
-
-
-roles_users_table = db.Table(
-    "roles_users",
-    db.Column("users_id", db.Integer, db.ForeignKey("users.user_id")),
-    db.Column("roles_id", db.Integer, db.ForeignKey("roles.role_id")),
-)
+from app import create_app
+from app.extensions import db
+from app.models import Users, Roles, Devices, Releases
+import subprocess
+import shutil
+from flask_security import SQLAlchemyUserDatastore, hash_password
+from random import choice
+from faker import Faker
 
 
-class User(db.Model, UserMixin):
-    __tablename__ = "users"
-
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, index=True)
-    password = db.Column(db.String(80))
-    device = db.Column(db.String(200), nullable=True)
-    active = db.Column(db.Boolean)
-    roles = db.relationship(
-        "Role", secondary=roles_users_table, backref="users", lazy=True
-    )
-    fs_uniquifier = db.Column(
-        db.String(64),
-        unique=True,
-        nullable=False,
-        name="unique_fs_uniquifier_constraint",
-    )
-
-
-class Role(db.Model, RoleMixin):
-    """The role of a user.
-
-    E.g. customer, administrator, sales.
-
-    """
-
-    __tablename__ = "roles"
-
-    role_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-    def __repr__(self):
-        return f"Role(role_id={self.role_id}, name={self.name}"
-
-
-class Device(db.Model):
-    """A device, like dev01234 or C15."""
-
-    __tablename__ = "devices"
-
-    device_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20), unique=True)
-    country = db.Column(db.String(3), nullable=True)
-
-    def __repr__(self):
-        return f"Device(device_id={self.device_id}, name={self.name}"
-
-
-class Release(db.Model):
-    __tablename__ = "releases"
-
-    release_id = db.Column(db.Integer, primary_key=True)
-    main_version = db.Column(db.String(20))  # e.g. 8.0.122
-    device_id = db.Column(db.Integer)
-    flag_visible = db.Column(db.Boolean())
-
-    def __repr__(self):
-        return f"Release(release_id={self.id}, name={self.name}"
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+fake = Faker()
+N_USERS = 50
+ROLES = [
+    "administrator",
+    "customer",
+    "sales",
+    "production",
+    "application",
+    "software",
+]
 
 
 def main():
-    user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    app = create_app()
     with app.app_context():
-        db.drop_all()  # Needed?
-        db.create_all()
-
-        first_user = user_datastore.create_user(username="admin", password="12345678")
-        user_datastore.activate_user(first_user)
-        # db.session.commit()
-
+        delete_folders()
+        setup_database()
+        roles_creation()
+        dummy_users()
         devices = create_sample_devices()
         releases = create_sample_releases()
         populate_tables(devices, releases)
+        
         db.session.commit()
 
 
-def populate_tables(devices, releases):
-    random.seed(22)
+def delete_folders():
+    folders_to_delete = ["instance", "migrations"]
+    for folder in folders_to_delete:
+        try:
+            shutil.rmtree(folder)
+            print(f"Folder '{folder}' deleted.")
+        except FileNotFoundError:
+            print(f"Folder '{folder}' not found.")
 
-    device_map = {}
-    for dev_name in devices:
-        device = Device(name=dev_name, country=None)
-        db.session.add(device)
-        device_map[dev_name] = device
 
-    # Finalize device entries, so the objects get a device_id
-    db.session.commit()
+def setup_database():
+    # Log into the shell and execute commands
+    subprocess.run(
+        ["flask", "shell"],
+        input="from app.extensions import db\n" "db.create_all()\n" "exit()\n",
+        text=True,
+    )
 
-    for rel_number in releases:
-        # Hide one out of 5 releases
-        visible = random.randint(1, 5) > 1
-        for dev_name in devices:
-            # Include only every 4th combination
-            if random.randint(1, 4) == 1:
-                release = Release(
-                    main_version=rel_number,
-                    device_id=device_map[dev_name].device_id,
-                    flag_visible=visible,
-                )
-                db.session.add(release)
+    # Initiating and migrating the database
+    subprocess.run(["flask", "db", "init"])
+    subprocess.run(["flask", "db", "migrate"])
+
+
+def roles_creation():
+    app = create_app()
+    with app.app_context():
+        for role_name in ROLES:
+            existing_role = Roles.query.filter_by(name=role_name).first()
+            if existing_role is None:
+                new_role = Roles(name=role_name, description=f"{role_name} role")
+                db.session.add(new_role)
+                print(f'Role "{new_role.name}" has beeen created')
+
+        db.session.commit()
 
 
 def create_sample_devices():
@@ -205,6 +157,51 @@ def create_sample_releases():
                 elif random.randint(1, 10) == 1:
                     releases.add(f"{main}.{i}A")
     return releases
+
+def populate_tables(devices, releases):
+    random.seed(22)
+
+    device_map = {}
+    for dev_name in devices:
+        device = Devices(name=dev_name, country=None)
+        db.session.add(device)
+        device_map[dev_name] = device
+
+    # Finalize device entries, so the objects get a device_id
+    db.session.commit()
+
+    for rel_number in releases:
+        # Hide one out of 5 releases
+        visible = random.randint(1, 5) > 1
+        for dev_name in devices:
+            # Include only every 4th combination
+            if random.randint(1, 4) == 1:
+                release = Releases(
+                    main_version=rel_number,
+                    device_id=device_map[dev_name].device_id,
+                    flag_visible=visible,
+                )
+                db.session.add(release)
+                
+
+def dummy_users():
+    app = create_app()
+    with app.app_context():
+        for number in range(N_USERS):
+            new_user = Users(
+                username=fake.name(),
+                password=hash_password("12345678"),
+                active=True,
+            )
+            db.session.add(new_user)
+
+            role_name = choice(ROLES)
+            new_role = Roles.query.filter_by(name=role_name).first()
+            new_user.roles.append(new_role)
+
+            print(f'User "{new_user.username}" has been created.')
+
+        db.session.commit()
 
 
 if __name__ == "__main__":

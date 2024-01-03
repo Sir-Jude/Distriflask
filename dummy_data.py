@@ -60,32 +60,6 @@ def roles_creation():
         db.session.commit()
 
 
-def populate_tables(devices, releases):
-    random.seed(22)
-
-    device_map = {}
-    for dev_name in devices:
-        device = Devices(name=dev_name, country=None)
-        db.session.add(device)
-        device_map[dev_name] = device
-
-    # Finalize device entries, so the objects get a device_id
-    db.session.commit()
-    
-    for rel_number in releases:
-        # Hide one out of 5 releases
-        visible = random.randint(1, 5) > 1
-        for dev_name in devices:
-            # Include only every 4th combination
-            if random.randint(1, 4) == 1:
-                release = Releases(
-                    main_version=rel_number,
-                    device_id=device_map[dev_name].device_id,
-                    flag_visible=visible,
-                )
-                db.session.add(release)
-
-
 def create_sample_devices():
     random.seed(42)
 
@@ -129,6 +103,32 @@ def create_sample_releases():
     return releases
 
 
+def populate_tables(devices, releases):
+    random.seed(22)
+    
+    device_map = {}
+    for dev_name in devices:
+        device = Devices(name=dev_name, country=None)
+        db.session.add(device)
+        device_map[dev_name] = device
+
+    # Finalize device entries, so the objects get a device_id
+    db.session.commit()
+
+    for rel_number in releases:
+        # Hide one out of 5 releases
+        visible = random.randint(1, 5) > 1
+        for dev_name in devices:
+            # Include only every 4th combination
+            if random.randint(1, 4) == 1:
+                release = Releases(
+                    main_version=rel_number,
+                    device_id=device_map[dev_name].device_id,
+                    flag_visible=visible,
+                )
+                db.session.add(release)
+
+
 def devices_and_releases():
     app = create_app()
     with app.app_context():
@@ -163,5 +163,6 @@ if __name__ == "__main__":
     delete_folders()
     setup_database()
     roles_creation()
+    populate_tables(create_sample_devices(), create_sample_releases())
     devices_and_releases()
     dummy_users()
