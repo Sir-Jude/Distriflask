@@ -1,7 +1,7 @@
 # Introduction
 In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of this Markdown file.
 
-The app is splitted into chunks to improve its redability, debugging and further extensibility .
+The app is split into chunks to improve its redability, debugging and further extensibility .
 ```
 .
 ├── app
@@ -44,7 +44,7 @@ The app is splitted into chunks to improve its redability, debugging and further
     ├── __init__.py
     └── test_html.py
 ```
-These goals are reached also thanks to the implementation of the [Flask's Blueprint](https://exploreflask.com/en/latest/blueprints.html) architecture.
+These goals are reached also thanks to the implementation of [Flask's Blueprint](https://exploreflask.com/en/latest/blueprints.html) architecture.
 
 The project comes with a dummy_data script, which:
 - erases any pre-existing database
@@ -60,7 +60,7 @@ source .venv/bin/activate
 **TIP**: in the terminal, type "*deactivate*" to switch off the virtual environment.
 
 
-## Installation of the requirements
+## Installation of requirements
 For general web development using Flask, **libldap2-dev** and **libsasl2-dev** might not be essential: Flask itself doesn't directly rely on these libraries for its core functionality.
 
 However, their importance might arise if it's necessary to implement certain features within the Flask application that require interaction with LDAP for user authentication or to integrate SASL for security-related functionalities.
@@ -95,13 +95,13 @@ request.http
 ## Set the environmental variables
 Create a .env file
 ```
-code .env
+$EDITOR .env
 ```
 Add the following environmental variables
 ```
 FLASK_ENV=development
 FLASK_APP=app.py
-SECRET_KEY =<a_secure_secret_key>
+SECRET_KEY=<a_secure_secret_key>
 SECURITY_PASSWORD_SALT=<a_secure_salt_key>
 SQLALCHEMY_DATABASE_URI=sqlite:///db_1.sqlite3
 ```
@@ -123,7 +123,7 @@ Create a file called config.py and import the [**os**](https://docs.python.org/3
 Use the functions **load_dotenv** and **getenv** to access to the .env file.
 
 Create the basedir variable to set the application's root directory and use:
-- **os.path.dirname(\_\_file__)**, to get the relative path to the directory which contains the application's script, rappresented by the Python special variable *\_\_file__*
+- **os.path.dirname(\_\_file\_\_)**, to get the relative path to the directory which contains the application's script, represented by the Python special variable *\_\_file\_\_*
 - **os.path.abspath()**, to convert the relative path just created into an absolute path
 
 ```
@@ -285,7 +285,7 @@ from app.extensions import db, login_manager
 from flask_migrate import Migrate
 
 
-# Imports from otehr files
+# Imports from other files
 from app.errors import register_error_handlers
 from app.models import Users, Roles, user_datastore
 from app.views.customers import customers
@@ -310,8 +310,10 @@ Launch the app
 flask --app app run --debug
 ```
 The "**--debug**" option provides:
-- the continuous synchronization of the code after every modification, so that the application has not to be retart to be updated
-- the interactive debugger, which highlights the errors in the code
+- continuous synchronization of the code after every modification, such
+  that the application does not need to be restarted after changes to the
+  code
+- the interactive debugger, which highlights errors in the code
 
 
 ## Create the "*templates*" and the "*static*" folder
@@ -353,12 +355,12 @@ def logout():
     logout_user()
 ```
 
-Finally, render one of the html file kept in the *templates* folder
+Finally, render one of the html templates kept in the *templates* folder
 ```
 return render_template("registration/login.html", context=object)
 ```
 
-Or redirect the user to a specific route, identifed by the name of its associatd function:
+Or redirect the user to a specific route, identifed by the name of its associated function:
 ```
 return redirect(url_for("login"))
 ```
@@ -366,14 +368,14 @@ return redirect(url_for("login"))
 
 
 
-# Initiate the database
+# Initialize the database
 Import SQLAlchemy and Migrate
 ```
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 ```
 
-Configure the parameter which specifies the **URI** (**U**niform **R**esource **I**dentifier) used to connect to a database. In this case, SQLAlchemy (an open-source SQL toolkit and Object-Relational Mapping (ORM) library for Python) use the URI to establish a connection with a SQLite database called *db.sqlite3*
+Configure the parameter which specifies the **URI** (**U**niform **R**esource **I**dentifier) used to connect to a database. In this case, SQLAlchemy (an open-source SQL toolkit and Object-Relational Mapping (ORM) library for Python) uses the URI to establish a connection with a SQLite database called *db.sqlite3*
 ```
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 ```
@@ -429,7 +431,7 @@ flask db migrate
 flask db migrate -m "short description..."
 flask db upgrade
 ```
-**DO NOT FORGET**: in case a model is modiefied, for example the "Users", you need to update also:
+**DO NOT FORGET**: in case a model is modified, for example the "Users", you need to update also:
 - the register form
 - the register route
 - the http template
@@ -466,7 +468,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 ```
 
-Add to the .env file a "SECRET_KEY" variable: all modern web forms works with a **CSRF** (**C**ross-**S**ite **R**equest **F**orgery) token which create a secret key which sync up behind the scenes with our secret_key and make sure a hacker has not hijacked the form itself    
+Add to the .env file a "SECRET_KEY" variable: all modern web forms works with a **CSRF** (**C**ross-**S**ite **R**equest **F**orgery) token which create a secret key which sync up behind the scenes with our secret_key and make sure a hacker has not hijacked the form itself
 ```
 SECRET_KEY = a_secure_secret_key
 ```
@@ -597,8 +599,8 @@ def load_user(user_id):
 ```
 
 # Populate the database with some dummy data
-Script already created  
-Relative documentation is still a working in progress...
+Script already created
+Relative documentation is still work in progress...
 
 # Test the app
 Create a folder *next* (not inside) the main project folder (app) called **tests**
@@ -606,7 +608,7 @@ Create inside this folder two files:
 - conftest.py
 - test_project
 
-**conftest**, is a special file for pytest, where you can set up your test environment and everything which needs to be caled before every test.
+**conftest**, is a special file for pytest, where you can set up your test environment and everything which needs to be called before every test.
 
 **test_project**, is the actual file which you write the tests in and it must start with the word *test*.
 
@@ -629,7 +631,7 @@ def client(app):
 ```
 
 
-## Store in a file the errors handlers functions
+## Store in a file the error handlers functions
 ```
 from flask import render_template
 
