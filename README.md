@@ -95,7 +95,7 @@ request.http
 ## Set the environmental variables
 Create a .env file
 ```
-code .env
+$EDITOR .env
 ```
 Add the following environmental variables
 ```
