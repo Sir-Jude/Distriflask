@@ -72,11 +72,10 @@ def main():
         delete_folders()
         setup_database()
         roles_creation()
-        dummy_users()
         devices = create_sample_devices()
         releases = create_sample_releases()
         populate_tables(devices, releases)
-        
+        dummy_users()
         db.session.commit()
 
 
@@ -182,6 +181,8 @@ def populate_tables(devices, releases):
                     flag_visible=visible,
                 )
                 db.session.add(release)
+    
+    db.session.commit()
                 
 
 def dummy_users():
