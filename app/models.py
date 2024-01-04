@@ -33,7 +33,7 @@ class Users(db.Model, UserMixin):
 
     devices = relationship("Devices", backref=backref("users", lazy=True))
     releases = relationship("Releases", backref=backref("users", lazy=True))
-    
+
     def __repr__(self):
         return self.username
 
@@ -65,7 +65,7 @@ class Releases(db.Model):
     # Foreign key referencing Device table
     device_id = Column(Integer, ForeignKey("devices.device_id"))
     flag_visible = Column(Boolean())
-    
+
     devices = relationship("Devices", backref=backref("releases", lazy=True))
 
     def __repr__(self):
