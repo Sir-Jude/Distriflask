@@ -105,7 +105,7 @@ def create_sample_releases():
 
 def populate_tables(devices, releases):
     random.seed(22)
-    
+
     device_map = {}
     for dev_name in devices:
         device = Devices(name=dev_name, country=None)
@@ -132,7 +132,6 @@ def populate_tables(devices, releases):
 def devices_and_releases():
     app = create_app()
     with app.app_context():
-        
         devices = create_sample_devices()
         releases = create_sample_releases()
         populate_tables(devices, releases)
