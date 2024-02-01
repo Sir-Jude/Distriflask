@@ -157,6 +157,7 @@ def create_sample_releases():
                     releases.add(f"{main}.{i}A")
     return releases
 
+
 def populate_tables(devices, releases):
     random.seed(22)
 
@@ -181,9 +182,9 @@ def populate_tables(devices, releases):
                     flag_visible=visible,
                 )
                 db.session.add(release)
-    
+
     db.session.commit()
-                
+
 
 def dummy_users():
     app = create_app()
