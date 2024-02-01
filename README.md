@@ -95,15 +95,15 @@ request.http
 ## Set the environmental variables
 Create a .env file
 ```
-$EDITOR .env
+code .env
 ```
 Add the following environmental variables
 ```
+FLASK_APP=app
 FLASK_ENV=development
-FLASK_APP=app.py
-SECRET_KEY=<a_secure_secret_key>
-SECURITY_PASSWORD_SALT=<a_secure_salt_key>
-SQLALCHEMY_DATABASE_URI=sqlite:///db_1.sqlite3
+SECRET_KEY=Bruk3r_Secr3T_K3y_D0_N0t_5har3
+SECURITY_PASSWORD_SALT=Sal7_F0r_Bruk3R_PaS5w0rD
+SQLALCHEMY_DATABASE_URI=sqlite:///db.sqlite3
 ```
 
 The **FLASK_ENV** variable is used to set the Flask environment and determines the behavior of the app: it can have values like "development", "testing" or "production".
@@ -129,6 +129,7 @@ Create the basedir variable to set the application's root directory and use:
 ```
 import os
 from dotenv import load_dotenv
+
 # Use this function to map a username to an identity
 from flask_security import uia_username_mapper
 
@@ -155,30 +156,54 @@ class Config:
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper}}]
 ```
 
+# Build the app folder architecture
+- Create a folder **tests** where to store all the tests.  
+- Create the folder **app**, which will be the root folder.  
+- Move inside it and create the following subfolders:
+    - static
+    - templates
+    - views  
 
-## Store in a file the flask extensions
-Create the **extensions.py** file and initiate the flask extensions:
+- Then create the following fileS
+    - \_\_init__.py
+    - errors.py
+    - extensions.py
+    - forms.py
+    - models.py
+
+
+## File extensions.py
+Open the file app/**extensions.py** and initiate the flask extensions:
 ```
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+migrate = Migrate()
 ```
 
 
-# Create the models
+## File models.py
 Link to the tutorial for the Flask's [models creation](https://blog.teclado.com/user-authentication-flask-security-too/).
 
-Create a medels.py file and import all the necessary libraries
+Open the file app/**medels.py** and import all the necessary libraries
 ```
 from app.extensions import db
 from flask_security import RoleMixin, UserMixin, SQLAlchemyUserDatastore
-from sqlalchemy import event
+from sqlalchemy import Boolean, Column, event, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship, backref
 import uuid
-```
+```  
 
+Create a class for each of the follwoing models:  
+- RoleUsers
+- Users
+- Roles
+- Devices
+- Release
+```
 roles_users_table = db.Table(
     "roles_users",
     db.Column("users_id", db.Integer(), db.ForeignKey("users.user_id")),
@@ -245,32 +270,25 @@ class Release(db.Model):
 
     def __repr__(self):
         return f"Release(release_id={self.id}, name={self.name})"
+```
 
-
+The extension "**Flask security too**" (which substitues the previous and deprecated *Flask security*), requires to create an instance attribute called **fs_uniquifier** to identify unequivocally the different users:
+```
 # Generate a random fs_uniquifier: users cannot login without it
 @event.listens_for(Users, "before_insert")
 def before_insert_listener(mapper, connection, target):
     if target.fs_uniquifier is None:
         target.fs_uniquifier = str(uuid.uuid4())
+```
 
+Finally, initialize a **SQLAlchemyUserDatastore** object, which is used by Flask security Too to manage the user authentication and authorization with SQLAlchemy:
 
+```
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 ```
 
-Import the libraries to create a "view" for SQLAlchemy models in Flask-Admin
-```
-from flask_admin.contrib.sqla import ModelView
-```
-
-Add a new view for the Use model to the admin interface
-```
-admin.add_view(ModelView(Users, db.session))
-```
-
-
-
 ## Create and launch the application 
-Create a folder called **app**, the file app/**\_\_init__.py** and import the following libraries:
+Open the file app/**\_\_init__.py** and import the following libraries:
 ```
 # Basic flask imports
 from flask import Flask, redirect, url_for
@@ -334,6 +352,7 @@ The **templates** folder is going to store the files with the code for the html 
 │   ├── home.html
 │   └── index.html
 └── security
+    ├── _menu.html
     ├── login_user.html
     └── register_user.html
 ```

@@ -55,7 +55,7 @@ class Devices(db.Model):
     country = Column(String(3), nullable=True)
 
     def __repr__(self):
-        return f"{self.name.capitalize()} (from {self.country.capitalize()})"
+        return f"{self.name.capitalize()} (from {self.country})"
 
 
 class Releases(db.Model):
