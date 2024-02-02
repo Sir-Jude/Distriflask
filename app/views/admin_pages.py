@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, render_template, redirect, url_for
 from app.forms import ExtendedRegisterForm
-from app.models import Users, Roles, user_datastore
+from app.models import Users, Roles, Devices, Releases, user_datastore
 from flask_security import hash_password
 from app.extensions import db
 
@@ -13,10 +13,18 @@ def register():
     form = ExtendedRegisterForm()
 
     if form.validate_on_submit():
+        
+        device_id = form.devices.data
+        device = Devices.query.filter_by(name=form.devices.data).first()
+        
+        if not device:
+            flash("Selected device does not exist.", "error")
+            return render_template("security/register_user.html", form=form)
+
         new_user = Users(
             username=form.email.data,
             password=hash_password(form.password.data),
-            devices=form.devices.data,
+            devices=device,
             active=form.active.data,
         )
 
