@@ -27,6 +27,8 @@ from flask_security import (
 
 # Imports for Admin page
 from flask_admin import Admin, helpers as admin_helpers
+from flask_admin.base import BaseView, expose
+from flask_admin.menu import MenuLink
 from flask_admin.contrib.sqla import ModelView
 
 
@@ -39,6 +41,7 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
+    # Variable name="Admin" refers to the button "Admn" in the nav-bar
     admin = Admin(
         app, name="Admin", base_template="master.html", template_mode="bootstrap3"
     )
@@ -47,7 +50,7 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_pages)
     register_error_handlers(app)
 
-    # This snippet MUST stay after app.register_blueprint(admin_pages)
+    # This snippet MUST stay after "app.register_blueprint(admin_pages)"
     security = Security(
         app,
         user_datastore,
@@ -88,13 +91,14 @@ def create_app(config_class=Config):
             db.session.commit()
 
     class UserAdminView(ModelView):
-        column_list = ("username", "devices", "version", "active", "roles")
+        # Actual columns' title as seen in the website
+        column_list = ("username", "versions", "active", "roles")
+        # Link the columns' title and the model class attribute, so to make data sortable
         column_sortable_list = (
             "username",
-            "devices",
-            ("version", "releases.main_version"),
+            ("versions", "device_name"),
             "active",
-            ("roles", "roles.name"),  # Make 'roles' sortable
+            ("roles", "roles.name"),
         )
 
         def is_accessible(self):
@@ -108,13 +112,31 @@ def create_app(config_class=Config):
             if not self.is_accessible():
                 return redirect(url_for("security.login"))
 
-        @staticmethod
         def _display_roles(view, context, model, name):
             return ", ".join([role.name.capitalize() for role in model.roles])
 
-        column_formatters = {"roles": _display_roles}
+        def _display_versions(view, context, model, name):
+            return model.versions()
+
+        column_formatters = {"roles": _display_roles, "versions": _display_versions}
+
+    class CustomMenuView(BaseView):
+        @expose("/")
+        def index(self):
+            return redirect(url_for("admin_pages.show_devices"))
+
+        def is_accessible(self):
+            return (
+                current_user.is_active
+                and current_user.is_authenticated
+                and any(role.name == "administrator" for role in current_user.roles)
+            )
+
+        def _get_admin_menu(self):
+            return MenuLink("Devices", endpoint="admin_pages.show_devices")
 
     admin.add_view(UserAdminView(Users, db.session))
+    admin.add_view(CustomMenuView(name="Devices"))
 
     # Flask_login stuff
     login_manager.login_view = "login"

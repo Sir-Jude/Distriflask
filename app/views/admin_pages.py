@@ -1,22 +1,24 @@
 from flask import Blueprint, flash, render_template, redirect, url_for
 from app.forms import ExtendedRegisterForm
 from app.models import Users, Roles, Devices, Releases, user_datastore
+from flask_login import login_required
 from flask_security import hash_password
 from app.extensions import db
+import re
 
 
 admin_pages = Blueprint("admin_pages", __name__)
 
 
 @admin_pages.route("/admin/users/new/", methods=["GET", "POST"])
+@login_required
 def register():
     form = ExtendedRegisterForm()
 
     if form.validate_on_submit():
-        
-        device_id = form.devices.data
+        device_name = form.devices.data
         device = Devices.query.filter_by(name=form.devices.data).first()
-        
+
         if not device:
             flash("Selected device does not exist.", "error")
             return render_template("security/register_user.html", form=form)
@@ -49,3 +51,32 @@ def register():
             return render_template("security/register_user.html", form=form)
 
     return render_template("security/register_user.html", form=form)
+
+
+@admin_pages.route("/admin/devices/", methods=["GET"])
+# Disabled during development environment
+@login_required
+def show_devices():
+    devices = sorted(Devices.query.all(), key=lambda d: d.name)
+    device_ids = [d.device_id for d in devices]
+    device_versions = {}
+    for device in devices:
+        device_versions[device] = [r.version for r in device.releases]
+    unsorted_releases = set()
+    for release in Releases.query.all():
+        if release.device_id in device_ids:
+            unsorted_releases.add(release.version)
+    releases = sorted(
+        unsorted_releases,
+        key=lambda x: [
+            int(part) if part.isdigit() else part for part in re.split(r"(\d+|\D+)", x)
+        ],
+        reverse=True,
+    )
+
+    return render_template(
+        "admin/matrix.html",
+        devices=devices,
+        device_versions=device_versions,
+        release_versions=releases,
+    )
