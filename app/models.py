@@ -8,8 +8,8 @@ import uuid
 class RolesUsers(db.Model):
     __tablename__ = "roles_users"
     id = Column(Integer(), primary_key=True)
-    user_id = Column("users_id", Integer(), ForeignKey("users.user_id"))
-    role_id = Column("roles_id", Integer(), ForeignKey("roles.role_id"))
+    user_id = Column("user_id", Integer(), ForeignKey("users.user_id"))
+    role_id = Column("role_id", Integer(), ForeignKey("roles.role_id"))
 
 
 class Users(db.Model, UserMixin):
@@ -17,8 +17,7 @@ class Users(db.Model, UserMixin):
     user_id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True, index=True)
     password = Column(String(80))
-    device_id = Column(Integer, ForeignKey("devices.device_id"))
-    main_version = Column(String, ForeignKey("releases.main_version"))
+    device_name = Column(String, ForeignKey("devices.name"), unique=True)
     active = Column(Boolean())
     roles = relationship(
         "Roles", secondary="roles_users", backref=backref("users", lazy=True)
@@ -31,8 +30,13 @@ class Users(db.Model, UserMixin):
         name="unique_fs_uniquifier_constraint",
     )
 
-    devices = relationship("Devices", backref=backref("users", lazy=True))
-    releases = relationship("Releases", backref=backref("users", lazy=True))
+    devices = relationship("Devices", backref=backref("user", uselist=False))
+
+    def versions(self):
+        if self.devices:
+            return ", ".join(release.version for release in self.devices.releases)
+        else:
+            return ""
 
     def __repr__(self):
         return self.username
@@ -45,31 +49,38 @@ class Roles(db.Model, RoleMixin):
     description = Column(String(255))
 
     def __repr__(self):
-        return f"{self.name.capitalize()} (role_id={self.role_id})"
+        return f"{self.name} (role_id={self.role_id})"
 
 
 class Devices(db.Model):
     __tablename__ = "devices"
     device_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
-    country = Column(String(3), nullable=True)
+    country_id = Column(Integer, ForeignKey("countries.country_id"))
+
+    releases = relationship("Releases", backref=backref("devices", lazy=True))
 
     def __repr__(self):
-        return f"{self.name.capitalize()} (from {self.country})"
+        return f"{self.name}, country: ({self.country_id})"
+
+
+class Country(db.Model):
+    __tablename__ = "countries"
+    country_id = Column(Integer, primary_key=True)
+    name = Column(String(30), unique=True)
+
+    devices = relationship("Devices", backref=backref("countries", lazy=True))
 
 
 class Releases(db.Model):
     __tablename__ = "releases"
     release_id = Column(Integer, primary_key=True)
-    main_version = Column(String(20))  # e.g. 8.0.122
-    # Foreign key referencing Device table
     device_id = Column(Integer, ForeignKey("devices.device_id"))
+    version = Column(String(20))  # e.g. 8.0.122
     flag_visible = Column(Boolean())
 
-    devices = relationship("Devices", backref=backref("releases", lazy=True))
-
     def __repr__(self):
-        return self.main_version
+        return f"{self.version}"
 
 
 # Generate a random fs_uniquifier: users cannot login without it

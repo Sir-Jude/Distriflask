@@ -1,6 +1,6 @@
 {% extends 'home/index.html' %}
 {% block title %}
-<title>Users</title>
+<title>{{ current_user.username.title() }}</title>
 {% endblock %}
 {% block content %}
 {% for message in get_flashed_messages() %}
@@ -12,10 +12,10 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <h1 class="display-6">{{ current_user.username.capitalize() }}'s Profile.</h1>
+      <h1 class="display-6">{{ current_user.username.title() }}'s Profile.</h1>
     </div>
     <div>
-      <p>{{ devices }}</p>
+      <p><h5>Device: </h5>{{ devices }}</p>
     </div>
   </div>
 </div>

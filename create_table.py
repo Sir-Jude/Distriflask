@@ -1,61 +1,22 @@
 #! /usr/bin/env python3
 
-"""Create and populate a dummy table in SQLAlchemy"""
-
-# Live Hacks:
-#
-# * Setup
-#
-#   export FLASK_ENV=development FLASK_APP=project.py
-#   export SECRET_KEY=a_secure_secret_key SECURITY_PASSWORD_SALT=a_secure_salt_key
-#   sudo apt install python3-venv libldap2-dev libsasl2-dev sqlite3-pcre
-#   python3 -m venv .venv
-#   source .venv/bin/activate
-#   python3 -mpip install --no-user -r requirements.txt
-#
-#
-# * Interact with the data base
-#
-#   $ source .venv/bin/activate
-#
-# ** Dump content of database
-#   $ sqlite3 instance/project.db .dump
-#   or maybe even
-#   $ sqlite3_analyzer instance/project.db
-#
-# ** Command-line tool
-#   $ sudo apt install litecli sqlite3-tools
-#   # Or, if this version throws the error
-#   #   AttributeError: module 'click' has no attribute 'get_terminal_size'
-#   # Download litecli_1.10.0-1_all.deb and install that.
-#
-#   $ litecli instance/project.db
-#   -- Make REGEXP available:
-#   litecli>  .load /usr/lib/sqlite3/pcre.so
-#
-#   litecli>  .tables  -- show tables
-#   litecli>  help     -- show all commands
-#   litecli>  select * from users
-#   litecli>  select * from releases, devices \
-#                 where releases.device_id = devices.device_id \
-#                 order by main_version, name
-
+# Create and populate a dummy table in SQLAlchemy
 
 import random
+import shutil
+import subprocess
+import sys
+from random import choice
 
 from app import create_app
 from app.extensions import db
-from app.models import Users, Roles, Devices, Releases
-import subprocess
-import shutil
-from flask_security import SQLAlchemyUserDatastore, hash_password
-from random import choice
+from app.models import Devices, Releases, Roles, Users
 from faker import Faker
-
+from flask_security import SQLAlchemyUserDatastore, hash_password
 
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 fake = Faker()
-N_USERS = 50
+N_USERS = 15
 ROLES = [
     "administrator",
     "customer",
@@ -71,11 +32,11 @@ def main():
     with app.app_context():
         delete_folders()
         setup_database()
-        roles_creation()
+        create_roles()
         devices = create_sample_devices()
         releases = create_sample_releases()
         populate_tables(devices, releases)
-        dummy_users()
+        create_users()
         db.session.commit()
 
 
@@ -102,7 +63,7 @@ def setup_database():
     subprocess.run(["flask", "db", "migrate"])
 
 
-def roles_creation():
+def create_roles():
     app = create_app()
     with app.app_context():
         for role_name in ROLES:
@@ -120,13 +81,12 @@ def create_sample_devices():
 
     devices = set()
 
-    devices.add("c15")
-    devices.add("c24")
-    for n in range(200):
-        devices.add(f"dev0{random.randint(10,2500):04d}")
-    for n in range(20):
-        devices.add(f"dev100{random.randint(10,70):02d}")
-    return devices
+    for n in range(100):
+        devices.add(f"abc0{random.randint(10,2500):04d}")
+    for n in range(10):
+        devices.add(f"abc50{random.randint(10,70):02d}")
+
+    return list(devices)
 
 
 def create_sample_releases():
@@ -135,11 +95,9 @@ def create_sample_releases():
     releases = set()
 
     for main, max in [
-        ("8.1", 12),
-        ("8.0", 125),
-        ("7.0", 105),
-        ("6.4", 88),
-        ("6.1", 220),
+        ("8.3", 46),
+        ("7.0", 39),
+        ("6.4", 30),
     ]:
         for i in range(1, max + 1):
             # Include only every 3rd possible release
@@ -155,7 +113,7 @@ def create_sample_releases():
                     releases.add(f"{main}.{i}B")
                 elif random.randint(1, 10) == 1:
                     releases.add(f"{main}.{i}A")
-    return releases
+    return list(releases)
 
 
 def populate_tables(devices, releases):
@@ -163,7 +121,7 @@ def populate_tables(devices, releases):
 
     device_map = {}
     for dev_name in devices:
-        device = Devices(name=dev_name, country=None)
+        device = Devices(name=dev_name, country_id=None)
         db.session.add(device)
         device_map[dev_name] = device
 
@@ -177,7 +135,7 @@ def populate_tables(devices, releases):
             # Include only every 4th combination
             if random.randint(1, 4) == 1:
                 release = Releases(
-                    main_version=rel_number,
+                    version=rel_number,
                     device_id=device_map[dev_name].device_id,
                     flag_visible=visible,
                 )
@@ -186,10 +144,12 @@ def populate_tables(devices, releases):
     db.session.commit()
 
 
-def dummy_users():
+def create_users():
     app = create_app()
+    random.seed(151)
     with app.app_context():
-        for number in range(N_USERS):
+        print("Creating in-house users")
+        for _ in range(N_USERS):
             new_user = Users(
                 username=fake.name(),
                 password=hash_password("12345678"),
@@ -197,11 +157,50 @@ def dummy_users():
             )
             db.session.add(new_user)
 
-            role_name = choice(ROLES)
-            new_role = Roles.query.filter_by(name=role_name).first()
+            # Give the new user up to 4 roles:
+            roles = set()
+            for _ in range(random.randint(1, 4)):
+                roles.add(choice(ROLES))
+            for role_name in roles:
+                new_role = Roles.query.filter_by(name=role_name).first()
+                new_user.roles.append(new_role)
+
+            # Named (= in-house) users do not have devices.
+            # We can create users like 'dev01234' if we want to simulate
+            # customer user accounts.
+            new_user.device_id = None
+
+            # Indicate porgress
+            print(".", end="")
+            sys.stdout.flush()
+        print()
+
+        print("Creating customers")
+        DEVICES = create_sample_devices()
+        used_device_names = set()
+        for _ in range(N_USERS):
+            # Generate a unique username based on device names
+            device_name = choice(DEVICES)
+            while device_name in used_device_names:
+                device_name = choice(DEVICES)
+            used_device_names.add(device_name)
+
+            new_user = Users(
+                username=device_name,
+                password=hash_password("12345678"),
+                active=True,
+            )
+            db.session.add(new_user)
+
+            new_role = Roles.query.filter_by(name="customer").first()
             new_user.roles.append(new_role)
 
-            print(f'User "{new_user.username}" has been created.')
+            new_user.device_name = new_user.username
+
+            # Indicate progress
+            print(".", end="")
+            sys.stdout.flush()
+        print()
 
         db.session.commit()
 
