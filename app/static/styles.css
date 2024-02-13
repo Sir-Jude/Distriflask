@@ -1,0 +1,17 @@
+table {
+    border-collapse: collapse;
+    margin: auto; /* Center the table horizontally */
+  }
+  
+  th, td {
+    padding: 6px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+
+  h2 {
+    text-align: center; /* Center the "Table of devices and releases" heading */
+  }
