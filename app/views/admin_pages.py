@@ -4,6 +4,7 @@ from app.models import Users, Roles, Devices, Releases, user_datastore
 from flask_login import login_required
 from flask_security import hash_password
 from app.extensions import db
+from collections import defaultdict
 import re
 
 
@@ -62,21 +63,23 @@ def show_devices():
     device_versions = {}
     for device in devices:
         device_versions[device] = [r.version for r in device.releases]
-    unsorted_releases = set()
-    for release in Releases.query.all():
-        if release.device_id in device_ids:
-            unsorted_releases.add(release.version)
-    releases = sorted(
-        unsorted_releases,
+    releases_dict = defaultdict(list)
+    all_releases = sorted(
+        Releases.query.all(),
         key=lambda x: [
-            int(part) if part.isdigit() else part for part in re.split(r"(\d+|\D+)", x)
+            int(part) if part.isdigit() else part for part in re.split(r"(\d+|\D+)", x.version)
         ],
-        reverse=True,
+        reverse=True
     )
-
+    for release in all_releases:
+        if release.device_id in device_ids:
+            major_version = release.version.split('.')[0]
+            if len(releases_dict[major_version]) < 10:
+                if release.version not in releases_dict[major_version]:
+                    releases_dict[major_version].append(release.version)
     return render_template(
         "admin/matrix.html",
         devices=devices,
         device_versions=device_versions,
-        release_versions=releases,
+        release_versions=releases_dict,
     )
