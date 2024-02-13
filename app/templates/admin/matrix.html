@@ -1,6 +1,10 @@
 {% extends "security/base.html" %}
 {% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
 
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+{% endblock head %}
+
 {% block content %}
   <h2>Table of devices and releases</h2>
   <table border="3" bordercolor="#ffffff">

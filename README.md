@@ -358,10 +358,11 @@ The **templates** folder is going to store the files with the code for the html 
 ```
 
 The **static** folder is going to store static assets like CSS files, JavaScript files, images, fonts, etc.
- 
+
 app/static
-└── images
-    └── your_company.png
+├── images
+│   ├── your_company.png
+├── style.css
 
 
 
