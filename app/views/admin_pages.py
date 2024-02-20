@@ -54,13 +54,17 @@ def register():
     return render_template("security/register_user.html", form=form)
 
 
-@admin_pages.route("/admin/devices/", defaults={'device_name': None}, methods=["GET", "POST"])
+@admin_pages.route(
+    "/admin/devices/", defaults={"device_name": None}, methods=["GET", "POST"]
+)
 @admin_pages.route("/admin/devices/<device_name>", methods=["GET", "POST"])
 # Disabled during development environment
 @login_required
 def search_releases(device_name):
     devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
-    device_versions = {device: [r.version for r in device.releases] for device in devices}
+    device_versions = {
+        device: [r.version for r in device.releases] for device in devices
+    }
 
     form = ReleaseSearchForm()
 
@@ -73,12 +77,9 @@ def search_releases(device_name):
 
         if filtered_device:
             return redirect(
-                url_for(
-                    'admin_pages.search_releases',
-                    device_name=filtered_device.name
-                )
+                url_for("admin_pages.search_releases", device_name=filtered_device.name)
             )
-        
+
     else:
         releases_dict = defaultdict(list)
         all_releases = sorted(
@@ -89,23 +90,25 @@ def search_releases(device_name):
             ],
             reverse=True,
         )
-        
+
         for release in all_releases:
             major_version = release.version.split(".")[0]
             if len(releases_dict[major_version]) < 10:
                 if release.version not in releases_dict[major_version]:
                     releases_dict[major_version].append(release.version)
-        
+
         if device_name:
             # If device name parameter is provided, filter devices accordingly
-            filtered_device = Device.query.filter(func.lower(Device.name) == func.lower(device_name)).first()
+            filtered_device = Device.query.filter(
+                func.lower(Device.name) == func.lower(device_name)
+            ).first()
             if filtered_device:
                 return render_template(
                     "admin/matrix_filtered.html",
                     devices=[filtered_device],
                     device_versions=device_versions,
                 )
-        
+
         return render_template(
             "admin/matrix_default.html",
             form=form,

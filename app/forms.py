@@ -8,7 +8,14 @@ from flask_security import (
     lookup_identity,
 )
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, PasswordField, SelectField, SelectMultipleField, StringField, SubmitField
+from wtforms import (
+    BooleanField,
+    PasswordField,
+    SelectField,
+    SelectMultipleField,
+    StringField,
+    SubmitField,
+)
 from wtforms.validators import InputRequired, Length, ValidationError
 from werkzeug.local import LocalProxy
 
@@ -57,5 +64,5 @@ class ExtendedLoginForm(LoginForm):
 
 
 class ReleaseSearchForm(FlaskForm):
-    device_name = SelectField('Device Name', choices=[], validators=[InputRequired()])
+    device_name = SelectField("Device Name", choices=[], validators=[InputRequired()])
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
