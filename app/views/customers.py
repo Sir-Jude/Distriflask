@@ -1,10 +1,11 @@
-import re
-from flask import Blueprint, render_template, flash, redirect, url_for
-from flask_login import login_user, login_required, current_user, logout_user
+from app.extensions import db
+from app.models import User
+from flask import Blueprint, flash, redirect, render_template, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 from flask_security import verify_password
-from app.models import Users
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from sqlalchemy import select
+from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
 
 
@@ -27,7 +28,7 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = Users.query.filter_by(username=form.email.data).first()
+        user = User.query.filter_by(username=form.email.data).first()
         if user and user.is_active:
             if verify_password(form.password.data, user.password):
                 login_user(user)

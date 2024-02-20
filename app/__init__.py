@@ -1,22 +1,23 @@
-# Basic flask imports
-from flask import Flask, redirect, url_for
-
-
-# Import app's configurations
-from config import Config
-
-
-# Import Flask's extensions
 from app.extensions import db, login_manager, migrate
-
 
 # Imports from otehr files
 from app.errors import register_error_handlers
-from app.models import Users, Roles, user_datastore
+from app.models import User, Role, user_datastore
 from app.views.customers import customers
 from app.views.admin_pages import admin_pages
 from app.forms import ExtendedRegisterForm, ExtendedLoginForm
 
+# Import app's configurations
+from config import Config
+
+# Basic flask imports
+from flask import Flask, redirect, url_for
+
+# Imports for Admin page
+from flask_admin import Admin, helpers as admin_helpers
+from flask_admin.base import BaseView, expose
+from flask_admin.menu import MenuLink
+from flask_admin.contrib.sqla import ModelView
 
 # Imports for Flask security
 from flask_security import (
@@ -24,12 +25,7 @@ from flask_security import (
     Security,
 )
 
-
-# Imports for Admin page
-from flask_admin import Admin, helpers as admin_helpers
-from flask_admin.base import BaseView, expose
-from flask_admin.menu import MenuLink
-from flask_admin.contrib.sqla import ModelView
+from sqlalchemy import select
 
 
 def create_app(config_class=Config):
@@ -71,7 +67,7 @@ def create_app(config_class=Config):
     def security_register_processor():
         return dict(
             user_datastore=user_datastore,
-            roles=Roles.query.all(),
+            roles=Role.query.all(),
             register_user_form=ExtendedRegisterForm(),
         )
 
@@ -86,7 +82,7 @@ def create_app(config_class=Config):
             db.session.commit()
 
             # Assign the 'administrator' role to the 'admin' user
-            admin_role = Roles.query.filter_by(name="administrator").first()
+            admin_role = Role.query.filter_by(name="administrator").first()
             user_datastore.add_role_to_user(first_user, admin_role)
             db.session.commit()
 
@@ -123,7 +119,7 @@ def create_app(config_class=Config):
     class CustomMenuView(BaseView):
         @expose("/")
         def index(self):
-            return redirect(url_for("admin_pages.show_devices"))
+            return redirect(url_for("admin_pages.search_releases"))
 
         def is_accessible(self):
             return (
@@ -133,9 +129,9 @@ def create_app(config_class=Config):
             )
 
         def _get_admin_menu(self):
-            return MenuLink("Devices", endpoint="admin_pages.show_devices")
+            return MenuLink("Device", endpoint="admin_pages.show_devices")
 
-    admin.add_view(UserAdminView(Users, db.session))
+    admin.add_view(UserAdminView(User, db.session, name="Users"))
     admin.add_view(CustomMenuView(name="Devices"))
 
     # Flask_login stuff
@@ -143,6 +139,6 @@ def create_app(config_class=Config):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return Users.query.get(user_id)
+        return User.query.get(user_id)
 
     return app

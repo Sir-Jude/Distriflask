@@ -6,14 +6,28 @@
 {% endblock head %}
 
 {% block content %}
+  {% include "security/_messages.html" %}
+  <div style="float: left;">
+    <h2>{{ _fsdomain('Search for a device') }}</h2>
+    <form action="{{ url_for('admin_pages.search_releases') }}" method="POST">
+      {{ form.hidden_tag() }}
+      {{ render_form_errors(form) }}
+      <h3>Device: </h3>
+      {{ render_field_with_errors(form.device_name) }}
+      {{ render_field(form.submit) }}
+    </form>
+  </div>
+
+  <div style="clear:both;"></div>  <!-- Add this to clear the float -->
+  
   <h2>Table of devices and releases</h2>
-  <table border="3" bordercolor="#ffffff">
+  <table class="default-table" border="3" bordercolor="#ffffff">
     <thead>
       <tr>
         <th></th>
         {% for major_version, releases in release_versions.items() %}
             {% for release in releases %}
-                <th>{{ release }}</th>
+              <th class="rotated-header">{{ release }}</th>
             {% endfor %}
         {% endfor %}
       </tr>
