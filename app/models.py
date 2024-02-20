@@ -12,7 +12,7 @@ class RolesUsers(db.Model):
     role_id = Column("role_id", Integer(), ForeignKey("roles.role_id"))
 
 
-class Users(db.Model, UserMixin):
+class User(db.Model, UserMixin):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True, index=True)
@@ -20,7 +20,7 @@ class Users(db.Model, UserMixin):
     device_name = Column(String, ForeignKey("devices.name"), unique=True)
     active = Column(Boolean())
     roles = relationship(
-        "Roles", secondary="roles_users", backref=backref("users", lazy=True)
+        "Role", secondary="roles_users", backref=backref("users", lazy=True)
     )
     fs_uniquifier = Column(
         String(255),
@@ -30,7 +30,7 @@ class Users(db.Model, UserMixin):
         name="unique_fs_uniquifier_constraint",
     )
 
-    devices = relationship("Devices", backref=backref("user", uselist=False))
+    devices = relationship("Device", backref=backref("user", uselist=False))
 
     def versions(self):
         if self.devices:
@@ -42,7 +42,7 @@ class Users(db.Model, UserMixin):
         return self.username
 
 
-class Roles(db.Model, RoleMixin):
+class Role(db.Model, RoleMixin):
     __tablename__ = "roles"
     role_id = Column(Integer(), primary_key=True)
     name = Column(String(80), unique=True)
@@ -52,13 +52,13 @@ class Roles(db.Model, RoleMixin):
         return f"{self.name} (role_id={self.role_id})"
 
 
-class Devices(db.Model):
+class Device(db.Model):
     __tablename__ = "devices"
     device_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     country_id = Column(Integer, ForeignKey("countries.country_id"))
 
-    releases = relationship("Releases", backref=backref("devices", lazy=True))
+    releases = relationship("Release", backref=backref("devices", lazy=True))
 
     def __repr__(self):
         return f"{self.name}, country: ({self.country_id})"
@@ -69,10 +69,10 @@ class Country(db.Model):
     country_id = Column(Integer, primary_key=True)
     name = Column(String(30), unique=True)
 
-    devices = relationship("Devices", backref=backref("countries", lazy=True))
+    devices = relationship("Device", backref=backref("countries", lazy=True))
 
 
-class Releases(db.Model):
+class Release(db.Model):
     __tablename__ = "releases"
     release_id = Column(Integer, primary_key=True)
     device_id = Column(Integer, ForeignKey("devices.device_id"))
@@ -84,10 +84,10 @@ class Releases(db.Model):
 
 
 # Generate a random fs_uniquifier: users cannot login without it
-@event.listens_for(Users, "before_insert")
+@event.listens_for(User, "before_insert")
 def before_insert_listener(mapper, connection, target):
     if target.fs_uniquifier is None:
         target.fs_uniquifier = str(uuid.uuid4())
 
 
-user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)

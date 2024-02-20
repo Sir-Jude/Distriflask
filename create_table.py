@@ -49,11 +49,11 @@ from random import choice
 
 from app import create_app
 from app.extensions import db
-from app.models import Devices, Releases, Roles, Users
+from app.models import Device, Release, Role, User
 from faker import Faker
 from flask_security import SQLAlchemyUserDatastore, hash_password
 
-user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 fake = Faker()
 N_USERS = 15
 ROLES = [
@@ -106,9 +106,9 @@ def create_roles():
     app = create_app()
     with app.app_context():
         for role_name in ROLES:
-            existing_role = Roles.query.filter_by(name=role_name).first()
+            existing_role = Role.query.filter_by(name=role_name).first()
             if existing_role is None:
-                new_role = Roles(name=role_name, description=f"{role_name} role")
+                new_role = Role(name=role_name, description=f"{role_name} role")
                 db.session.add(new_role)
                 print(f'Role "{new_role.name}" has beeen created')
 
@@ -162,7 +162,7 @@ def populate_tables(devices, releases):
 
     device_map = {}
     for dev_name in devices:
-        device = Devices(name=dev_name, country_id=None)
+        device = Device(name=dev_name, country_id=None)
         db.session.add(device)
         device_map[dev_name] = device
 
@@ -175,7 +175,7 @@ def populate_tables(devices, releases):
         for dev_name in devices:
             # Include only every 4th combination
             if random.randint(1, 4) == 1:
-                release = Releases(
+                release = Release(
                     version=rel_number,
                     device_id=device_map[dev_name].device_id,
                     flag_visible=visible,
@@ -191,7 +191,7 @@ def create_users():
     with app.app_context():
         print("Creating in-house users")
         for _ in range(N_USERS):
-            new_user = Users(
+            new_user = User(
                 username=fake.name(),
                 password=hash_password("12345678"),
                 active=True,
@@ -203,7 +203,7 @@ def create_users():
             for _ in range(random.randint(1, 4)):
                 roles.add(choice(ROLES))
             for role_name in roles:
-                new_role = Roles.query.filter_by(name=role_name).first()
+                new_role = Role.query.filter_by(name=role_name).first()
                 new_user.roles.append(new_role)
 
             # Named (= in-house) users do not have devices.
@@ -226,14 +226,14 @@ def create_users():
                 device_name = choice(DEVICES)
             used_device_names.add(device_name)
 
-            new_user = Users(
+            new_user = User(
                 username=device_name,
                 password=hash_password("12345678"),
                 active=True,
             )
             db.session.add(new_user)
 
-            new_role = Roles.query.filter_by(name="customer").first()
+            new_role = Role.query.filter_by(name="customer").first()
             new_user.roles.append(new_role)
 
             new_user.device_name = new_user.username

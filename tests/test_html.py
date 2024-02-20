@@ -1,5 +1,5 @@
 # Actual file containing the tests
-from app.models import Users
+from app.models import User
 
 
 def test_home_title_tab(client):

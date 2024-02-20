@@ -1,15 +1,15 @@
-# Imports for WTF
+from app.extensions import db
+from app.models import Device, Release
 from flask import current_app
-from wtforms import BooleanField, StringField, PasswordField, SelectField
-from wtforms.validators import InputRequired, Length, ValidationError
-
 from flask_security import (
     RegisterForm,
     LoginForm,
     unique_identity_attribute,
     lookup_identity,
 )
-
+from flask_wtf import FlaskForm
+from wtforms import BooleanField, PasswordField, SelectField, SelectMultipleField, StringField, SubmitField
+from wtforms.validators import InputRequired, Length, ValidationError
 from werkzeug.local import LocalProxy
 
 
@@ -27,10 +27,10 @@ class ExtendedRegisterForm(RegisterForm):
         "Username", [InputRequired(), username_validator, unique_identity_attribute]
     )
     password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    devices = StringField("Devices")
+    devices = StringField("Device")
     active = BooleanField("Active")
     role = SelectField(
-        "Role",
+        "Roles",
         choices=[
             ("customer"),
             ("administrator"),
@@ -54,3 +54,8 @@ class ExtendedLoginForm(LoginForm):
         if not super().validate(**kwargs):
             return False
         return True
+
+
+class ReleaseSearchForm(FlaskForm):
+    device_name = SelectField('Device Name', choices=[], validators=[InputRequired()])
+    submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})

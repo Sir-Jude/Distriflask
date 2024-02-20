@@ -1,0 +1,29 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+{% endblock head %}
+
+{% block content %}
+  <h2>Filtered Results</h2>
+  <table class="results-table" border="3" bordercolor="#ffffff">
+    <thead>
+      <tr>
+        <th>Device</th>
+        <th>Releases</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ devices[0].name }}</td>
+        <td>
+          {% set releases_string = device_versions[devices[0]]|join(', ') %}
+          {{ releases_string }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <a href="{{ url_for('admin_pages.search_releases') }}">Go back to search</a>
+  {% include "security/_menu.html" %}
+{% endblock content %}
