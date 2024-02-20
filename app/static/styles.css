@@ -15,9 +15,8 @@
 .default-table .rotated-header {
   writing-mode: sideways-lr;
   transform: rotate(300deg);
-  width: 5ex;
+  width: 4ex;
   height: 3em;
-  padding: 0.5em;
   background-color: transparent;
 }
 
