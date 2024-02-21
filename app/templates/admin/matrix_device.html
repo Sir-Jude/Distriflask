@@ -6,8 +6,8 @@
 {% endblock head %}
 
 {% block content %}
-  <h2>Filtered Results</h2>
-  <table class="results-table" border="3" bordercolor="#ffffff">
+  <h2>Filtered device</h2>
+  <table class="device-table" border="3" bordercolor="#ffffff">
     <thead>
       <tr>
         <th>Device</th>
@@ -24,6 +24,7 @@
       </tr>
     </tbody>
   </table>
-  <a href="{{ url_for('admin_pages.search_releases') }}">Go back to search</a>
+  <br>
+  <a href="{{ url_for('admin_pages.device_filter') }}">Go back to search</a>
   {% include "security/_menu.html" %}
 {% endblock content %}

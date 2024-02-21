@@ -1,5 +1,3 @@
-from app.extensions import db
-from app.models import Device, Release
 from flask import current_app
 from flask_security import (
     RegisterForm,
@@ -12,7 +10,6 @@ from wtforms import (
     BooleanField,
     PasswordField,
     SelectField,
-    SelectMultipleField,
     StringField,
     SubmitField,
 )
@@ -63,6 +60,7 @@ class ExtendedLoginForm(LoginForm):
         return True
 
 
-class ReleaseSearchForm(FlaskForm):
-    device_name = SelectField("Device Name", choices=[], validators=[InputRequired()])
+class DeviceSearchForm(FlaskForm):
+    device_name = StringField("Device: ")
+    release_number = StringField("Release: ")
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
