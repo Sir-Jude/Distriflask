@@ -9,10 +9,11 @@
   {% include "security/_messages.html" %}
   <div style="float: left;">
     <h2>{{ _fsdomain('Search for a device') }}</h2>
-    <form action="{{ url_for('admin_pages.search_releases') }}" method="POST">
+    <form action="{{ url_for('admin_pages.device_filter') }}" method="POST">
       {{ form.hidden_tag() }}
       {{ render_form_errors(form) }}
       <h3>{{ render_field_with_errors(form.device_name) }}</h3>
+      <h3>{{ render_field_with_errors(form.release_number) }}</h3>
       {{ render_field(form.submit) }}
     </form>
   </div>
