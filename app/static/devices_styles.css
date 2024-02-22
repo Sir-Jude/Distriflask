@@ -1,0 +1,73 @@
+.search-box {
+  float: left;
+  background-color: #e0e0e0; /* Light gray background color */
+  padding: 20px; /* Add padding for spacing inside the box */
+}
+
+.search-box h2 {
+  text-align: center; /* Center the heading */
+}
+
+.search-box form {
+  margin-top: 20px; /* Add margin for spacing between heading and form */
+}
+
+.form-group {
+  margin-bottom: 15px; /* Add margin between form groups */
+}
+
+.form-group label {
+  display: inline-block; /* Ensure label and input are on the same line */
+  width: 80px; /* Adjust width as needed */
+}
+
+.form-group div {
+  display: inline-block; /* Align input next to label */
+  vertical-align: middle; /* Vertically align input */
+}
+
+.default-table,
+.release-table {
+  border-collapse: collapse;
+  margin: auto; /* Center the table horizontally */
+  background-color: #e0e0e0; /* Gray background color */
+}
+
+.default-table th,
+.default-table td,
+.release-table th,
+.release-table td {
+  padding: 6px;
+  text-align: left;
+}
+
+.default-table th,
+.device-table th,
+.release-table th {
+  background-color: #e0e0e0; /* Lighter gray background color for headers */
+}
+
+.default-table .rotated-header,
+.release-table .rotated-header {
+  writing-mode: sideways-lr;
+  transform: rotate(300deg);
+  width: 4ex;
+  height: 3em;
+  background-color: transparent;
+}
+
+h2 {
+  text-align: center; /* Center the "Table of devices and releases" heading */
+}
+
+.device-table {
+  border-collapse: collapse;
+  margin: auto; /* Center the table horizontally */
+  width: 80%; /* Adjust the width of the table */
+  background-color: #e0e0e0; /* Gray background color */
+}
+
+.device-table th, .device-table td {
+  padding: 10px; /* Adjust padding for cells */
+  text-align: center; /* Center-align the content */
+}
