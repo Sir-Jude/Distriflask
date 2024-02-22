@@ -1,6 +1,7 @@
 {% extends 'home/index.html' %}
 {% block title %}
 <title>Login</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='customer_styles.css') }}">
 {% endblock %}
 {% block content %}
 {% for message in get_flashed_messages() %}
@@ -10,25 +11,30 @@
   </div>
 {% endfor %}
 <p>
-    Please, insert your username and password:
+    <h3>Login</h3>
 </p>
-<form method="POST" action="{{ url_for('customers.login') }}">
-  {{ form.csrf_token }}
-  {{ form.hidden_tag() }}
-  {{ form.email() }}
-  <br>
-  {{ form.password() }}
-  <br>
-  {{ form.submit() }}
-
-  {% if form.errors %}
-    <ul class="errors">
-      {% for field, errors in form.errors.items() %}
-        {% for error in errors %}
-          <li>{{ field }}: {{ error }}</li>
+<div class="customer-login">
+  <form method="POST" action="{{ url_for('customers.login') }}">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    <div>
+      <label for="email">Username:</label>
+      <input id="email" name="email" required type="text" value="">
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input id="password" name="password" required type="password" value="">
+    </div>
+    <button type="submit" class="btn btn-primary submit-button">Login</button>
+    {% if form.errors %}
+      <ul class="errors">
+        {% for field, errors in form.errors.items() %}
+          {% for error in errors %}
+            <li>{{ field }}: {{ error }}</li>
+          {% endfor %}
         {% endfor %}
-      {% endfor %}
-    </ul>
-  {% endif %}
-</form>
+      </ul>
+    {% endif %}
+  </form>
+</div>
 {% endblock %}

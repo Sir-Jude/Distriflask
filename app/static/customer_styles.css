@@ -1,0 +1,27 @@
+.customer-home,
+.customer-login,
+.customer-profile {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  background-color: #e9ecef;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.customer-login form {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-login label {
+  width: 100px;
+}
+
+.customer-login input {
+  margin-bottom: 10px;
+}
+
+.customer-login button {
+  margin-top: 10px;
+  width: 100px; /* Set button width to auto */
+}
