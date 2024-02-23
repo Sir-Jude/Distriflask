@@ -2,7 +2,11 @@
 {% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='devices_styles.css') }}">
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='devices_styles.css') }}"
+/>
 {% endblock head %}
 
 {% block content %}
@@ -13,10 +17,10 @@
       {{ form.hidden_tag() }}
       {{ render_form_errors(form) }}
       <div class="form-group">
-        <h3>{{ render_field_with_errors(form.device_name) }}<h3>
+        <h3>{{ render_field_with_errors(form.release_number) }}</h3>
       </div>
       <div class="form-group">
-        <h3>{{ render_field_with_errors(form.release_number) }}</h3>
+        <h3>{{ render_field_with_errors(form.device_name) }}<h3>
       </div>
       {{ render_field(form.submit) }}
     </form>
@@ -29,6 +33,7 @@
     <thead>
       <tr>
         <th></th>
+        <!-- This loop renders the headers of the table -->
         {% for major_version, releases in release_versions.items() %}
             {% for release in releases %}
               <th class="rotated-header">{{ release }}</th>
@@ -38,18 +43,19 @@
     </thead>
     <tbody>
       {% for device in devices %}
-      <tr>
-        <td>{{ device.name }}</td>
-        {% for major_version, releases in release_versions.items() %}
+        <tr>
+          <td>{{ device.name }}</td>
+          <!-- This loop renders the content of the table -->
+          {% for major_version, releases in release_versions.items() %}
             {% for release in releases %}
-                {% if release in device_versions[device] %}
-                    <td>*</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
+              {% if release in device_versions[device] %}
+                <td>*</td>
+              {% else %}
+                <td></td>
+              {% endif %}
             {% endfor %}
-        {% endfor %}
-      </tr>
+          {% endfor %}
+        </tr>
       {% endfor %}
     </tbody>
   </table>

@@ -47,15 +47,6 @@
   background-color: #e0e0e0; /* Lighter gray background color for headers */
 }
 
-.default-table .rotated-header,
-.release-table .rotated-header {
-  writing-mode: sideways-lr;
-  transform: rotate(300deg);
-  width: 4ex;
-  height: 3em;
-  background-color: transparent;
-}
-
 h2 {
   text-align: center; /* Center the "Table of devices and releases" heading */
 }
