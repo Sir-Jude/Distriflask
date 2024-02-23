@@ -22,7 +22,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for device in devices %}
+    {% for device in devices_in_rows %}
       <tr>
         <td>{{ device.name }}</td>
         {% for release in all_releases %} {% if release in device_versions[device]%}

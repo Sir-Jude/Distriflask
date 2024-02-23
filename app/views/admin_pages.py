@@ -63,32 +63,33 @@ def register():
 @admin_pages.route("/admin/devices/<release_number>", methods=["GET", "POST"])
 @login_required
 def device_filter(device_name, release_number):
-    devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
-    device_versions = {
-        device: [r.version for r in device.releases] for device in devices
+    all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
+    all_device_versions = {
+        device: [r.version for r in device.releases] for device in all_devices
     }
 
     form = DeviceSearchForm()
 
     if form.validate_on_submit():
         searched_device_name = form.device_name.data
-        searched_release_number = form.release_number.data
+        searched_major_release = form.release_number.data
 
-        if searched_device_name and searched_release_number:
+        if searched_device_name and searched_major_release:
             flash("Please provide only one search criteria at a time", "error")
             return redirect(url_for("admin_pages.device_filter"))
 
-        if searched_release_number:
+        # Resulting table of the Release search
+        if searched_major_release:
             filtered_releases = Release.query.filter(
-                Release.version.like(f"{searched_release_number}%")
+                Release.version.like(f"{searched_major_release}%")
             ).all()
             if filtered_releases:
                 devices_with_matching_releases = [
                     release.devices for release in filtered_releases
                 ]
-                devices = Device.query.filter(
+                devices_in_rows = Device.query.filter(
                     Device.releases.any(
-                        Release.version.like(f"{searched_release_number}%")
+                        Release.version.like(f"{searched_major_release}%")
                     )
                 ).all()
                 all_releases = sorted(
@@ -96,9 +97,10 @@ def device_filter(device_name, release_number):
                     key=lambda x: tuple(
                         int(part) if part.isdigit() else part
                         for part in re.findall(r"\d+|\D+", x)
-                        # This line of code reverse the order of the table columns
+                        # Sort columns (releases) in reverse order
                     ), reverse=True
-                )[:20]  # Slice to include only the first 20 releases
+                # Slice columns (releases) to include only the first 20
+                )[:20]
                 
                 device_versions = {
                     device: [
@@ -109,12 +111,12 @@ def device_filter(device_name, release_number):
                     for device in devices_with_matching_releases
                 }
                 
-                # Sort devices rows in reverse order
-                devices = sorted(devices, key=lambda x: x.name, reverse=True)
+                # Sort rows (devices) in reverse order
+                devices_in_rows = sorted(devices_in_rows, key=lambda x: x.name, reverse=True)
 
                 return render_template(
                     "admin/matrix_release.html",
-                    devices=devices,
+                    devices_in_rows=devices_in_rows,
                     device_versions=device_versions,
                     all_releases=all_releases,
                 )
@@ -122,18 +124,20 @@ def device_filter(device_name, release_number):
                 flash("No release found", "error")
                 return redirect(url_for("admin_pages.device_filter"))
 
+        # Resulting table of the Device search
         elif searched_device_name:
             filtered_device = Device.query.filter_by(name=searched_device_name).first()
             if filtered_device:
                 return render_template(
                     "admin/matrix_device.html",
                     devices=[filtered_device],
-                    device_versions=device_versions,
+                    all_device_versions=all_device_versions,
                 )
             else:
                 flash("No devices found", "error")
                 return redirect(url_for("admin_pages.device_filter"))
 
+    # Default table
     else:
         releases_dict = defaultdict(list)
         all_releases = sorted(
@@ -147,23 +151,24 @@ def device_filter(device_name, release_number):
         last_major_version = str(
             max(int(release.version.split(".")[0]) for release in all_releases)
         )
-        last_major_releases_count = 0
+        last_major_release_count = 0
         for release in reversed(all_releases):
             major_version = release.version.split(".")[0]
             if major_version != last_major_version:
                 continue
-            if last_major_releases_count >= 20:
+            if last_major_release_count >= 20:
                 break
             if release.version not in releases_dict[major_version]:
                 releases_dict[major_version].insert(0, release.version)
-                last_major_releases_count += 1
+                last_major_release_count += 1
 
+        # Sort columns (releases) in reverse order
         releases_dict[major_version].reverse()
 
         return render_template(
             "admin/matrix_default.html",
             form=form,
-            devices=devices,
-            device_versions=device_versions,
+            all_devices=all_devices,
+            all_device_versions=all_device_versions,
             release_versions=releases_dict,
         )
