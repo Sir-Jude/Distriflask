@@ -2,7 +2,7 @@
 {% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='devices_styles.css') }}">
 {% endblock head %}
 
 {% block content %}
@@ -18,7 +18,7 @@
       <tr>
         <td>{{ devices[0].name }}</td>
         <td>
-          {% set releases_string = device_versions[devices[0]]|join(', ') %}
+          {% set releases_string = all_device_versions[devices[0]]|join(', ') %}
           {{ releases_string }}
         </td>
       </tr>

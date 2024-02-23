@@ -42,13 +42,13 @@
       </tr>
     </thead>
     <tbody>
-      {% for device in devices %}
+      {% for device in all_devices %}
         <tr>
           <td>{{ device.name }}</td>
           <!-- This loop renders the content of the table -->
           {% for major_version, releases in release_versions.items() %}
             {% for release in releases %}
-              {% if release in device_versions[device] %}
+              {% if release in all_device_versions[device] %}
                 <td>*</td>
               {% else %}
                 <td></td>
