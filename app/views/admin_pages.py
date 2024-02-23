@@ -56,13 +56,13 @@ def register():
 
 @admin_pages.route(
     "/admin/devices/",
-    defaults={"device_name": None, "release_number": None},
+    defaults={"device_name": None, "major_version": None},
     methods=["GET", "POST"],
 )
 @admin_pages.route("/admin/devices/<device_name>", methods=["GET", "POST"])
-@admin_pages.route("/admin/devices/<release_number>", methods=["GET", "POST"])
+@admin_pages.route("/admin/devices/<major_version>", methods=["GET", "POST"])
 @login_required
-def device_filter(device_name, release_number):
+def device_filter(device_name, major_version):
     all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
     all_device_versions = {
         device: [r.version for r in device.releases] for device in all_devices
@@ -72,7 +72,7 @@ def device_filter(device_name, release_number):
 
     if form.validate_on_submit():
         searched_device_name = form.device_name.data
-        searched_major_release = form.release_number.data
+        searched_major_release = form.major_version.data
 
         if searched_device_name and searched_major_release:
             flash("Please provide only one search criteria at a time", "error")
