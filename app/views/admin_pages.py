@@ -78,19 +78,7 @@ def device_filter(device_name, release_number):
             flash("Please provide only one search criteria at a time", "error")
             return redirect(url_for("admin_pages.device_filter"))
 
-        if searched_device_name:
-            filtered_device = Device.query.filter_by(name=searched_device_name).first()
-            if filtered_device:
-                return render_template(
-                    "admin/matrix_device.html",
-                    devices=[filtered_device],
-                    device_versions=device_versions,
-                )
-            else:
-                flash("No devices found", "error")
-                return redirect(url_for("admin_pages.device_filter"))
-
-        elif searched_release_number:
+        if searched_release_number:
             filtered_releases = Release.query.filter(
                 Release.version.like(f"{searched_release_number}%")
             ).all()
@@ -108,8 +96,10 @@ def device_filter(device_name, release_number):
                     key=lambda x: tuple(
                         int(part) if part.isdigit() else part
                         for part in re.findall(r"\d+|\D+", x)
-                    ),
-                )
+                        # This line of code reverse the order of the table columns
+                    ), reverse=True
+                )[:20]  # Slice to include only the first 20 releases
+                
                 device_versions = {
                     device: [
                         release.version
@@ -118,6 +108,10 @@ def device_filter(device_name, release_number):
                     ]
                     for device in devices_with_matching_releases
                 }
+                
+                # Sort devices rows in reverse order
+                devices = sorted(devices, key=lambda x: x.name, reverse=True)
+
                 return render_template(
                     "admin/matrix_release.html",
                     devices=devices,
@@ -127,6 +121,19 @@ def device_filter(device_name, release_number):
             else:
                 flash("No release found", "error")
                 return redirect(url_for("admin_pages.device_filter"))
+
+        elif searched_device_name:
+            filtered_device = Device.query.filter_by(name=searched_device_name).first()
+            if filtered_device:
+                return render_template(
+                    "admin/matrix_device.html",
+                    devices=[filtered_device],
+                    device_versions=device_versions,
+                )
+            else:
+                flash("No devices found", "error")
+                return redirect(url_for("admin_pages.device_filter"))
+
     else:
         releases_dict = defaultdict(list)
         all_releases = sorted(
@@ -137,10 +144,13 @@ def device_filter(device_name, release_number):
             ),
         )
 
+        last_major_version = str(
+            max(int(release.version.split(".")[0]) for release in all_releases)
+        )
         last_major_releases_count = 0
         for release in reversed(all_releases):
             major_version = release.version.split(".")[0]
-            if major_version != "3":
+            if major_version != last_major_version:
                 continue
             if last_major_releases_count >= 20:
                 break
@@ -148,7 +158,7 @@ def device_filter(device_name, release_number):
                 releases_dict[major_version].insert(0, release.version)
                 last_major_releases_count += 1
 
-        print(type(releases_dict))
+        releases_dict[major_version].reverse()
 
         return render_template(
             "admin/matrix_default.html",
