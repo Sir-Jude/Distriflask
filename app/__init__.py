@@ -119,7 +119,7 @@ def create_app(config_class=Config):
     class CustomMenuView(BaseView):
         @expose("/")
         def index(self):
-            return redirect(url_for("admin_pages.device_filter"))
+            return redirect(url_for("admin_pages.devices_default_table"))
 
         def is_accessible(self):
             return (
