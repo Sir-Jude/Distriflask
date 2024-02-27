@@ -1,33 +1,5 @@
-{% extends "security/base.html" %}
-{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
-
-{% block head %}
-<link
-  rel="stylesheet"
-  type="text/css"
-  href="{{ url_for('static', filename='devices_styles.css') }}"
-/>
-{% endblock head %}
-
-{% block content %}
-  {% include "security/_messages.html" %}
-  <div class="search-box">
-    <h2>{{ _fsdomain('Search for a device') }}</h2>
-    <form action="{{ url_for('admin_pages.devices_default_table') }}" method="POST">
-      {{ form.hidden_tag() }}
-      {{ render_form_errors(form) }}
-      <div class="form-group">
-        <h3>{{ render_field_with_errors(form.major_version) }}</h3>
-      </div>
-      <div class="form-group">
-        <h3>{{ render_field_with_errors(form.device_name) }}<h3>
-      </div>
-      {{ render_field(form.submit) }}
-    </form>
-  </div>
-
-  <div style="clear:both;"></div>  <!-- Add this to clear the float -->
-  
+{% extends "admin/devices_base.html" %}
+  {% block table %}
   <h2>Table of devices and releases</h2>
   <table class="default-table" border="3" bordercolor="#ffffff">
     <thead>
@@ -59,5 +31,4 @@
       {% endfor %}
     </tbody>
   </table>
-  {% include "security/_menu.html" %}
-{% endblock content %}
+  {% endblock table %}
