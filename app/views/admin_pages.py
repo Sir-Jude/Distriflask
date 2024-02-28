@@ -1,11 +1,9 @@
 from app.extensions import db
 from app.forms import DeviceSearchForm, ExtendedRegisterForm
 from app.models import User, Role, Device, Release, user_datastore
-from collections import defaultdict
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
-from flask_security import hash_password
-from sqlalchemy import func
+from flask_security import hash_password, roles_required
 import re
 
 
@@ -14,6 +12,7 @@ admin_pages = Blueprint("admin_pages", __name__)
 
 @admin_pages.route("/admin/user/new/", methods=["GET", "POST"])
 @login_required
+@roles_required('administrator')
 def register():
     form = ExtendedRegisterForm()
 
@@ -56,12 +55,8 @@ def register():
 
 @admin_pages.route("/admin/devices/", methods=["GET", "POST"])
 @login_required
+@roles_required('administrator')
 def devices_default_table():
-    all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
-    all_device_versions = {
-        device: [r.version for r in device.releases] for device in all_devices
-    }
-
     form = DeviceSearchForm()
 
     if form.validate_on_submit():
@@ -90,7 +85,6 @@ def devices_default_table():
 
     # Default table
     else:
-        releases_dict = defaultdict(set)  # Use set to ensure uniqueness
         all_releases = sorted(
             Release.query.all(),
             key=lambda x: tuple(
@@ -111,38 +105,19 @@ def devices_default_table():
             )
         )
 
-        last_minor_release_count = 0
-        for release in reversed(all_releases):
-            major_version = release.version.split(".")[0]
-            if major_version != last_major_version:
-                continue
-            if not release.version.startswith(
-                f"{last_major_version}.{str(latest_minor_release)}."
-            ):
-                continue
-            if last_minor_release_count >= 20:
-                break
-            releases_dict[last_major_version].add(release.version)
-            last_minor_release_count += 1
-
-        # Sort columns (releases) in reverse order
-        releases_dict[last_major_version] = sorted(
-            releases_dict[last_major_version], reverse=True
-        )
-
-        return render_template(
-            "admin/matrix_default.html",
-            form=form,
-            all_devices=all_devices,
-            all_device_versions=all_device_versions,
-            release_versions=releases_dict,
+        return redirect(
+            url_for(
+                "admin_pages.selected_major_version",
+                major_version=f"{last_major_version}.{latest_minor_release}",
+            )
         )
 
 
-@admin_pages.route("/admin/devices/release/<major_version>", methods=["GET", "POST"])
+@admin_pages.route("/admin/devices/release/<major_version>.", methods=["GET", "POST"])
 @login_required
+@roles_required('administrator')
 def selected_major_version(major_version):
-    form = DeviceSearchForm()  # Instantiate the form
+    form = DeviceSearchForm()
     filtered_releases = Release.query.filter(
         Release.version.like(f"{major_version}%")
     ).all()
@@ -179,7 +154,7 @@ def selected_major_version(major_version):
             devices_in_rows=devices_in_rows,
             device_versions=device_versions,
             all_releases=all_releases,
-            form=form
+            form=form,
         )
     else:
         flash("No release found", "error")
@@ -188,6 +163,7 @@ def selected_major_version(major_version):
 
 @admin_pages.route("/admin/devices/device/<device_name>", methods=["GET", "POST"])
 @login_required
+@roles_required('administrator')
 def selected_device_name(device_name):
     form = DeviceSearchForm()  # Instantiate the form
     all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
@@ -200,7 +176,7 @@ def selected_device_name(device_name):
             "admin/matrix_device.html",
             devices=[filtered_device],
             all_device_versions=all_device_versions,
-            form=form
+            form=form,
         )
     else:
         flash("No devices found", "error")
