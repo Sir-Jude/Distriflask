@@ -14,6 +14,21 @@
     <h3>{{ current_user.username.title() }}'s profile.</h3>
   </p>
     <div class="customer-profile">
-      <p><h5>Device: </h5>{{ devices }}</p>
-    </div>
+      {% if device %}
+        <p><h5>Device: </h5>{{ device }}</p>
+        <p><h5>Country: </h5>{{ country }} </p> 
+        <h5>
+          Select software version:
+          <h6>
+            <select name="release">
+            {% for release in releases %}
+              <option value="{{ release.id }}">{{ release }}</option>
+            {% endfor %}
+            </select>
+          </h6>
+        </h5>
+      {% else %}
+        <p>No device associated with this user.</p>
+      {% endif %}
+  </div>
 {% endblock %}

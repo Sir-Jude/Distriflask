@@ -25,8 +25,6 @@ from flask_security import (
     Security,
 )
 
-from sqlalchemy import select
-
 
 def create_app(config_class=Config):
     app = Flask(__name__)

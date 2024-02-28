@@ -1,10 +1,10 @@
 from app.extensions import db
-from app.models import User
+from app.models import User, Device, Release
 from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_security import verify_password
 from flask_wtf import FlaskForm
-from sqlalchemy import select
+import re
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
 
@@ -62,9 +62,30 @@ def profile(username):
     if current_user.username != username:
         return render_template("errors/403.html"), 403
 
-    # To be substituted with a database...
-    devices = current_user.devices
-    return render_template("customers/profile.html", username=username, devices=devices)
+
+    device = current_user.devices
+    country = None # Initialize country to None initially
+    if device:  # Check if User has an associated device
+        country = device.country_id
+        releases = sorted(
+            Release.query.join(Device).filter(Device.name == str(device)).all(),
+            key=lambda r: tuple(
+                int(part) if part.isdigit() else part
+                for part in re.findall(r"\d+|\D+", r.version)
+            ),
+            reverse=True,
+        )
+    else:
+        releases = []  # If device is not available, set releases to an empty list
+
+
+    return render_template(
+        "customers/profile.html",
+        username=username,
+        device=device,
+        country=country,
+        releases=releases,
+    )
 
 
 @customers.route("/logout/", methods=["GET", "POST"])

@@ -61,7 +61,7 @@ class Device(db.Model):
     releases = relationship("Release", backref=backref("devices", lazy=True))
 
     def __repr__(self):
-        return f"{self.name}, country: ({self.country_id})"
+        return f"{self.name}"
 
 
 class Country(db.Model):
@@ -70,6 +70,10 @@ class Country(db.Model):
     name = Column(String(30), unique=True)
 
     devices = relationship("Device", backref=backref("countries", lazy=True))
+    
+    def __repr__(self):
+        return f"{self.name}"
+    
 
 
 class Release(db.Model):
