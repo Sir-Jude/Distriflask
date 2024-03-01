@@ -1,9 +1,11 @@
 from app.extensions import db
 from app.models import User, Device, Release
-from flask import Blueprint, flash, redirect, render_template, url_for
+from config import Config
+from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_security import verify_password
 from flask_wtf import FlaskForm
+import os
 import re
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
@@ -62,9 +64,8 @@ def profile(username):
     if current_user.username != username:
         return render_template("errors/403.html"), 403
 
-
     device = current_user.devices
-    country = None # Initialize country to None initially
+    country = None  # Initialize country to None initially
     if device:  # Check if User has an associated device
         country = device.country_id
         releases = sorted(
@@ -78,7 +79,6 @@ def profile(username):
     else:
         releases = []  # If device is not available, set releases to an empty list
 
-
     return render_template(
         "customers/profile.html",
         username=username,
@@ -87,6 +87,22 @@ def profile(username):
         releases=releases,
     )
 
+
+@customers.route("/devices/<path:rel_path>", methods=['GET', 'POST'])
+def download_release(rel_path):
+    # Get the selected release version from the form
+    release_id = request.form['release']
+    
+    # Query the database to get the Release object
+    release = Release.query.get(release_id)
+    
+    # Check if the release exists and is visible
+    if release and release.flag_visible:
+        # Construct the full path to the release file
+        release_file_path = os.path.join(Config.UPLOAD_FOLDER, release.release_path)
+        # Serve the file for download
+        return send_from_directory(Config.UPLOAD_FOLDER, release.release_path, as_attachment=True)
+    
 
 @customers.route("/logout/", methods=["GET", "POST"])
 @login_required

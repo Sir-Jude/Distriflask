@@ -68,12 +68,10 @@ class Country(db.Model):
     __tablename__ = "countries"
     country_id = Column(Integer, primary_key=True)
     name = Column(String(30), unique=True)
-
     devices = relationship("Device", backref=backref("countries", lazy=True))
-    
+
     def __repr__(self):
         return f"{self.name}"
-    
 
 
 class Release(db.Model):
@@ -81,6 +79,7 @@ class Release(db.Model):
     release_id = Column(Integer, primary_key=True)
     device_id = Column(Integer, ForeignKey("devices.device_id"))
     version = Column(String(20))  # e.g. 8.0.122
+    release_path = Column(String(255))
     flag_visible = Column(Boolean())
 
     def __repr__(self):

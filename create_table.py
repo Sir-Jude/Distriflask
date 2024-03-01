@@ -1,3 +1,4 @@
+import os
 import pycountry
 import random
 import shutil
@@ -39,7 +40,7 @@ def main():
 
 
 def delete_folders():
-    folders_to_delete = ["instance", "migrations"]
+    folders_to_delete = ["instance", "migrations", "devices"]
     for folder in folders_to_delete:
         try:
             shutil.rmtree(folder)
@@ -117,8 +118,12 @@ def create_sample_releases():
 
 
 def populate_tables(devices, releases):
+    devs_folder = "devices"
+    # Create the folder if it doesn't exist
+    os.makedirs(devs_folder, exist_ok=True)
+    
     random.seed(22)
-
+    
     device_map = {}
     for dev_name in devices:
         device = Device(name=dev_name, country_id=random.choice(COUNTRIES))
@@ -139,6 +144,16 @@ def populate_tables(devices, releases):
                     device_id=device_map[dev_name].device_id,
                     flag_visible=visible,
                 )
+
+                os.makedirs(f"devices/{dev_name}", exist_ok=True)
+                rel_path = os.path.join(dev_name, release.version)
+                print(f"rel_path:{rel_path}")
+                
+                release.release_path = f"{rel_path}.txt"
+
+                with open(f"devices/{release.release_path}", "w") as file:
+                    file.write(f"This is the release {release.version}")
+
                 db.session.add(release)
 
     db.session.commit()
