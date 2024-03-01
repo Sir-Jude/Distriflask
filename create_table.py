@@ -1,3 +1,4 @@
+import os
 import pycountry
 import random
 import shutil
@@ -33,13 +34,14 @@ def main():
         create_roles()
         devices = create_sample_devices()
         releases = create_sample_releases()
+        create_device_folders(devices)
         populate_tables(devices, releases)
         create_users()
         db.session.commit()
 
 
 def delete_folders():
-    folders_to_delete = ["instance", "migrations"]
+    folders_to_delete = ["instance", "migrations", "Devices"]
     for folder in folders_to_delete:
         try:
             shutil.rmtree(folder)
@@ -85,6 +87,20 @@ def create_sample_devices():
         devices.add(f"Dev_100{random.randint(10,70):02d}")
 
     return list(devices)
+
+
+def create_device_folders(devices):
+    folder_name = "Devices"
+    # Create the folder if it doesn't exist
+    os.makedirs(folder_name, exist_ok=True)
+
+    device_paths = []
+    for device in devices:
+        # Construct the path to the device folder
+        device_path = os.path.join(folder_name, device)
+        # Create the folder
+        os.makedirs(device_path, exist_ok=True)
+        device_paths.append(device_path)
 
 
 def create_sample_releases():
@@ -139,6 +155,12 @@ def populate_tables(devices, releases):
                     device_id=device_map[dev_name].device_id,
                     flag_visible=visible,
                 )
+
+                release.release_path = f"Devices/{dev_name}/{release.version}.txt"
+
+                with open(f"Devices/{dev_name}/{release.version}", "w") as file:
+                    file.write(f"This is the release {release.version}")
+
                 db.session.add(release)
 
     db.session.commit()

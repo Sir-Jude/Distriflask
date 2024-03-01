@@ -62,9 +62,8 @@ def profile(username):
     if current_user.username != username:
         return render_template("errors/403.html"), 403
 
-
     device = current_user.devices
-    country = None # Initialize country to None initially
+    country = None  # Initialize country to None initially
     if device:  # Check if User has an associated device
         country = device.country_id
         releases = sorted(
@@ -77,7 +76,6 @@ def profile(username):
         )
     else:
         releases = []  # If device is not available, set releases to an empty list
-
 
     return render_template(
         "customers/profile.html",
