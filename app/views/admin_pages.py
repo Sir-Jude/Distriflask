@@ -12,7 +12,7 @@ admin_pages = Blueprint("admin_pages", __name__)
 
 @admin_pages.route("/admin/user/new/", methods=["GET", "POST"])
 @login_required
-@roles_required('administrator')
+@roles_required("administrator")
 def register():
     form = ExtendedRegisterForm()
 
@@ -55,7 +55,7 @@ def register():
 
 @admin_pages.route("/admin/devices/", methods=["GET", "POST"])
 @login_required
-@roles_required('administrator')
+@roles_required("administrator")
 def devices_default_table():
     form = DeviceSearchForm()
 
@@ -115,7 +115,7 @@ def devices_default_table():
 
 @admin_pages.route("/admin/devices/release/<major_version>.", methods=["GET", "POST"])
 @login_required
-@roles_required('administrator')
+@roles_required("administrator")
 def selected_major_version(major_version):
     form = DeviceSearchForm()
     filtered_releases = Release.query.filter(
@@ -163,7 +163,7 @@ def selected_major_version(major_version):
 
 @admin_pages.route("/admin/devices/device/<device_name>", methods=["GET", "POST"])
 @login_required
-@roles_required('administrator')
+@roles_required("administrator")
 def selected_device_name(device_name):
     form = DeviceSearchForm()  # Instantiate the form
     all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
