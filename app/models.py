@@ -56,6 +56,7 @@ class Device(db.Model):
     __tablename__ = "devices"
     device_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
+    device_path = Column(String(255))
     country_id = Column(Integer, ForeignKey("countries.country_id"))
 
     releases = relationship("Release", backref=backref("devices", lazy=True))
