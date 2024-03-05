@@ -34,7 +34,6 @@ def main():
         create_roles()
         devices = create_sample_devices()
         releases = create_sample_releases()
-        create_device_folders(devices)
         populate_tables(devices, releases)
         create_users()
         db.session.commit()
@@ -89,20 +88,6 @@ def create_sample_devices():
     return list(devices)
 
 
-def create_device_folders(devices):
-    folder_name = "Devices"
-    # Create the folder if it doesn't exist
-    os.makedirs(folder_name, exist_ok=True)
-
-    device_paths = []
-    for device in devices:
-        # Construct the path to the device folder
-        device_path = os.path.join(folder_name, device)
-        # Create the folder
-        os.makedirs(device_path, exist_ok=True)
-        device_paths.append(device_path)
-
-
 def create_sample_releases():
     random.seed(17)
 
@@ -136,9 +121,9 @@ def populate_tables(devices, releases):
     devs_folder = "devices"
     # Create the folder if it doesn't exist
     os.makedirs(devs_folder, exist_ok=True)
-    
+
     random.seed(22)
-    
+
     device_map = {}
     for dev_name in devices:
         device = Device(name=dev_name, country_id=random.choice(COUNTRIES))
@@ -162,8 +147,7 @@ def populate_tables(devices, releases):
 
                 os.makedirs(f"devices/{dev_name}", exist_ok=True)
                 rel_path = os.path.join(dev_name, release.version)
-                print(f"rel_path:{rel_path}")
-                
+
                 release.release_path = f"{rel_path}.txt"
 
                 with open(f"devices/{release.release_path}", "w") as file:
