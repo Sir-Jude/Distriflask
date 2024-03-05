@@ -34,6 +34,7 @@ def main():
         create_roles()
         devices = create_sample_devices()
         releases = create_sample_releases()
+        create_device_folders(devices)
         populate_tables(devices, releases)
         create_users()
         db.session.commit()
@@ -86,6 +87,20 @@ def create_sample_devices():
         devices.add(f"Dev_100{random.randint(10,70):02d}")
 
     return list(devices)
+
+
+def create_device_folders(devices):
+    folder_name = "Devices"
+    # Create the folder if it doesn't exist
+    os.makedirs(folder_name, exist_ok=True)
+
+    device_paths = []
+    for device in devices:
+        # Construct the path to the device folder
+        device_path = os.path.join(folder_name, device)
+        # Create the folder
+        os.makedirs(device_path, exist_ok=True)
+        device_paths.append(device_path)
 
 
 def create_sample_releases():

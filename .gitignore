@@ -6,4 +6,8 @@ __pycache__
 *.sqlite3
 request.http
 .python-version
+<<<<<<< HEAD
 devices
+=======
+Devices
+>>>>>>> 14d7b086654f8b33d359be0a859dd5161f12f38d
