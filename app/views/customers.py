@@ -1,7 +1,16 @@
 from app.extensions import db
 from app.models import User, Device, Release
 from config import Config
-from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_security import verify_password
 from flask_wtf import FlaskForm
@@ -88,21 +97,23 @@ def profile(username):
     )
 
 
-@customers.route("/devices/<path:rel_path>", methods=['GET', 'POST'])
+@customers.route("/devices/<path:rel_path>", methods=["GET", "POST"])
 def download_release(rel_path):
     # Get the selected release version from the form
-    release_id = request.form['release']
-    
+    release_id = request.form["release"]
+
     # Query the database to get the Release object
     release = Release.query.get(release_id)
-    
+
     # Check if the release exists and is visible
     if release and release.flag_visible:
         # Construct the full path to the release file
         release_file_path = os.path.join(Config.UPLOAD_FOLDER, release.release_path)
         # Serve the file for download
-        return send_from_directory(Config.UPLOAD_FOLDER, release.release_path, as_attachment=True)
-    
+        return send_from_directory(
+            Config.UPLOAD_FOLDER, release.release_path, as_attachment=True
+        )
+
 
 @customers.route("/logout/", methods=["GET", "POST"])
 @login_required
