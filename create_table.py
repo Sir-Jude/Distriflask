@@ -125,10 +125,19 @@ def populate_tables(devices, releases):
     random.seed(22)
 
     device_map = {}
+    first_release = {}
+    last_release = {}
     for dev_name in devices:
-        device = Device(name=dev_name, country_id=random.choice(COUNTRIES))
+        device = Device(
+            name=dev_name,
+            country_id=random.choice(COUNTRIES),
+        )
         db.session.add(device)
         device_map[dev_name] = device
+
+        # The release the device was shipped with
+        first_release[dev_name] = random.choice(releases)
+        last_release[dev_name] = random.choice(releases)
 
     # Finalize device entries, so the objects get a device_id
     db.session.commit()

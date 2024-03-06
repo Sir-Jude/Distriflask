@@ -1,21 +1,19 @@
-from app.extensions import db
+from app.forms import DownloadRelease
 from app.models import User, Device, Release
-from config import Config
+from config import basedir, Config
 from flask import (
     Blueprint,
-    current_app,
     flash,
     redirect,
     render_template,
-    request,
     send_from_directory,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_security import verify_password
 from flask_wtf import FlaskForm
-import os
 import re
+import os
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
 
@@ -88,31 +86,47 @@ def profile(username):
     else:
         releases = []  # If device is not available, set releases to an empty list
 
+    form = DownloadRelease()
+    # Populating the choices for release versions in the form
+    form.release_version.choices = [
+        # (value submitted to the form, text displayed to the user)
+        (release.release_path, release.version)
+        for release in releases
+    ]
+    if form.validate_on_submit():
+        release_version = form.release_version.data
+        release = Release.query.filter_by(version=release_version).first()
+
+        if release:
+            filename = f"{release.version}.txt"
+            return redirect(url_for("customers.download_version", filename=filename))
+        else:
+            flash("Release not found.", "error")
+
     return render_template(
         "customers/profile.html",
         username=username,
         device=device,
         country=country,
         releases=releases,
+        form=form,
     )
 
 
-@customers.route("/devices/<path:rel_path>", methods=["GET", "POST"])
-def download_release(rel_path):
-    # Get the selected release version from the form
-    release_id = request.form["release"]
+@customers.route("/devices/<username>/<path:filename>", methods=["GET", "POST"])
+@login_required
+def download_version(username, filename):
+    release = Release.query.filter_by(release_path=filename).first()
+    if not release or release.device.user.username != username:
+        return render_template("errors/403.html"), 403
 
-    # Query the database to get the Release object
-    release = Release.query.get(release_id)
+    directory = os.path.join(basedir, Config.UPLOAD_FOLDER, username)
+    filename = f"{release.version}.txt"
 
-    # Check if the release exists and is visible
-    if release and release.flag_visible:
-        # Construct the full path to the release file
-        release_file_path = os.path.join(Config.UPLOAD_FOLDER, release.release_path)
-        # Serve the file for download
-        return send_from_directory(
-            Config.UPLOAD_FOLDER, release.release_path, as_attachment=True
-        )
+    try:
+        return send_from_directory(directory=directory, filename=filename)
+    except Exception as e:
+        return render_template("errors/500.html", error=e), 500
 
 
 @customers.route("/logout/", methods=["GET", "POST"])
