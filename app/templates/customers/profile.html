@@ -17,20 +17,19 @@
       {% if device %}
         <p><h5>Device: </h5>{{ device }}</p>
         <p><h5>Country: </h5>{{ country }} </p> 
-        <form action="{{ url_for('customers.download_release', rel_path=rel_path) }}" method="post">
-          <h5>
-            Select software version:
-            <h6>
-              <select name="release" id="releaseSelect">
+        <h5>
+          Select software version:
+          <h6>
+            <form action="{{ url_for('customers.download_version', filename=filename, username=current_user.username) }}" method="GET">
+              <select name="filename">
               {% for release in releases %}
-                <option value="{{ release.id }}">{{ release }}</option>
+                <option value="{{ release.version }}.txt">{{ release.version }}</option>
               {% endfor %}
               </select>
-              <span style="margin-right: 10px;"></span>
-              <button type="submit" class="btn btn-sm btn-primary submit-button" id="downloadButton">Download</button>
-            </h6>
-          </h5>
-        </form>
+              <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Download</button>
+            </form>
+          </h6>
+        </h5>
       {% else %}
         <p>No device associated with this user.</p>
       {% endif %}
