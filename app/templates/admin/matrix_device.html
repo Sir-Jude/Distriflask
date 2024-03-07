@@ -1,21 +1,29 @@
 {% extends "admin/devices_base.html" %}
-  {% block table %}
-  <h2>Filtered device</h2>
-  <table class="device-table" border="3" bordercolor="#ffffff">
-    <thead>
-      <tr>
-        <th>Device</th>
-        <th>Releases</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ devices[0].name }}</td>
-        <td>
-          {% set releases_string = all_device_versions[devices[0]]|join(', ') %}
-          {{ releases_string }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  {% endblock table %}
+{% block table %}
+<h2>Filtered device</h2>
+<table class="device-table" border="3" bordercolor="#ffffff">
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th>Releases</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      {# Display the device name #}
+      <td>{{ devices[0].name }}</td>
+      <td>
+        {# Get all releases for the device #}
+        {% set releases = all_device_versions[devices[0]] %}
+        {# Iterate over each release #}
+        {% for release in releases %}
+          {# Create a link for each release pointing to selected_release_version view #}
+          <a href="{{ url_for('admin_pages.selected_release_version', selected_release_version=release) }}">{{ release }}</a>
+          {# Add a comma after each release except the last one #}
+          {% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
+  </tbody>
+</table>
+{% endblock table %}

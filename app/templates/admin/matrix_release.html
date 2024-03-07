@@ -1,27 +1,34 @@
 {% extends "admin/devices_base.html" %}
-  {% block table %}
-  <h2>Filtered releases</h2>
-  <table class="release-table" border="3" bordercolor="#ffffff">
-    <thead>
+
+{% block table %}
+<h2>Filtered releases</h2>
+<table class="release-table" border="3" bordercolor="#ffffff">
+  <thead>
+    <tr>
+      <th></th>
+      <!-- This loop renders the headers of the table -->
+      {% for release in all_releases %}
+        {% if release == selected_release_version %}
+          <th class="rotated-header highlight-column" style="font-weight:bold"><div><span>{{ release }}</span></div></th>
+        {% else %}
+          <th class="rotated-header"><div><span>{{ release }}</span></div></th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for device in devices_in_rows %}
       <tr>
-        <th></th>
-        <!-- This loop renders the headers of the table -->
+        <td>{{ device.name }}</td>
         {% for release in all_releases %}
-          <th class="rotated-header">{{ release }}</th>
+          {% if release == selected_release_version %}
+            <td class="highlight-column" style="font-weight:bold">{% if release in device_versions[device]%}*{% endif %}</td>
+          {% else %}
+            <td>{% if release in device_versions[device]%}*{% endif %}</td>
+          {% endif %}
         {% endfor %}
       </tr>
-    </thead>
-    <tbody>
-      {% for device in devices_in_rows %}
-        <tr>
-          <td>{{ device.name }}</td>
-          {% for release in all_releases %} {% if release in device_versions[device]%}
-            <td>*</td>
-          {% else %}
-            <td></td>
-          {% endif %} {% endfor %}
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% endblock table %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock table %}

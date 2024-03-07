@@ -62,7 +62,7 @@ class ExtendedLoginForm(LoginForm):
 
 class DeviceSearchForm(FlaskForm):
     device_name = StringField("Device: ")
-    major_version = StringField("Release: ")
+    selected_release_version = StringField("Release: ")
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
 
