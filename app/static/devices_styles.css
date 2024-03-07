@@ -47,6 +47,22 @@
   background-color: #e0e0e0; /* Lighter gray background color for headers */
 }
 
+/* Rotated table header (following
+ https://css-tricks.com/rotated-table-column-headers/)
+*/
+.default-table .rotated-header,
+.release-table .rotated-header {
+  background-color: transparent;
+}
+th.rotated-header > div {
+  transform:
+    /* Magic Numbers */
+    translate(2.1ex, 1.8em)
+    rotate(-65deg);
+  width: 4.6ex;
+  height: 4.7em;
+}
+
 h2 {
   text-align: center; /* Center the "Table of devices and releases" heading */
 }
@@ -58,7 +74,14 @@ h2 {
   background-color: #e0e0e0; /* Gray background color */
 }
 
-.device-table th, .device-table td {
+.device-table th,
+.device-table td {
   padding: 10px; /* Adjust padding for cells */
   text-align: center; /* Center-align the content */
+}
+
+/* New style for the column border */
+.highlight-column {
+  border-left: 3px solid red; /* Increase the width for a thicker line */
+  border-right: 3px solid red; /* Increase the width for a thicker line */
 }
