@@ -42,7 +42,7 @@ def login():
         if user and user.is_active:
             if verify_password(form.password.data, user.password):
                 login_user(user)
-                flash("Logged in successfully!")
+                flash("Logged in successfully.")
                 """
                 IMPORTANT!!!
                 The documentation advises to add this snippet:
@@ -62,7 +62,7 @@ def login():
             else:
                 flash("Wrong password - Try Again...")
         else:
-            flash("Invalid username")
+            flash("Invalid username.")
     return render_template("customers/login.html", form=form)
 
 
@@ -94,14 +94,14 @@ def profile(username):
         (release.version, release.version)
         for release in releases
     ]
-    
+
     if form.validate_on_submit():
         release_version = form.release_version.data
         release = Release.query.filter_by(version=release_version).first()
 
         if release:
-            filename = f"{username}/{release.version}.txt"
-            return redirect(url_for("customers.download_version", username=username, filename=filename))
+            version = release.release_path
+            return redirect(url_for("customers.download_version", version=version))
         else:
             flash("Release not found.", "error")
 
@@ -115,20 +115,17 @@ def profile(username):
     )
 
 
-# http://127.0.0.1:5000/devices/Dev_00466/Dev_00466/3.0.95.txt
-# Perhaps change filename with version
-@customers.route("/devices/<username>/<path:filename>", methods=["GET", "POST"])
+# http://127.0.0.1:5000/devices/Dev_00466/3.0.95.txt
+@customers.route("/devices/<path:version>", methods=["GET", "POST"])
 @login_required
-def download_version(username, filename):
-    release = Release.query.filter_by(release_path=filename).first()
-    if current_user.username != username:
-        return render_template("errors/403.html"), 403
+def download_version(version):
+    release = Release.query.filter_by(release_path=version).first()
 
-    filename = f"{username}/{release.version}.txt"
-    path = os.path.join(basedir, Config.UPLOAD_FOLDER, filename)
-    
+    version = release.release_path
+    path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
 
     return send_file(path_or_file=path, as_attachment=True)
+
 
 @customers.route("/logout/", methods=["GET", "POST"])
 @login_required
