@@ -6,7 +6,8 @@ from flask import (
     flash,
     redirect,
     render_template,
-    send_from_directory,
+    request,
+    send_file,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -86,20 +87,21 @@ def profile(username):
     else:
         releases = []  # If device is not available, set releases to an empty list
 
-    form = DownloadRelease()
+    form = DownloadRelease(formdata=request.form)
     # Populating the choices for release versions in the form
     form.release_version.choices = [
         # (value submitted to the form, text displayed to the user)
-        (release.release_path, release.version)
+        (release.version, release.version)
         for release in releases
     ]
+    
     if form.validate_on_submit():
         release_version = form.release_version.data
         release = Release.query.filter_by(version=release_version).first()
 
         if release:
-            filename = f"{release.version}.txt"
-            return redirect(url_for("customers.download_version", filename=filename))
+            filename = f"{username}/{release.version}.txt"
+            return redirect(url_for("customers.download_version", username=username, filename=filename))
         else:
             flash("Release not found.", "error")
 
@@ -122,12 +124,11 @@ def download_version(username, filename):
     if current_user.username != username:
         return render_template("errors/403.html"), 403
 
-    directory = os.path.join(basedir, Config.UPLOAD_FOLDER)
     filename = f"{username}/{release.version}.txt"
+    path = os.path.join(basedir, Config.UPLOAD_FOLDER, filename)
+    
 
-    breakpoint()
-    return send_from_directory(directory=directory, path=filename)
-
+    return send_file(path_or_file=path, as_attachment=True)
 
 @customers.route("/logout/", methods=["GET", "POST"])
 @login_required

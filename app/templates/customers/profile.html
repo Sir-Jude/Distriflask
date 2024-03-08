@@ -20,10 +20,12 @@
         <h5>
           Select software version:
           <h6>
-            <form action="{{ url_for('customers.download_version', filename=filename, username=current_user.username) }}" method="GET">
-              <select name="filename">
+            <form action="{{ url_for('customers.profile', username=current_user.username) }}" method="POST">
+              {{ form.csrf_token }}
+              {{ form.hidden_tag() }}
+              <select name="release_version">
               {% for release in releases %}
-                <option value="{{ release.version }}.txt">{{ release.version }}</option>
+                <option value="{{ release.version }}">{{ release.version }}</option>
               {% endfor %}
               </select>
               <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Download</button>
