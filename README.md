@@ -131,10 +131,10 @@ http://127.0.0.1:5000
 Click on **Login** and use the following credentials
 ```
 Username: admin
-Password: 123456478
+Password: 12345678
 ```
 
-To go to the admin page, go to the link:
+To visit the admin page, go to the link:
 ```
 http://127.0.0.1:5000/admin/
 ```
