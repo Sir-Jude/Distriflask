@@ -90,7 +90,7 @@ Add the following environmental variables
 FLASK_APP=app
 FLASK_ENV=development
 SECRET_KEY=Y0ur_cOmpany_Secr3T_K3y_D0_N0t_5har3
-SECURITY_PASSWORD_SALT=Sal7_F0r_YoUr_CoMpAnY_PaS5w0rDv
+SECURITY_PASSWORD_SALT=Sal7_F0r_YoUr_CoMpAnY_PaS5w0rD
 SQLALCHEMY_DATABASE_URI=sqlite:///db.sqlite3
 ```
 
@@ -105,7 +105,7 @@ The **SECURITY_PASSWORD_SALT** is a variable used in combination with the SECRET
 The **SQLALCHEMY_DATABASE_URI** specifies the name of the database connected to the project while using SQLAlchemy.
 
 # Populate the database with some dummy data
-Launche the script to create and populate the database
+Launch the script to create and populate the database
 ```
 python create_tables.py
 ```
@@ -120,3 +120,21 @@ The "**--debug**" option provides:
   that the application does not need to be restarted after changes to the
   code
 - the interactive debugger, which highlights errors in the code
+
+# Using and exploring the app
+In the VSCode terminal, click on
+```
+http://127.0.0.1:5000
+```
+(Or type the same address in the address bar of any browser)
+
+Click on **Login** and use the following credentials
+```
+Username: admin
+Password: 123456478
+```
+
+To go to the admin page, go to the link:
+```
+http://127.0.0.1:5000/admin/
+```
