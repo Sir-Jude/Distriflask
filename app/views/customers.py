@@ -113,20 +113,20 @@ def profile(username):
     )
 
 
+# http://127.0.0.1:5000/devices/Dev_00466/Dev_00466/3.0.95.txt
+# Perhaps change filename with version
 @customers.route("/devices/<username>/<path:filename>", methods=["GET", "POST"])
 @login_required
 def download_version(username, filename):
     release = Release.query.filter_by(release_path=filename).first()
-    if not release or release.device.user.username != username:
+    if current_user.username != username:
         return render_template("errors/403.html"), 403
 
-    directory = os.path.join(basedir, Config.UPLOAD_FOLDER, username)
-    filename = f"{release.version}.txt"
+    directory = os.path.join(basedir, Config.UPLOAD_FOLDER)
+    filename = f"{username}/{release.version}.txt"
 
-    try:
-        return send_from_directory(directory=directory, filename=filename)
-    except Exception as e:
-        return render_template("errors/500.html", error=e), 500
+    breakpoint()
+    return send_from_directory(directory=directory, path=filename)
 
 
 @customers.route("/logout/", methods=["GET", "POST"])
