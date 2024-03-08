@@ -64,7 +64,7 @@ def devices_default_table():
         selected_release_version = form.selected_release_version.data
 
         if device_name and selected_release_version:
-            flash("Please provide only one search criteria at a time", "error")
+            flash("Please provide only one search criteria at a time.", "error")
             return redirect(url_for("admin_pages.devices_default_table"))
 
         # Resulting table of the Release search
@@ -83,6 +83,10 @@ def devices_default_table():
             return redirect(
                 url_for("admin_pages.selected_device_name", device_name=device_name)
             )
+
+        else:
+            flash("Please, provide at least one search criteria.", "error")
+            return redirect(url_for("admin_pages.devices_default_table"))
 
     # Default table
     else:
@@ -207,7 +211,7 @@ def selected_release_version(selected_release_version):
             form=form,
         )
     else:
-        flash("No release found", "error")
+        flash("No release found.", "error")
         # Redirect to the default devices table
         return redirect(url_for("admin_pages.devices_default_table"))
 
@@ -238,5 +242,5 @@ def selected_device_name(device_name):
             form=form,
         )
     else:
-        flash("No devices found", "error")
+        flash("No devices found.", "error")
         return redirect(url_for("admin_pages.devices_default_table"))
