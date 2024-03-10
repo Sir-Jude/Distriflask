@@ -81,9 +81,9 @@ def create_sample_devices():
     devices = set()
 
     for n in range(200):
-        devices.add(f"Dev_0{random.randint(10,2500):04d}")
+        devices.add(f"Dev0{random.randint(10,2500):04d}")
     for n in range(20):
-        devices.add(f"Dev_100{random.randint(10,70):02d}")
+        devices.add(f"Dev100{random.randint(10,70):02d}")
 
     return list(devices)
 
@@ -163,6 +163,9 @@ def create_users():
     random.seed(151)
     with app.app_context():
         print("Creating in-house users")
+        # Fetch all roles from the database
+        all_roles = Role.query.all()
+        
         for _ in range(N_USERS):
             new_user = User(
                 username=fake.name(),
@@ -171,20 +174,30 @@ def create_users():
             )
             db.session.add(new_user)
 
-            # Give the new user up to 4 roles:
             roles = set()
-            for _ in range(random.randint(1, 4)):
-                roles.add(choice(ROLES))
+            # Give the new user up to 3 roles:
+            for _ in range(random.randint(1, 3)):
+                role = choice(ROLES)
+                if role != "customer":
+                    roles.add(role)
+                    
+            # If no non-"administrator" nor "customer" roles were added, add one at random
+            if not roles:
+                role = choice([r for r in ROLES if r !="customer"])
+                roles.add(role)
+                        
+            # Assign roles to the user
             for role_name in roles:
-                new_role = Role.query.filter_by(name=role_name).first()
-                new_user.roles.append(new_role)
+                for role_obj in all_roles:
+                    if role_obj.name == role_name:
+                        new_user.roles.append(role_obj)
 
             # Named (= in-house) users do not have devices.
             # We can create users like 'JPK01234' if we want to simulate
             # customer user accounts.
             new_user.device_id = None
 
-            # Indicate porgress
+            # Indicate progress
             print(".", end="")
             sys.stdout.flush()
         print()
