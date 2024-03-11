@@ -183,13 +183,15 @@ def selected_release_version(selected_release_version):
             reverse=True,
         )
 
-        # major_version_index = all_releases_before.index(release_version_X_X)
-        # start_index = max(0, major_version_index - 10)
-        # end_index = min(len(all_releases_before), major_version_index + 11)
+        index = all_releases.index(selected_release_version)
 
-        # all_releases = all_releases_before[start_index:end_index]
+        if index == 0:
+            all_releases = all_releases[:11]
+        if 0 < index < 11:
+            all_releases = all_releases[: index + 11]
+        else:
+            all_releases = all_releases[index - 10 : index + 11]
 
-        # Create a dictionary mapping devices to their associated releases
         device_versions = {
             device: [
                 release.version
