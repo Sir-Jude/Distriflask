@@ -4,7 +4,6 @@ import random
 import shutil
 import subprocess
 import sys
-from random import choice
 
 from app import create_app
 from app.extensions import db
@@ -126,7 +125,10 @@ def populate_tables(devices, releases):
 
     device_map = {}
     for dev_name in devices:
-        device = Device(name=dev_name, country_id=random.choice(COUNTRIES))
+        device = Device(
+            name=dev_name,
+            country_id=random.choice(COUNTRIES),
+        )
         db.session.add(device)
         device_map[dev_name] = device
 
@@ -165,7 +167,6 @@ def create_users():
         print("Creating in-house users")
         # Fetch all roles from the database
         all_roles = Role.query.all()
-        
         for _ in range(N_USERS):
             new_user = User(
                 username=fake.name(),
@@ -177,15 +178,15 @@ def create_users():
             roles = set()
             # Give the new user up to 3 roles:
             for _ in range(random.randint(1, 3)):
-                role = choice(ROLES)
+                role = random.choice(ROLES)
                 if role != "customer":
                     roles.add(role)
-                    
+
             # If no non-"administrator" nor "customer" roles were added, add one at random
             if not roles:
-                role = choice([r for r in ROLES if r !="customer"])
+                role = random.choice([r for r in ROLES if r != "customer"])
                 roles.add(role)
-                        
+
             # Assign roles to the user
             for role_name in roles:
                 for role_obj in all_roles:
@@ -207,9 +208,9 @@ def create_users():
         used_device_names = set()
         for _ in range(N_USERS):
             # Generate a unique username based on device names
-            device_name = choice(DEVICES)
+            device_name = random.choice(DEVICES)
             while device_name in used_device_names:
-                device_name = choice(DEVICES)
+                device_name = random.choice(DEVICES)
             used_device_names.add(device_name)
 
             new_user = User(
