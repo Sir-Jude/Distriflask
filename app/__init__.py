@@ -25,6 +25,8 @@ from flask_security import (
     Security,
 )
 
+import re
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -110,7 +112,20 @@ def create_app(config_class=Config):
             return ", ".join([role.name.capitalize() for role in model.roles])
 
         def _display_versions(view, context, model, name):
-            return model.versions()
+            if model.devices:
+                # Extract versions and sort them
+                versions = sorted(
+                    (release.version for release in model.devices.releases),
+                    key=lambda r: tuple(
+                        int(part) if part.isdigit() else part
+                        for part in re.findall(r"\d+|\D+", r)
+                    ),
+                    reverse=True,
+                )
+                # Return a formatted string with sorted versions
+                return ", ".join(versions)
+            else:
+                return ""
 
         column_formatters = {"roles": _display_roles, "versions": _display_versions}
 

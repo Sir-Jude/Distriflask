@@ -31,7 +31,7 @@ customers = Blueprint("customers", __name__)
 @customers.route("/home")
 @customers.route("/")
 def home():
-    return render_template("home/home.html")
+    return render_template("customers/home.html")
 
 
 @customers.route("/customer_login", methods=["GET", "POST"])
@@ -115,7 +115,6 @@ def profile(username):
     )
 
 
-# http://127.0.0.1:5000/devices/Dev_00466/3.0.95.txt
 @customers.route("/devices/<path:version>", methods=["GET", "POST"])
 @login_required
 def download_version(version):
@@ -123,7 +122,6 @@ def download_version(version):
 
     version = release.release_path
     path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
-
     return send_file(path_or_file=path, as_attachment=True)
 
 
