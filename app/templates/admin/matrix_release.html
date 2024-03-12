@@ -9,9 +9,9 @@
       <!-- This loop renders the headers of the table -->
       {% for release in all_releases %}
         {% if release == selected_release_version %}
-          <th class="rotated-header highlight-column" style="font-weight:bold"><div><span>{{ release }}</span></div></th>
+          <th class="rotated-header highlight-column" style="font-weight:bold"><div><span><a href="{{ url_for('admin_pages.selected_release_version', selected_release_version=release) }}">{{ release }}</a></span></div></th>
         {% else %}
-          <th class="rotated-header"><div><span>{{ release }}</span></div></th>
+          <th class="rotated-header"><div><span><a href="{{ url_for('admin_pages.selected_release_version', selected_release_version=release) }}">{{ release }}</a></span></div></th>
         {% endif %}
       {% endfor %}
     </tr>
@@ -19,12 +19,19 @@
   <tbody>
     {% for device in devices_in_rows %}
       <tr>
-        <td>{{ device.name }}</td>
+        <td><a href="{{ url_for('admin_pages.selected_device_name', device_name=device.name) }}">{{ device.name }}</a></td>
         {% for release in all_releases %}
           {% if release == selected_release_version %}
-            <td class="highlight-column" style="font-weight:bold">{% if release in device_versions[device]%}*{% endif %}</td>
+            <td class="highlight-column" style="font-weight:bold">
+              {% if release in device_versions[device]%}
+                *
+              {% endif %}</td>
           {% else %}
-            <td>{% if release in device_versions[device]%}*{% endif %}</td>
+            <td>
+              {% if release in device_versions[device]%}
+                *
+              {% endif %}
+            </td>
           {% endif %}
         {% endfor %}
       </tr>

@@ -187,7 +187,7 @@ def selected_release_version(selected_release_version):
 
         if index == 0:
             all_releases = all_releases[:11]
-        if 0 < index < 11:
+        elif 0 < index < 11:
             all_releases = all_releases[: index + 11]
         else:
             all_releases = all_releases[index - 10 : index + 11]
