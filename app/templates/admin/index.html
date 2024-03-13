@@ -5,17 +5,18 @@
   <div class='container'>
       <div>
           <div>
-            {% if not current_user.is_authenticated %}
-            <h3>Please log in to continue</h3>
-            <br>
-            <p>
-                <a class='btn btn-primary' href="{{ url_for('security.login') }}">Login</a>
-            </p>
-            {% endif %}
             {% if current_user.is_authenticated %}
-            <h2>Welcome, {{ current_user.username.title() }}!</h1>
-            <h3>You have successfully logged in.</h3>
-            <p>You now have access to the Users and Devices view.</p>
+              <h2>Welcome, {{ current_user.username.title() }}!</h2>
+              <h3>You have successfully logged in.</h3>
+            {% else %}
+              <h3>Please log in to continue</h3>
+              <br>
+              <p>
+                  <a class='btn btn-primary' href="{{ url_for('security.login') }}">Login</a>
+              </p>
+            {% endif %}
+            {% if current_user.has_role('administrator') %}
+              <p>You now have access to the Users, Devices and Upload views.</p>
             {% endif %}
           </div>
       </div>

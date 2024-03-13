@@ -129,7 +129,7 @@ def create_app(config_class=Config):
 
         column_formatters = {"roles": _display_roles, "versions": _display_versions}
 
-    class CustomMenuView(BaseView):
+    class DeviceAdminView(BaseView):
         @expose("/")
         def index(self):
             return redirect(url_for("admin_pages.devices_default_table"))
@@ -142,10 +142,26 @@ def create_app(config_class=Config):
             )
 
         def _get_admin_menu(self):
-            return MenuLink("Device", endpoint="admin_pages.show_devices")
+            return MenuLink("Devices", endpoint="admin_pages.devices_default_table")
+
+    class UploadAdminView(BaseView):
+        @expose("/")
+        def index(self):
+            return redirect(url_for("admin_pages.upload"))
+
+        def is_accessible(self):
+            return (
+                current_user.is_active
+                and current_user.is_authenticated
+                and any(role.name == "administrator" for role in current_user.roles)
+            )
+
+        def _get_admin_menu(self):
+            return MenuLink("Upload", endpoint="admin_pages.upload")
 
     admin.add_view(UserAdminView(User, db.session, name="Users"))
-    admin.add_view(CustomMenuView(name="Devices"))
+    admin.add_view(DeviceAdminView(name="Devices"))
+    admin.add_view(UploadAdminView(name="Upload"))
 
     # Flask_login stuff
     login_manager.login_view = "login"

@@ -1,4 +1,4 @@
-from app.forms import DownloadRelease
+from app.forms import DownloadReleaseForm
 from app.models import User, Device, Release
 from config import basedir, Config
 from flask import (
@@ -87,7 +87,7 @@ def profile(username):
     else:
         releases = []  # If device is not available, set releases to an empty list
 
-    form = DownloadRelease(formdata=request.form)
+    form = DownloadReleaseForm(formdata=request.form)
     # Populating the choices for release versions in the form
     form.release_version.choices = [
         # (value submitted to the form, text displayed to the user)
