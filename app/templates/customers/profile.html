@@ -1,6 +1,6 @@
 {% extends 'customers/index.html' %}
 {% block title %}
-<title>{{ current_user.username.title() }}</title>
+  <title>{{ current_user.username.title() }}</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='customer_styles.css') }}">
 {% endblock %}
 {% block content %}
@@ -11,29 +11,36 @@
   </div>
 {% endfor %}
   <p>
-    <h3>{{ current_user.username.title() }}'s profile.</h3>
+    {% if current_user.username == "admin" %}
+      <h3>{{ current_user.username.title() }}'s view</h3>
+    {% else %}
+      <h3>{{ current_user.username.title() }}'s profile.</h3>
+    {% endif %}
   </p>
-    <div class="customer-profile">
-      {% if device %}
-        <p><h5>Device: </h5>{{ device }}</p>
-        <p><h5>Country: </h5>{{ country }} </p> 
-        <h5>
-          Select software version:
-          <h6>
-            <form action="{{ url_for('customers.profile', username=current_user.username) }}" method="POST">
-              {{ form.csrf_token }}
-              {{ form.hidden_tag() }}
-              <select name="release_version">
-              {% for release in releases %}
-                <option value="{{ release.version }}">{{ release.version }}</option>
-              {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Download</button>
-            </form>
-          </h6>
-        </h5>
-      {% else %}
-        <p>No device associated with this user.</p>
+  <div class="customer-profile">
+    {% if device %}
+      <p><h5>Device: </h5>{{ device }}</p>
+      <p><h5>Country: </h5>{{ country }} </p> 
+      <h5>
+        Select software version:
+        <h6>
+          <form action="{{ url_for('customers.profile', username=current_user.username) }}" method="POST">
+            {{ form.csrf_token }}
+            {{ form.hidden_tag() }}
+            <select name="release_version">
+            {% for release in releases %}
+              <option value="{{ release.version }}">{{ release.version }}</option>
+            {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Download</button>
+          </form>
+        </h6>
+      </h5>
+      {% if current_user.username == "admin" %}
+        <a href="{{ url_for('admin_pages.selected_device_name', device_name=device.name) }}">Back to the device search</a>
       {% endif %}
+    {% else %}
+      <p>No device associated with this user.</p>
+    {% endif %}
   </div>
 {% endblock %}
