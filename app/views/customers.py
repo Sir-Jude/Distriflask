@@ -69,10 +69,16 @@ def login():
 @customers.route("/customer/<username>/", methods=["GET", "POST"])
 @login_required
 def profile(username):
-    if current_user.username != username:
+    # Assign True to admin_role if current user has an "administrator" role 
+    admin_role ="administrator" in [r.name for r in current_user.roles]
+    # Return 403 error if current user:
+    # - is not accessing their own profile
+    # - AND does not have an "administrator" role.
+    if current_user.username != username and not admin_role:
         return render_template("errors/403.html"), 403
 
-    device = current_user.devices
+    # Fetch from database the device associated with provided <username>
+    device = Device.query.filter_by(name=username).first()
     country = None  # Initialize country to None initially
     if device:  # Check if User has an associated device
         country = device.country_id

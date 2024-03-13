@@ -1,9 +1,11 @@
 from app.extensions import db
 from app.forms import DeviceSearchForm, ExtendedRegisterForm, UploadReleaseForm
 from app.models import User, Role, Device, Release, user_datastore
+from config import Config
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 from flask_security import hash_password, roles_required
+from werkzeug.utils import secure_filename
 import re
 
 
