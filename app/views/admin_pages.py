@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.forms import DeviceSearchForm, ExtendedRegisterForm
+from app.forms import DeviceSearchForm, ExtendedRegisterForm, UploadReleaseForm
 from app.models import User, Role, Device, Release, user_datastore
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
@@ -246,3 +246,11 @@ def selected_device_name(device_name):
     else:
         flash("No devices found.", "error")
         return redirect(url_for("admin_pages.devices_default_table"))
+
+
+@admin_pages.route("/admin/upload/", methods=["GET", "POST"])
+@login_required
+@roles_required("administrator")
+def upload():
+    form = UploadReleaseForm()
+    pass
