@@ -69,8 +69,8 @@ def login():
 @customers.route("/customer/<username>/", methods=["GET", "POST"])
 @login_required
 def profile(username):
-    # Assign True to admin_role if current user has an "administrator" role 
-    admin_role ="administrator" in [r.name for r in current_user.roles]
+    # Assign True to admin_role if current user has an "administrator" role
+    admin_role = "administrator" in [r.name for r in current_user.roles]
     # Return 403 error if current user:
     # - is not accessing their own profile
     # - AND does not have an "administrator" role.

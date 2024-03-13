@@ -23,4 +23,4 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = "devices/"
-    ALLOWED_EXTENSIONS = {'txt', 'deb'}
+    ALLOWED_EXTENSIONS = {"txt", "deb"}
