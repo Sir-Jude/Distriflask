@@ -1,3 +1,4 @@
+from config import basedir, Config
 from flask import current_app
 from flask_security import (
     RegisterForm,
@@ -8,6 +9,7 @@ from flask_security import (
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
+    FileField,
     PasswordField,
     SelectField,
     StringField,
@@ -15,6 +17,7 @@ from wtforms import (
 )
 from wtforms.validators import InputRequired, Length, ValidationError
 from werkzeug.local import LocalProxy
+import os
 
 
 def username_validator(form, field):
@@ -72,5 +75,17 @@ class DownloadReleaseForm(FlaskForm):
 
 
 class UploadReleaseForm(FlaskForm):
-    release_version = SelectField("Version: ")
+    device = StringField("Device: ")
+    version = FileField("Version: ")
     submit = SubmitField("Upload", render_kw={"class": "btn btn-primary"})
+
+    def allowed_file(self):
+        version = self.version.data
+        return (
+            "." in version.filename
+            and version.filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+        )
+
+    def path_exists(self):
+        upload_path = os.path.join(basedir, Config.UPLOAD_FOLDER, self.device.data)
+        return os.path.exists(upload_path)
