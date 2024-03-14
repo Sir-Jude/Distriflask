@@ -2,7 +2,7 @@ from app.extensions import db
 from app.forms import DeviceSearchForm, ExtendedRegisterForm, UploadReleaseForm
 from app.models import User, Role, Device, Release, user_datastore
 from config import basedir, Config
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import login_required
 from flask_security import hash_password, roles_required
 from werkzeug.utils import secure_filename
@@ -140,7 +140,7 @@ def devices_default_table():
 
 
 @admin_pages.route(
-    "/admin/devices/release/<selected_release_version>.", methods=["GET", "POST"]
+    "/admin/devices/release-table/<selected_release_version>", methods=["GET", "POST"]
 )
 @login_required
 @roles_required("administrator")
@@ -257,6 +257,11 @@ def selected_device_name(device_name):
 def upload():
     form = UploadReleaseForm()
 
+    # Retrieve device name from session if available
+    device_name = session.get('device_name', None)
+    if device_name:
+        form.device.data = device_name
+        
     if form.validate_on_submit():
         device = form.device.data
         version = form.version.data
@@ -274,9 +279,12 @@ def upload():
             device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device)
 
             version.save(os.path.join(device_folder, secure_filename(version.filename)))
-            flash(f"File has been uploaded in the folder 'Devices/{device}/{version}.")
+            flash(f'File has been uploaded in the folder "Devices/{device}/{version.filename}".')
+            session.pop('device_name', None)  # Clear device name from session
             return redirect(url_for("admin_pages.upload"))
 
+        # Store device name in session
+        session['device_name'] = device
         return redirect(url_for("admin_pages.upload"))
 
     return render_template("admin/upload.html", form=form)
