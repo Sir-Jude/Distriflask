@@ -73,11 +73,11 @@ def login():
 def profile(username):
     # Assign True to admin_role if current user has an "administrator" role
     admin_role = "administrator" in [r.name for r in current_user.roles]
-    # Return 403 error if current user:
-    # - is not accessing their own profile
-    # - AND does not have an "administrator" role.
-    if current_user.username != username and not admin_role:
-        return render_template("errors/403.html"), 403
+    # Bypass restriction for administrators to access any profile
+    if not admin_role:
+        # Return 403 error if current user is not accessing their own profile
+        if current_user.username != username:
+            return render_template("errors/403.html"), 403
 
     # Fetch from database the device associated with provided <username>
     device = Device.query.filter_by(name=username).first()

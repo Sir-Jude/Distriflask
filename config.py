@@ -13,7 +13,8 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
     SECURITY_POST_LOGIN_VIEW = "/admin/"
-    SECURITY_POST_LOGOUT_VIEW = "/admin/"
+    # Change from "/admin/" to "/" to land on customer home view
+    SECURITY_POST_LOGOUT_VIEW = "/"
     SECURITY_POST_REGISTER_VIEW = "/admin/"
     SECURITY_REGISTERABLE = True
     # NOT remove! Flask is not able to create new users without
