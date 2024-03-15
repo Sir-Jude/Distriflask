@@ -18,13 +18,17 @@
     {% endif %}
   </p>
   <div class="customer-profile">
-    {% if device %}
-      <p><h5>Device: </h5>{{ device }}</p>
-      <p><h5>Country: </h5>{{ country }} </p> 
+    {% if device or current_user.username == "admin" %}
+      {% if device %}
+        <p><h5>Device: </h5>{{ device }}</p>
+        <p><h5>Country: </h5>{{ country }} </p> 
+      {% endif %}
       <h5>
         Select software version:
         <h6>
-          <form action="{{ url_for('customers.profile', username=current_user.username) }}" method="POST">
+          {# Change username=current_user.username to username=username #}
+          {# This allows admin to behave as customers and download any available software #}
+          <form action="{{ url_for('customers.profile', username=username) }}" method="POST">
             {{ form.csrf_token }}
             {{ form.hidden_tag() }}
             <select name="release_version">
