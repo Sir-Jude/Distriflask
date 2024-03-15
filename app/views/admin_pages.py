@@ -258,10 +258,10 @@ def upload():
     form = UploadReleaseForm()
 
     # Retrieve device name from session if available
-    device_name = session.get('device_name', None)
+    device_name = session.get("device_name", None)
     if device_name:
         form.device.data = device_name
-        
+
     if form.validate_on_submit():
         device = form.device.data
         version = form.version.data
@@ -279,12 +279,14 @@ def upload():
             device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device)
 
             version.save(os.path.join(device_folder, secure_filename(version.filename)))
-            flash(f'File has been uploaded in the folder "Devices/{device}/{version.filename}".')
-            session.pop('device_name', None)  # Clear device name from session
+            flash(
+                f'File has been uploaded in the folder "Devices/{device}/{version.filename}".'
+            )
+            session.pop("device_name", None)  # Clear device name from session
             return redirect(url_for("admin_pages.upload"))
 
         # Store device name in session
-        session['device_name'] = device
+        session["device_name"] = device
         return redirect(url_for("admin_pages.upload"))
 
     return render_template("admin/upload.html", form=form)
