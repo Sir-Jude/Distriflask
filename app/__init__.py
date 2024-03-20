@@ -112,10 +112,10 @@ def create_app(config_class=Config):
             return ", ".join([role.name.capitalize() for role in model.roles])
 
         def _display_versions(view, context, model, name):
-            if model.devices:
+            if model.device:
                 # Extract versions and sort them
                 versions = sorted(
-                    (release.version for release in model.devices.releases),
+                    (release.version for release in model.device.releases),
                     key=lambda r: tuple(
                         int(part) if part.isdigit() else part
                         for part in re.findall(r"\d+|\D+", r)

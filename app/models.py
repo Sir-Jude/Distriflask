@@ -1,7 +1,7 @@
 from app.extensions import db
 from flask_security import RoleMixin, UserMixin, SQLAlchemyUserDatastore
 from sqlalchemy import Boolean, Column, event, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 import uuid
 
 
@@ -20,8 +20,9 @@ class User(db.Model, UserMixin):
     device_name = Column(String, ForeignKey("devices.name"), unique=True)
     active = Column(Boolean())
     roles = relationship(
-        "Role", secondary="roles_users", backref=backref("users", lazy=True)
+        "Role", secondary="roles_users", back_populates="users", lazy=True
     )
+    device = relationship("Device", back_populates="user", uselist=False)
     fs_uniquifier = Column(
         String(255),
         unique=True,
@@ -29,8 +30,6 @@ class User(db.Model, UserMixin):
         # Line below necessary to avoid "ValueError: Constraint must have a name"
         name="unique_fs_uniquifier_constraint",
     )
-
-    devices = relationship("Device", backref=backref("user", uselist=False))
 
     def versions(self):
         if self.devices:
@@ -47,9 +46,39 @@ class Role(db.Model, RoleMixin):
     role_id = Column(Integer(), primary_key=True)
     name = Column(String(80), unique=True)
     description = Column(String(255))
+    region_id = Column(Integer, ForeignKey("regions.region_id"))
+    users = relationship(
+        "User", secondary="roles_users", back_populates="roles", lazy=True
+    )
+    region = relationship("Region", back_populates="role", uselist=False)
 
     def __repr__(self):
         return f"{self.name} (role_id={self.role_id})"
+
+
+class Region(db.Model):
+    __tablename__ = "regions"
+    region_id = Column(Integer, primary_key=True)
+    name = Column(String(10), unique=True)
+    long_name = Column(String(30), unique=True)
+    description = Column(String(60), unique=True)
+    role = relationship("Role", back_populates="region", uselist=False)
+    countries = relationship("Country", back_populates="region", lazy=True)
+
+    def __repr__(self):
+        return f"{self.long_name}"
+
+
+class Country(db.Model):
+    __tablename__ = "countries"
+    country_id = Column(Integer, primary_key=True)
+    name = Column(String(30), unique=True)
+    region_id = Column(Integer, ForeignKey("regions.region_id"))
+    devices = relationship("Device", back_populates="country", lazy=True)
+    region = relationship("Region", back_populates="countries", lazy=True)
+
+    def __repr__(self):
+        return f"{self.name}"
 
 
 class Device(db.Model):
@@ -57,18 +86,9 @@ class Device(db.Model):
     device_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     country_id = Column(Integer, ForeignKey("countries.country_id"))
-
-    releases = relationship("Release", backref=backref("devices", lazy=True))
-
-    def __repr__(self):
-        return f"{self.name}"
-
-
-class Country(db.Model):
-    __tablename__ = "countries"
-    country_id = Column(Integer, primary_key=True)
-    name = Column(String(30), unique=True)
-    devices = relationship("Device", backref=backref("countries", lazy=True))
+    user = relationship("User", back_populates="device", uselist=False, lazy=True)
+    releases = relationship("Release", back_populates="device", lazy=True)
+    country = relationship("Country", back_populates="devices", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
@@ -81,6 +101,7 @@ class Release(db.Model):
     version = Column(String(20))  # e.g. 8.0.122
     release_path = Column(String(255))
     flag_visible = Column(Boolean())
+    device = relationship("Device", back_populates="releases", uselist=False, lazy=True)
 
     def __repr__(self):
         return f"{self.version}"
