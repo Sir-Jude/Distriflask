@@ -6,5 +6,5 @@ __pycache__/
 *.sqlite3
 request.http
 .python-version
-devices
 migrations/env.py
+uploads/

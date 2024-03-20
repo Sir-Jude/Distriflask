@@ -280,7 +280,7 @@ def upload():
 
             version.save(os.path.join(device_folder, secure_filename(version.filename)))
             flash(
-                f'File has been uploaded in the folder "Devices/{device}/{version.filename}".'
+                f'File has been uploaded in the folder "{Config.UPLOAD_FOLDER}/{device}/{version.filename}".'
             )
             session.pop("device_name", None)  # Clear device name from session
             return redirect(url_for("admin_pages.upload"))
