@@ -8,7 +8,12 @@
 2.5. [Launch the application](#launching)  
 3. [Using the application](#using)  
 3.1. [The admin pages](#admin)  
-3.2. [The customer page](#customer)
+&nbsp;&nbsp;3.1.1. [Login as an admin](#admin_login)   
+&nbsp;&nbsp;3.1.2. [The list of Users](#user_list)  
+&nbsp;&nbsp;3.1.3. [Create a new User](#user_create)  
+&nbsp;&nbsp;3.1.4. [The table of releases and devices](#rel_dev)  
+&nbsp;&nbsp;3.1.5. [Upload a file](#upload)  
+3.2. [The customer page](#customer)  
 4. [Further development](#further)
 
 
@@ -106,7 +111,7 @@ The project comes with a create_tables.py script, which creates:
 <a id="setting"></a>
 # 2. Setting up the web application
 <a id="virtual-env"></a>
-## 2.1 Create a virtual environment
+## 2.1. Create a virtual environment
 First thing first, create a virtual environment
 ```
 python3 -m venv .venv
@@ -115,7 +120,7 @@ source .venv/bin/activate
 **TIP**: in the terminal, type "*deactivate*" to switch off the virtual environment.
 
 <a id="libraries"></a>  
-## 2.2 Install the required libraries
+## 2.2. Install the required libraries
 Install the libraries listed inside the **requirements.txt** file:
 ```
 pip install -r requirements.txt
@@ -123,7 +128,7 @@ pip install -r requirements.txt
 ```
 
 <a id="variables"></a>  
-## 2.3 Set up the environmental variables
+## 2.3. Set up the environmental variables
 Create a .env file
 ```
 code .env
@@ -191,20 +196,16 @@ http://127.0.0.1:5000
 # 3. Using the application  
 <a id="admin"></a>  
 ## 3.1. The admin pages
+<a id="admin_login"></a>  
 ### 3.1.1. Login as an admin
-Visit the link:
-```
-http://127.0.0.1:5000/admin/
-```
-
-
-Click on "**Login**" and then use the following credentials:
+Log in as an administrator using the following credentials:
 ```
 Username: admin
 Password: 12345678
 ```
 **IMPORTANT**: the script assignes this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create a **unique and safer** password for every different user!!!
 
+<a id="user_list"></a>
 ### 3.1.2. The list of Users
 Click on "**Users**" to see the list of Users. They are essentially divided in two main groups:
 - the employees hired by the company
@@ -214,6 +215,7 @@ In the first, only those who have been assigend the role of "administrator" can 
 
 The difference with the second group is that these Users have bought a device (used as their username) and a software package, which can be downloaded from the website.
 
+<a id="user_create"></a>
 ### 3.1.3. Create a new User
 Open the folder where you cloned the GitHub code and then the one called "**devices**" (it was created by the script): after having choosen the name of a device, click on "**Create**" in the navigation bar of the page with the list of Users.  
 
@@ -221,7 +223,8 @@ Fill the form and click on "**Register**".
 
 If you now go back to the list of Users, you will find that its Username has been added to the list. 
 
-### 3.1.4. Check the list of releases and devices
+<a id="rel_dev"></a>
+### 3.1.4. The table of releases and devices
 Note down a release version and then click on "**Devices**" in the navigation bar.
 
 Independently from which are the numbers used by the company, the default table always shows the last available minor releases (X.X.X) of the last major version (X.X).
@@ -229,7 +232,13 @@ Independently from which are the numbers used by the company, the default table 
 Now, paste in the form a release or a device number and click "**Search**"   
 - The filter "**Release**", shows a table with the list of all minor releases of the major version, with the column containing the selected one highlighted in red. This allows the employes of the company not only to see how many customers have bought that particular release, but also advise them about the updates which have been released after the version they have bought.
 - The filter "**Devices**", shows the list of releases available for that particular instrument.
-  
+
+<a id="upload"></a>
+### 3.1.5. Upload a file
+
+Work in progress...
+
+
 <a id="customer"></a>  
 ## 3.2. The customer page
 ## 3.2.1. Login as a customer
