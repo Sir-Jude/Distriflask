@@ -20,7 +20,7 @@ def register():
     form = ExtendedRegisterForm()
 
     if form.validate_on_submit():
-        device = Device.query.filter_by(name=form.devices.data).first()
+        device = Device.query.filter_by(name=form.device.data).first()
 
         if not device:
             flash("Selected device does not exist.", "error")
@@ -29,7 +29,7 @@ def register():
         new_user = User(
             username=form.email.data,
             password=hash_password(form.password.data),
-            devices=device,
+            device=device,
             active=form.active.data,
         )
 
@@ -168,7 +168,7 @@ def selected_release_version(selected_release_version):
 
         # Extract devices associated with the filtered releases
         devices_with_matching_releases = [
-            release.devices for release in filtered_releases
+            release.device for release in filtered_releases
         ]
 
         # Query devices that have releases matching the major version
@@ -257,11 +257,6 @@ def selected_device_name(device_name):
 def upload():
     form = UploadReleaseForm()
 
-    # Retrieve device name from session if available
-    device_name = session.get("device_name", None)
-    if device_name:
-        form.device.data = device_name
-
     if form.validate_on_submit():
         device = form.device.data
         version = form.version.data
@@ -277,16 +272,25 @@ def upload():
 
         else:
             device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device)
-
             version.save(os.path.join(device_folder, secure_filename(version.filename)))
             flash(
-                f'File has been uploaded in the folder "{Config.UPLOAD_FOLDER}/{device}/{version.filename}".'
+                f'The file "{version.filename}" has been uploaded into the folder "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
             )
-            session.pop("device_name", None)  # Clear device name from session
+
+            # Clear form data after successful submission
+            form.device.data = None
+            form.version.data = None
+
             return redirect(url_for("admin_pages.upload"))
 
-        # Store device name in session
-        session["device_name"] = device
-        return redirect(url_for("admin_pages.upload"))
+        # Retain device name on form submission failure due to invalid file format
+        if form.device.data:
+            device_value = form.device.data
+        else:
+            device_value = None
+
+        return render_template(
+            "admin/upload.html", form=form, device_value=device_value
+        )
 
     return render_template("admin/upload.html", form=form)
