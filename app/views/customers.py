@@ -123,7 +123,7 @@ def profile(username):
     )
 
 
-@customers.route("/devices/<path:version>", methods=["GET", "POST"])
+@customers.route("/device/<path:version>", methods=["GET", "POST"])
 @login_required
 def download_version(version):
     release = Release.query.filter_by(release_path=version).first()

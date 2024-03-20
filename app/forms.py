@@ -34,7 +34,7 @@ class ExtendedRegisterForm(RegisterForm):
         "Username", [InputRequired(), username_validator, unique_identity_attribute]
     )
     password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    devices = StringField("Device")
+    device = StringField("Device")
     active = BooleanField("Active")
     role = SelectField(
         "Roles",
@@ -79,6 +79,11 @@ class UploadReleaseForm(FlaskForm):
     version = FileField("Version: ")
     submit = SubmitField("Upload", render_kw={"class": "btn btn-primary"})
 
+    def __init__(self, device_value=None, *args, **kwargs):
+        super(UploadReleaseForm, self).__init__(*args, **kwargs)
+        if device_value:
+            self.device.data = device_value
+
     def allowed_file(self):
         version = self.version.data
         return (
@@ -88,4 +93,5 @@ class UploadReleaseForm(FlaskForm):
 
     def path_exists(self):
         upload_path = os.path.join(basedir, Config.UPLOAD_FOLDER, self.device.data)
+        print(upload_path)
         return os.path.exists(upload_path)
