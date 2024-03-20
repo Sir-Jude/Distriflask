@@ -39,7 +39,7 @@ def main():
 
 
 def delete_folders():
-    folders_to_delete = ["instance", "migrations", "devices"]
+    folders_to_delete = ["instance", "migrations", "uploads"]
     for folder in folders_to_delete:
         try:
             shutil.rmtree(folder)
@@ -117,10 +117,6 @@ def create_sample_releases():
 
 
 def populate_tables(devices, releases):
-    devs_folder = "devices"
-    # Create the folder if it doesn't exist
-    os.makedirs(devs_folder, exist_ok=True)
-
     random.seed(22)
 
     device_map = {}
@@ -147,12 +143,12 @@ def populate_tables(devices, releases):
                     flag_visible=visible,
                 )
 
-                os.makedirs(f"devices/{dev_name}", exist_ok=True)
+                os.makedirs(f"uploads/{dev_name}", exist_ok=True)
                 rel_path = os.path.join(dev_name, release.version)
 
                 release.release_path = f"{rel_path}.txt"
 
-                with open(f"devices/{release.release_path}", "w") as file:
+                with open(f"uploads/{release.release_path}", "w") as file:
                     file.write(f"This is the release {release.version}")
 
                 db.session.add(release)
