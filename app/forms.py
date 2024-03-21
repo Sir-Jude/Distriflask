@@ -36,7 +36,7 @@ class ExtendedRegisterForm(RegisterForm):
     password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
     device = StringField("Device")
     active = BooleanField("Active")
-    role = SelectField(
+    roles = SelectField(
         "Roles",
         choices=[
             ("customer"),
