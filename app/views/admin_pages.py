@@ -34,7 +34,7 @@ def register():
         )
 
         # Fetch the selected role name from the form
-        selected_role_name = form.role.data
+        selected_role_name = form.roles.data
 
         # Query the role based on the selected role name
         existing_role = Role.query.filter_by(name=selected_role_name).first()
