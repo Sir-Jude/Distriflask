@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 import uuid
 
 
-class RolesUsers(db.Model):
+class UserRole(db.Model):
     __tablename__ = "roles_users"
     id = Column(Integer(), primary_key=True)
     user_id = Column("user_id", Integer(), ForeignKey("users.user_id"))
@@ -44,38 +44,21 @@ class User(db.Model, UserMixin):
 class Role(db.Model, RoleMixin):
     __tablename__ = "roles"
     role_id = Column(Integer(), primary_key=True)
-    name = Column(String(80), unique=True)
+    name = Column(String(20), unique=True)
     description = Column(String(255))
-    region_id = Column(Integer, ForeignKey("regions.region_id"))
     users = relationship(
         "User", secondary="roles_users", back_populates="roles", lazy=True
     )
-    region = relationship("Region", back_populates="role", uselist=False)
 
     def __repr__(self):
         return f"{self.name} (role_id={self.role_id})"
 
 
-class Region(db.Model):
-    __tablename__ = "regions"
-    region_id = Column(Integer, primary_key=True)
-    name = Column(String(10), unique=True)
-    long_name = Column(String(30), unique=True)
-    description = Column(String(60), unique=True)
-    role = relationship("Role", back_populates="region", uselist=False)
-    countries = relationship("Country", back_populates="region", lazy=True)
-
-    def __repr__(self):
-        return f"{self.long_name}"
-
-
 class Country(db.Model):
     __tablename__ = "countries"
     country_id = Column(Integer, primary_key=True)
-    name = Column(String(30), unique=True)
-    region_id = Column(Integer, ForeignKey("regions.region_id"))
+    name = Column(String(40), unique=True)
     devices = relationship("Device", back_populates="country", lazy=True)
-    region = relationship("Region", back_populates="countries", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
