@@ -7,7 +7,7 @@ import sys
 
 from app import create_app
 from app.extensions import db
-from app.models import Device, Release, Role, User
+from app.models import Country, Device, Release, Role, User
 from faker import Faker
 from flask_security import SQLAlchemyUserDatastore, hash_password
 
@@ -22,7 +22,11 @@ ROLES = [
     "application",
     "software",
 ]
-COUNTRIES = [country.alpha_3 for country in pycountry.countries]
+
+countries = list(pycountry.countries)
+COUNTRIES = [
+    {"short_name": country.alpha_3, "long_name": country.name} for country in countries
+]
 
 
 def main():
@@ -31,6 +35,7 @@ def main():
         delete_folders()
         setup_database()
         create_roles()
+        create_countries()
         devices = create_sample_devices()
         releases = create_sample_releases()
         populate_tables(devices, releases)
@@ -70,6 +75,20 @@ def create_roles():
                 new_role = Role(name=role_name, description=f"{role_name} role")
                 db.session.add(new_role)
                 print(f'Role "{new_role.name}" has beeen created')
+
+        db.session.commit()
+
+
+def create_countries():
+    app = create_app()
+    with app.app_context():
+        for country_name in COUNTRIES:
+            existing_country = Country.query.filter_by(
+                name=country_name["long_name"]
+            ).first()
+            if existing_country is None:
+                new_country = Country(name=country_name["long_name"])
+                db.session.add(new_country)
 
         db.session.commit()
 
@@ -120,10 +139,13 @@ def populate_tables(devices, releases):
     random.seed(22)
 
     device_map = {}
+    countries = Country.query.all()
+
     for dev_name in devices:
+        country = random.choice(countries)
         device = Device(
             name=dev_name,
-            country_id=random.choice(COUNTRIES),
+            country_id=country.country_id,
         )
         db.session.add(device)
         device_map[dev_name] = device
