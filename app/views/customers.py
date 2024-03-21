@@ -46,7 +46,7 @@ def login():
                 """
                 IMPORTANT!!!
                 The documentation advises to add this snippet:
-                
+
                 next = flask.request.args.get('next')
                 # url_has_allowed_host_and_scheme should check if the url is safe
                 # for redirects, meaning it matches the request host.
@@ -54,7 +54,7 @@ def login():
                 if not url_has_allowed_host_and_scheme(next, request.host):
                     return flask.abort(400)
                 return redirect(next or url_for("user", username=user.username))
-                
+
                 Otherwise the application will be vulnerable to open redirects
                 INFO: flask-login.readthedocs.io/en/latest/#login-example
                 """
@@ -83,7 +83,7 @@ def profile(username):
     device = Device.query.filter_by(name=username).first()
     country = None  # Initialize country to None initially
     if device:  # Check if User has an associated device
-        country = device.country_id
+        country = device.country
         releases = sorted(
             Release.query.join(Device).filter(Device.name == str(device)).all(),
             key=lambda r: tuple(
