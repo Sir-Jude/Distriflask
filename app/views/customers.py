@@ -58,7 +58,7 @@ def login():
                 Otherwise the application will be vulnerable to open redirects
                 INFO: flask-login.readthedocs.io/en/latest/#login-example
                 """
-                if user.username == "admin":
+                if "administrator" in [role.name for role in user.roles]:
                     return redirect(url_for("admin.index"))
                 return redirect(url_for("customers.profile", username=user.username))
             else:
