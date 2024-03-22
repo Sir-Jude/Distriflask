@@ -29,6 +29,7 @@ from flask_security import (
 from markupsafe import Markup
 
 from wtforms import PasswordField
+from wtforms.validators import DataRequired, Length
 
 import re
 
@@ -112,7 +113,7 @@ def create_app(config_class=Config):
         )
 
         form_extra_fields = {
-            "password": PasswordField("Password")  # Add password field to the edit form
+            "password": PasswordField("Password", [DataRequired(), Length(min=8)])
         }
 
         form_excluded_columns = ("fs_uniquifier",)
