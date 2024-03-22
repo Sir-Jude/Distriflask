@@ -12,10 +12,11 @@ from wtforms import (
     FileField,
     PasswordField,
     SelectField,
+    SelectMultipleField,
     StringField,
     SubmitField,
 )
-from wtforms.validators import InputRequired, Length, ValidationError
+from wtforms.validators import DataRequired, Length, ValidationError
 from werkzeug.local import LocalProxy
 import os
 
@@ -30,13 +31,13 @@ def username_validator(form, field):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    email = StringField(
-        "Username", [InputRequired(), username_validator, unique_identity_attribute]
+    username = StringField(
+        "Username", [DataRequired(), username_validator, unique_identity_attribute]
     )
-    password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
-    device = StringField("Device")
+    password = PasswordField("Password", [DataRequired(), Length(min=8, max=20)])
+    device_name = StringField("Device")
     active = BooleanField("Active")
-    roles = SelectField(
+    roles = SelectMultipleField(
         "Roles",
         choices=[
             ("customer"),
@@ -46,12 +47,12 @@ class ExtendedRegisterForm(RegisterForm):
             ("application"),
             ("software"),
         ],
-        validators=[InputRequired()],
+        validators=[DataRequired()],
     )
 
 
 class ExtendedLoginForm(LoginForm):
-    email = StringField("Username", [InputRequired()])
+    email = StringField("Username", [DataRequired()])
 
     def validate(self, **kwargs):
         self.user = lookup_identity(self.email.data)

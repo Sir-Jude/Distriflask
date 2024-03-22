@@ -14,7 +14,7 @@
   </head>
   <body>
     <div class="container">
-      {% if current_user.username != "admin" %}
+      {% if "administrator" not in current_user.roles %}
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
           <div class="container-fluid">
             <img src="{{ url_for('static', filename='images/your_company.png') }}" alt="Your Company logo" width="5%" height="5%" style="margin-right: 10px;">
@@ -87,4 +87,3 @@
   </style>
   #}
 </html>
-

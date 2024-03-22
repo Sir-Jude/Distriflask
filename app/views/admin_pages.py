@@ -1,6 +1,6 @@
 from app.extensions import db
 from app.forms import DeviceSearchForm, ExtendedRegisterForm, UploadReleaseForm
-from app.models import User, Role, Device, Release, user_datastore
+from app.models import Role, Device, Release, user_datastore
 from config import basedir, Config
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import login_required
@@ -28,9 +28,8 @@ def devices_default_table():
             return redirect(url_for("admin_pages.devices_default_table"))
 
         # Resulting table of the Release search
-        if (
-            selected_release_version
-        ):  # Redirect to the new route for selected_release_version filtering
+        if selected_release_version:
+            # Redirect to the new route for selected_release_version filtering
             return redirect(
                 url_for(
                     "admin_pages.selected_release_version",

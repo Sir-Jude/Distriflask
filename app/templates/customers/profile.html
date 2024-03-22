@@ -11,17 +11,17 @@
   </div>
 {% endfor %}
   <p>
-    {% if current_user.username == "admin" %}
-    <h3>{{ current_user.username.title() }}'s view of customer: {{ device }}.</h3>
+    {% if "administrator" in current_user.roles %}
+      <h3>{{ current_user.username.title() }}'s view of customer: {{ device }}.</h3>
     {% else %}
       <h3>{{ current_user.username.title() }}'s profile.</h3>
     {% endif %}
   </p>
   <div class="customer-profile">
-    {% if device or current_user.username == "admin" %}
+    {% if device or ("administrator" in current_user.roles) %}
       {% if device %}
         <p><h5>Device: </h5>{{ device }}</p>
-        <p><h5>Country: </h5>{{ country }} </p> 
+        <p><h5>Country: </h5>{{ country }} </p>
       {% endif %}
       <h5>
         Select software version:
@@ -40,7 +40,7 @@
           </form>
         </h6>
       </h5>
-      {% if current_user.username == "admin" %}
+      {% if "administrator" in current_user.roles %}
         <a href="{{ url_for('admin_pages.selected_device_name', device_name=device.name) }}">Back to the device search</a>
       {% endif %}
     {% else %}
