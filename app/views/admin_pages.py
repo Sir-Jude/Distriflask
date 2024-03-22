@@ -13,47 +13,6 @@ import re
 admin_pages = Blueprint("admin_pages", __name__)
 
 
-@admin_pages.route("/admin/user/new/", methods=["GET", "POST"])
-@login_required
-@roles_required("administrator")
-def register():
-    form = ExtendedRegisterForm()
-
-    if request.method == "POST":
-        if form.validate_on_submit():
-            device = Device.query.filter_by(name=form.device.data).first()
-
-            if not device:
-                flash("Selected device does not exist.", "error")
-                return redirect(url_for("admin_pages.register"))
-
-            new_user = user_datastore.create_user(
-                username=form.email.data,
-                password=hash_password(form.password.data),
-                device=device,
-                active=form.active.data,
-            )
-
-            # Fetch the selected role name from the form
-            selected_role_name = form.roles.data
-
-            # Query the role based on the selected role name
-            existing_role = Role.query.filter_by(name=selected_role_name).first()
-
-            if existing_role:
-                user_datastore.add_role_to_user(new_user, existing_role)
-                db.session.commit()
-                return redirect(
-                    url_for("admin.index", _external=True, _scheme="http") + "user/"
-                )
-            else:
-                # Handle case where the selected role doesn't exist
-                flash(f"Role '{selected_role_name}' does not exist.", "error")
-                return redirect(url_for("admin_pages.register"))
-
-    return render_template("security/register_user.html", form=form)
-
-
 @admin_pages.route("/admin/devices/", methods=["GET", "POST"])
 @login_required
 @roles_required("administrator")
@@ -69,8 +28,9 @@ def devices_default_table():
             return redirect(url_for("admin_pages.devices_default_table"))
 
         # Resulting table of the Release search
-        if selected_release_version:
-            # Redirect to the new route for selected_release_version filtering
+        if (
+            selected_release_version
+        ):  # Redirect to the new route for selected_release_version filtering
             return redirect(
                 url_for(
                     "admin_pages.selected_release_version",
