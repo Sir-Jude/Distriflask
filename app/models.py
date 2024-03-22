@@ -27,6 +27,7 @@ class User(db.Model, UserMixin):
         String(255),
         unique=True,
         nullable=False,
+        default=str(uuid.uuid4()),  # Automatically generate UUID
         # Line below necessary to avoid "ValueError: Constraint must have a name"
         name="unique_fs_uniquifier_constraint",
     )
@@ -88,13 +89,6 @@ class Release(db.Model):
 
     def __repr__(self):
         return f"{self.version}"
-
-
-# Generate a random fs_uniquifier: users cannot login without it
-@event.listens_for(User, "before_insert")
-def before_insert_listener(mapper, connection, target):
-    if target.fs_uniquifier is None:
-        target.fs_uniquifier = str(uuid.uuid4())
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)

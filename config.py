@@ -17,8 +17,6 @@ class Config:
     SECURITY_POST_LOGOUT_VIEW = "/"
     SECURITY_POST_REGISTER_VIEW = "/admin/"
     SECURITY_REGISTERABLE = True
-    # NOT remove! Flask is not able to create new users without
-    SECURITY_REGISTER_URL = "/admin/user/new/"
     # Allow registration and login by username
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper}}]
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")

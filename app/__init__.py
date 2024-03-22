@@ -22,8 +22,13 @@ from flask_admin.contrib.sqla import ModelView
 # Imports for Flask security
 from flask_security import (
     current_user,
+    hash_password,
     Security,
 )
+
+from markupsafe import Markup
+
+from wtforms import PasswordField
 
 import re
 
@@ -65,10 +70,11 @@ def create_app(config_class=Config):
 
     @security.register_context_processor
     def security_register_processor():
+        register_form = ExtendedRegisterForm()
         return dict(
             user_datastore=user_datastore,
             roles=Role.query.all(),
-            register_user_form=ExtendedRegisterForm(),
+            register_form=register_form,
         )
 
     @app.before_request
@@ -87,6 +93,14 @@ def create_app(config_class=Config):
             db.session.commit()
 
     class UserAdminView(ModelView):
+        # Specify the order of fields in the form
+        form_columns = (
+            "username",
+            "password",
+            "roles",
+            "device",
+            "active",
+        )
         # Actual columns' title as seen in the website
         column_list = ("username", "versions", "active", "roles")
         # Link the columns' title and the model class attribute, so to make data sortable
@@ -96,6 +110,12 @@ def create_app(config_class=Config):
             "active",
             ("roles", "roles.name"),
         )
+
+        form_extra_fields = {
+            "password": PasswordField("Password")  # Add password field to the edit form
+        }
+
+        form_excluded_columns = ("fs_uniquifier",)
 
         def is_accessible(self):
             return (
@@ -127,7 +147,15 @@ def create_app(config_class=Config):
             else:
                 return ""
 
-        column_formatters = {"roles": _display_roles, "versions": _display_versions}
+        column_formatters = {"versions": _display_versions, "roles": _display_roles}
+
+        def on_model_change(self, form, model, is_created):
+            # Check if the model being changed is a User model and the current user is an administrator
+            if isinstance(model, User) and "administrator" in current_user.roles:
+                # Check if password field is present in the form and has a value
+                if "password" in form and form.password.data:
+                    # Hash the password before saving it to the database
+                    model.password = hash_password(form.password.data)
 
     class DeviceAdminView(BaseView):
         @expose("/")
