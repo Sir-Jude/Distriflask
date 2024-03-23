@@ -28,7 +28,7 @@ from flask_security import (
 
 from markupsafe import Markup
 
-from wtforms import PasswordField
+from wtforms import PasswordField, StringField
 from wtforms.validators import DataRequired, Length
 
 import re
@@ -113,6 +113,7 @@ def create_app(config_class=Config):
         )
 
         form_extra_fields = {
+            "username": StringField("Username", [DataRequired(), Length(min=4)]),
             "password": PasswordField("Password", [DataRequired(), Length(min=8)])
         }
 
