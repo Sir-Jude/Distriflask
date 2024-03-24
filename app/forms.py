@@ -4,6 +4,7 @@ from flask_security.forms import RegisterForm, LoginForm
 from flask_security import lookup_identity
 from flask_wtf import FlaskForm
 from app.models import Role, Device
+from sqlalchemy import func
 from wtforms import (
     BooleanField,
     FileField,
@@ -39,7 +40,7 @@ class ExtendedRegisterForm(RegisterForm):
     )
     device = QuerySelectField(
         "Device",
-        query_factory=lambda: Device.query.all(),
+        query_factory=lambda: Device.query.order_by(func.lower(Device.name)).all(),
         get_label="name",
         allow_blank=True,
         blank_text="None",
@@ -51,6 +52,12 @@ class ExtendedRegisterForm(RegisterForm):
         get_label="name",
         validators=[DataRequired()],
     )
+
+    def __init__(self, *args, **kwargs):
+        super(ExtendedRegisterForm, self).__init__(*args, **kwargs)
+        # Remove email field
+        delattr(self, "email")
+        delattr(self, "submit")
 
 
 class ExtendedLoginForm(LoginForm):

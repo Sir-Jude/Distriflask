@@ -15,7 +15,7 @@ class UserRole(db.Model):
 class User(db.Model, UserMixin):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True)
-    username = Column(String(100), unique=True, index=True)
+    username = Column(String(100), unique=True)
     password = Column(String(80))
     device_name = Column(String, ForeignKey("devices.name"), unique=True)
     active = Column(Boolean())
