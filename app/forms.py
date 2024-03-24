@@ -31,8 +31,7 @@ def username_validator(form, field):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    # username = StringField(
-    #     "Username", [DataRequired(), username_validator, unique_identity_attribute]
+    # username = StringField("Username", [DataRequired(), Length(min=4), unique_identity_attribute]
     # )
     password = PasswordField("Password", [DataRequired(), Length(min=8, max=20)])
     password_confirm = PasswordField(
@@ -46,6 +45,8 @@ class ExtendedRegisterForm(RegisterForm):
         "Device",
         query_factory=lambda: Device.query.all(),
         get_label="name",
+        allow_blank=True,
+        blank_text="None"
     )
     active = BooleanField("Active")
     roles = QuerySelectMultipleField(
