@@ -239,7 +239,6 @@ def create_users():
             db.session.add(new_user)
 
             new_role = Role.query.filter_by(name="customer").first()
-            print("QUACK!!!")
             new_user.roles.append(new_role)
 
             new_user.device_name = new_user.username

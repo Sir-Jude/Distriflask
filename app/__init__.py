@@ -6,6 +6,8 @@ from app.models import User, Role, user_datastore
 from app.views.customers import customers
 from app.views.admin_pages import admin_pages
 from app.forms import ExtendedRegisterForm, ExtendedLoginForm
+from app.security_utils import CustomUsernameUtil
+
 
 # Import app's configurations
 from config import Config
@@ -57,6 +59,7 @@ def create_app(config_class=Config):
     security = Security(
         app,
         user_datastore,
+        username_util_cls=CustomUsernameUtil,
         register_form=ExtendedRegisterForm,
         login_form=ExtendedLoginForm,
     )
@@ -137,37 +140,7 @@ def create_app(config_class=Config):
 
         column_formatters = {"versions": _display_versions, "roles": _display_roles}
 
-        # form = ExtendedRegisterForm
-
-        form_extra_fields = {
-            "username": StringField("Username", [DataRequired(), Length(min=4)]),
-            "password": PasswordField("Password", [DataRequired(), Length(min=8)]),
-            "roles": QuerySelectMultipleField(
-                "Roles",
-                query_factory=lambda: Role.query.all(),
-                get_label="name",
-                validators=[DataRequired()],
-            ),
-        }
-
-        # Specify the order of fields in the form
-        form_columns = (
-            "username",
-            "password",
-            "roles",
-            "device",
-            "active",
-        )
-
-        form_excluded_columns = ("fs_uniquifier",)
-
-        def on_model_change(self, form, model, is_created):
-            # Check if the model being changed is a User model and the current user is an administrator
-            if isinstance(model, User) and "administrator" in current_user.roles:
-                # Check if password field is present in the form and has a value
-                if "password" in form and form.password.data:
-                    # Hash the password before saving it to the database
-                    model.password = hash_password(form.password.data)
+        form = ExtendedRegisterForm
 
     class DeviceAdminView(BaseView):
         @expose("/")
