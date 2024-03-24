@@ -1,21 +1,21 @@
 from config import basedir, Config
 from flask import current_app
+from flask_security.forms import RegisterForm, LoginForm
 from flask_security import (
-    RegisterForm,
-    LoginForm,
     unique_identity_attribute,
     lookup_identity,
 )
 from flask_wtf import FlaskForm
+from app.models import Role
 from wtforms import (
     BooleanField,
     FileField,
     PasswordField,
     SelectField,
-    SelectMultipleField,
     StringField,
     SubmitField,
 )
+from wtforms_alchemy import QuerySelectMultipleField
 from wtforms.validators import DataRequired, Length, ValidationError
 from werkzeug.local import LocalProxy
 import os
@@ -31,22 +31,16 @@ def username_validator(form, field):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    username = StringField(
-        "Username", [DataRequired(), username_validator, unique_identity_attribute]
-    )
+    # username = StringField(
+    #     "Username", [DataRequired(), username_validator, unique_identity_attribute]
+    # )
     password = PasswordField("Password", [DataRequired(), Length(min=8, max=20)])
     device_name = StringField("Device")
     active = BooleanField("Active")
-    roles = SelectMultipleField(
+    roles = QuerySelectMultipleField(
         "Roles",
-        choices=[
-            ("customer"),
-            ("administrator"),
-            ("sales"),
-            ("production"),
-            ("application"),
-            ("software"),
-        ],
+        query_factory=lambda: Role.query.all(),
+        get_label="name",
         validators=[DataRequired()],
     )
 

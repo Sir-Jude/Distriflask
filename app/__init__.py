@@ -29,6 +29,7 @@ from flask_security import (
 from markupsafe import Markup
 
 from wtforms import PasswordField, StringField
+from wtforms_alchemy import QuerySelectMultipleField
 from wtforms.validators import DataRequired, Length
 
 import re
@@ -94,14 +95,6 @@ def create_app(config_class=Config):
             db.session.commit()
 
     class UserAdminView(ModelView):
-        # Specify the order of fields in the form
-        form_columns = (
-            "username",
-            "password",
-            "roles",
-            "device",
-            "active",
-        )
         # Actual columns' title as seen in the website
         column_list = ("username", "versions", "active", "roles")
         # Link the columns' title and the model class attribute, so to make data sortable
@@ -111,13 +104,6 @@ def create_app(config_class=Config):
             "active",
             ("roles", "roles.name"),
         )
-
-        form_extra_fields = {
-            "username": StringField("Username", [DataRequired(), Length(min=4)]),
-            "password": PasswordField("Password", [DataRequired(), Length(min=8)])
-        }
-
-        form_excluded_columns = ("fs_uniquifier",)
 
         def is_accessible(self):
             return (
@@ -150,6 +136,30 @@ def create_app(config_class=Config):
                 return ""
 
         column_formatters = {"versions": _display_versions, "roles": _display_roles}
+
+        # form = ExtendedRegisterForm
+
+        form_extra_fields = {
+            "username": StringField("Username", [DataRequired(), Length(min=4)]),
+            "password": PasswordField("Password", [DataRequired(), Length(min=8)]),
+            "roles": QuerySelectMultipleField(
+                "Roles",
+                query_factory=lambda: Role.query.all(),
+                get_label="name",
+                validators=[DataRequired()],
+            ),
+        }
+
+        # Specify the order of fields in the form
+        form_columns = (
+            "username",
+            "password",
+            "roles",
+            "device",
+            "active",
+        )
+
+        form_excluded_columns = ("fs_uniquifier",)
 
         def on_model_change(self, form, model, is_created):
             # Check if the model being changed is a User model and the current user is an administrator
