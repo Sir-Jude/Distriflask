@@ -1,10 +1,7 @@
 from config import basedir, Config
 from flask import current_app
 from flask_security.forms import RegisterForm, LoginForm
-from flask_security import (
-    unique_identity_attribute,
-    lookup_identity,
-)
+from flask_security import lookup_identity
 from flask_wtf import FlaskForm
 from app.models import Role, Device
 from wtforms import (
@@ -31,8 +28,7 @@ def username_validator(form, field):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    # username = StringField("Username", [DataRequired(), Length(min=4), unique_identity_attribute]
-    # )
+    username = StringField("Username", [DataRequired()])
     password = PasswordField("Password", [DataRequired(), Length(min=8, max=20)])
     password_confirm = PasswordField(
         "Retype password",
@@ -46,7 +42,7 @@ class ExtendedRegisterForm(RegisterForm):
         query_factory=lambda: Device.query.all(),
         get_label="name",
         allow_blank=True,
-        blank_text="None"
+        blank_text="None",
     )
     active = BooleanField("Active")
     roles = QuerySelectMultipleField(
@@ -58,13 +54,13 @@ class ExtendedRegisterForm(RegisterForm):
 
 
 class ExtendedLoginForm(LoginForm):
-    email = StringField("Username", [DataRequired()])
+    username = StringField("Username", [DataRequired()])
 
     def validate(self, **kwargs):
-        self.user = lookup_identity(self.email.data)
+        self.user = lookup_identity(self.username.data)
         # Setting 'ifield' informs the default login form validation
         # handler that the identity has already been confirmed.
-        self.ifield = self.email
+        self.ifield = self.username
         if not super().validate(**kwargs):
             return False
         return True
