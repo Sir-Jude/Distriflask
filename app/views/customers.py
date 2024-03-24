@@ -20,7 +20,7 @@ from wtforms.validators import InputRequired, Length
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Username", [InputRequired(), Length(min=4, max=20)])
+    username = StringField("Username", [InputRequired(), Length(min=4, max=20)])
     password = PasswordField("Password", [InputRequired(), Length(min=8, max=20)])
     submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
@@ -38,7 +38,7 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.email.data).first()
+        user = User.query.filter_by(username=form.username.data).first()
         if user and user.is_active:
             if verify_password(form.password.data, user.password):
                 login_user(user)
