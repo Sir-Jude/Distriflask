@@ -6,7 +6,7 @@ from flask_security import (
     lookup_identity,
 )
 from flask_wtf import FlaskForm
-from app.models import Role
+from app.models import Role, Device
 from wtforms import (
     BooleanField,
     FileField,
@@ -15,8 +15,8 @@ from wtforms import (
     StringField,
     SubmitField,
 )
-from wtforms_alchemy import QuerySelectMultipleField
-from wtforms.validators import DataRequired, Length, ValidationError
+from wtforms_alchemy import QuerySelectField, QuerySelectMultipleField
+from wtforms.validators import DataRequired, EqualTo, Length, ValidationError
 from werkzeug.local import LocalProxy
 import os
 
@@ -35,7 +35,18 @@ class ExtendedRegisterForm(RegisterForm):
     #     "Username", [DataRequired(), username_validator, unique_identity_attribute]
     # )
     password = PasswordField("Password", [DataRequired(), Length(min=8, max=20)])
-    device_name = StringField("Device")
+    password_confirm = PasswordField(
+        "Retype password",
+        validators=[
+            EqualTo("password", message="RETYPE_PASSWORD_MISMATCH"),
+            DataRequired(),
+        ],
+    )
+    device = QuerySelectField(
+        "Device",
+        query_factory=lambda: Device.query.all(),
+        get_label="name",
+    )
     active = BooleanField("Active")
     roles = QuerySelectMultipleField(
         "Roles",
