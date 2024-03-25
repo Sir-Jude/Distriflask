@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-# Use this function to map a username to an identity
-from flask_security import uia_username_mapper
 
 load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))

@@ -223,14 +223,7 @@ def create_users():
 
         print("Creating customers")
         DEVICES = create_sample_devices()
-        used_device_names = set()
-        for _ in range(N_USERS):
-            # Generate a unique username based on device names
-            device_name = random.choice(DEVICES)
-            while device_name in used_device_names:
-                device_name = random.choice(DEVICES)
-            used_device_names.add(device_name)
-
+        for device_name in DEVICES:
             new_user = User(
                 username=device_name,
                 password=hash_password("12345678"),
