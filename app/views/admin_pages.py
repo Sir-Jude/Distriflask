@@ -104,6 +104,25 @@ def devices_default_table():
 def selected_release_version(selected_release_version):
     form = DeviceSearchForm()
 
+    parts = selected_release_version.split(".")
+
+    # Filter releases based on first two numbers of the selected_release_version in the URL
+    filtered_releases = Release.query.filter(
+        Release.version.like(f"{parts[0]}.{parts[1]}.%")
+    ).all()
+
+    # Get all unique releases matching the major version
+    all_releases = sorted(
+        set([release.version for release in filtered_releases]),
+        key=lambda x: tuple(
+            int(part) if part.isdigit() else part for part in re.findall(r"\d+|\D+", x)
+        ),
+        reverse=True,
+    )
+
+    if len(parts) == 2:
+        selected_release_version = all_releases[0]
+
     check_existence = Release.query.filter_by(version=selected_release_version).first()
 
     # Check if there are any filtered releases
@@ -118,11 +137,6 @@ def selected_release_version(selected_release_version):
             ]
         )
 
-        # Filter releases based on first two numbers of the selected_release_version in the URL
-        filtered_releases = Release.query.filter(
-            Release.version.like(f"{release_version_X_X}%")
-        ).all()
-
         # Extract devices associated with the filtered releases
         devices_with_matching_releases = [
             release.device for release in filtered_releases
@@ -133,24 +147,35 @@ def selected_release_version(selected_release_version):
             Device.releases.any(Release.version.like(f"{release_version_X_X}%"))
         ).all()
 
-        # Get all unique releases matching the major version
-        all_releases = sorted(
-            set([release.version for release in filtered_releases]),
-            key=lambda x: tuple(
-                int(part) if part.isdigit() else part
-                for part in re.findall(r"\d+|\D+", x)
-            ),
-            reverse=True,
-        )
-
+        # Find the index of the selected release version in the list of all releases.
         index = all_releases.index(selected_release_version)
 
-        if index == 0:
-            all_releases = all_releases[:11]
-        elif 0 < index < 11:
-            all_releases = all_releases[: index + 11]
+        # Define a variable to store set number of newer/older releases
+        halfwith = 10
+
+        # Initialize lists to store newer and older releases.
+        newer = []
+        older = all_releases[index + 1 : index + halfwith + 1]
+
+        # Check if there are fewer than 10 releases before the selected one.
+        if index - halfwith < 0:
+            # If yes, include releases from beginning up to selected one.
+            newer = all_releases[:index]
         else:
-            all_releases = all_releases[index - 10 : index + 11]
+            # Otherwise, include the 10 releases before the selected one.
+            newer = all_releases[index - halfwith : index]
+
+        # Reorder all releases to have newer : selected :older
+        releases = newer + [all_releases[index]] + older
+
+        # Check if there are more releases after the selected one.
+        if (index + halfwith + 1) < len(all_releases):
+            # If yes, add ellipsis to indicate more releases.
+            releases = releases + ["..."]
+
+        # Check if there are more releases before the selected one.
+        if (index - halfwith) > 0:
+            releases = ["..."] + releases
 
         device_versions = {
             device: [
@@ -168,7 +193,7 @@ def selected_release_version(selected_release_version):
             "admin/matrix_release.html",
             devices_in_rows=devices_in_rows,
             device_versions=device_versions,
-            all_releases=all_releases,
+            releases=releases,
             selected_release_version=selected_release_version,
             form=form,
         )
