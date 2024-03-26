@@ -5,7 +5,13 @@ from app.errors import register_error_handlers
 from app.models import User, Role, user_datastore
 from app.views.customers import customers
 from app.views.admin_pages import UserAdminView, admin_pages
-from app.forms import ExtendedRegisterForm, ExtendedLoginForm
+from app.forms import (
+    DeviceSearchForm,
+    DownloadReleaseForm,
+    ExtendedLoginForm,
+    ExtendedRegisterForm,
+    UploadReleaseForm
+)
 from app.security_utils import CustomUsernameUtil
 
 
@@ -56,7 +62,13 @@ def create_app(config_class=Config):
 
     @security.context_processor
     def security_context_processor():
+        search_form = DeviceSearchForm()
+        download_form = DownloadReleaseForm()
+        upload_form = UploadReleaseForm()
         return dict(
+            search_form=search_form,
+            download_form=download_form,
+            upload_form=upload_form,
             admin_base_template=admin.base_template,
             admin_view=admin.index_view,
             h=admin_helpers,
@@ -67,9 +79,9 @@ def create_app(config_class=Config):
     def security_register_processor():
         register_form = ExtendedRegisterForm()
         return dict(
-            user_datastore=user_datastore,
-            roles=Role.query.all(),
             register_form=register_form,
+            roles=Role.query.all(),
+            user_datastore=user_datastore,
         )
 
     @app.before_request
