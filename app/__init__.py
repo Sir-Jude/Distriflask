@@ -10,7 +10,7 @@ from app.forms import (
     DownloadReleaseForm,
     ExtendedLoginForm,
     ExtendedRegisterForm,
-    UploadReleaseForm
+    UploadReleaseForm,
 )
 from app.security_utils import CustomUsernameUtil
 

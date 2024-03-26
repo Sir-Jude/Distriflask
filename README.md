@@ -2,10 +2,11 @@
 1. [Introduction](#introduction)
 2. [Setting up the web application](#setting)  
 2.1. [Create a virtual environment](#virtual-env)  
-2.2. [Install the required libraries](#libraries)  
-2.3. [Set up the environmental variables](#variables)  
-2.4. [Create and populate the database with some dummy data](#script)  
-2.5. [Launch the application](#launching)  
+2.2. [2.2. Install the packages "*libldap2-dev*" and "*libsasl2-dev*"](#libldap_libsasl)  
+2.3. [Install the required libraries](#libraries)  
+2.4. [Set up the environmental variables](#variables)  
+2.5. [Create and populate the database with some dummy data](#script)  
+2.6. [Launch the application](#launching)  
 3. [Using the application](#using)  
 3.1. [The admin pages](#admin)  
 &nbsp;&nbsp;3.1.1. [Login as an admin](#admin_login)   
@@ -119,8 +120,21 @@ source .venv/bin/activate
 ```
 **TIP**: in the terminal, type "*deactivate*" to switch off the virtual environment.
 
+
+<a id="libldap_libsasl"></a>
+## 2.2. Install the packages "libldap2-dev" and "libsasl2-dev"
+For general web development using Flask, **libldap2-dev** and **libsasl2-dev** might not be essential: Flask itself doesn't directly rely on these libraries for its core functionality.
+
+However, their importance might arise if it's necessary to implement certain features within the Flask application that require interaction with LDAP for user authentication or to integrate SASL for security-related functionalities.
+
+Finally, when testing the installation of the app on other computers, I have often encountered issues without these packages installed. Therefore, I strongly advise you to install them.
+```
+sudo apt-get install libldap2-dev
+sudo apt-get install libsasl2-dev
+```
+
 <a id="libraries"></a>  
-## 2.2. Install the required libraries
+## 2.3. Install the required libraries
 Install the libraries listed inside the **requirements.txt** file:
 ```
 pip install -r requirements.txt
@@ -128,7 +142,7 @@ pip install -r requirements.txt
 ```
 
 <a id="variables"></a>  
-## 2.3. Set up the environmental variables
+## 2.4. Set up the environmental variables
 Create a .env file
 ```
 code .env
@@ -154,14 +168,14 @@ The **SQLALCHEMY_DATABASE_URI** specifies the name of the database connected to 
 
 
 <a id="script"></a>  
-## 2.4. Create and populate the database with some dummy data
+## 2.5. Create and populate the database with some dummy data
 Launch the script to create and populate the database
 ```
 python create_tables.py
 ```  
 
 <a id="launching"></a>  
-## 2.5. Launch the application
+## 2.6. Launch the application
 In VSCode, open a second terminal (Ctrl + Shift + 5) and launch the app from there with the following command:
 ```
 flask --app app run --debug
