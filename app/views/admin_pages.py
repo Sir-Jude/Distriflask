@@ -1,13 +1,67 @@
-from app.extensions import db
 from app.forms import DeviceSearchForm, ExtendedRegisterForm, UploadReleaseForm
-from app.models import Role, Device, Release, user_datastore
+from app.models import User, Role, Device, Release
 from config import basedir, Config
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import login_required
-from flask_security import hash_password, roles_required
+from flask_security import current_user, hash_password, roles_required
+from flask_admin.contrib.sqla import ModelView
 from werkzeug.utils import secure_filename
 import os
 import re
+
+
+class UserAdminView(ModelView):
+    # Actual columns' title as seen in the website
+    column_list = ("username", "versions", "active", "roles")
+    # Link the columns' title and the model class attribute, so to make data sortable
+    column_sortable_list = (
+        "username",
+        ("versions", "device_name"),
+        "active",
+        ("roles", "roles.name"),
+    )
+
+    def is_accessible(self):
+        return (
+            current_user.is_active
+            and current_user.is_authenticated
+            and any(role.name == "administrator" for role in current_user.roles)
+        )
+
+    def _handle_view(self, name):
+        if not self.is_accessible():
+            return redirect(url_for("security.login"))
+
+    def _display_roles(view, context, model, name):
+        return ", ".join([role.name.capitalize() for role in model.roles])
+
+    def _display_versions(view, context, model, name):
+        if model.device:
+            # Extract versions and sort them
+            versions = sorted(
+                (release.version for release in model.device.releases),
+                key=lambda r: tuple(
+                    int(part) if part.isdigit() else part
+                    for part in re.findall(r"\d+|\D+", r)
+                ),
+                reverse=True,
+            )
+            # Return a formatted string with sorted versions
+            return ", ".join(versions)
+        else:
+            return ""
+
+    column_formatters = {"versions": _display_versions, "roles": _display_roles}
+
+    form = ExtendedRegisterForm
+
+    def on_model_change(self, form, model, is_created):
+        # Check if the model being changed is a User model and the current user is an administrator
+        if isinstance(model, User) and "administrator" in current_user.roles:
+            # Check if password field is present in the form and has a value
+            if "password" in form and form.password.data:
+                # Hash the password before saving it to the database
+                model.password = hash_password(form.password.data)
 
 
 admin_pages = Blueprint("admin_pages", __name__)
