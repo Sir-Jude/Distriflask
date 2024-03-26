@@ -106,10 +106,19 @@ def selected_release_version(selected_release_version):
 
     parts = selected_release_version.split(".")
 
-    # Filter releases based on first two numbers of the selected_release_version in the URL
+    # Check if users input a valid release format (X.X or X.X.X)
+    if len(parts) < 2:
+        flash("Invalid release version format.", "error")
+        return redirect(url_for("admin_pages.devices_default_table"))
+
     filtered_releases = Release.query.filter(
-        Release.version.like(f"{parts[0]}.{parts[1]}.%")
+        Release.version.like(f"{parts[0]}.{parts[1]}%")
     ).all()
+
+    # Check if any existing release starts with the provided major version (X.X)
+    if not filtered_releases:
+        flash("No releases found for the provided major version.", "error")
+        return redirect(url_for("admin_pages.devices_default_table"))
 
     # Get all unique releases matching the major version
     all_releases = sorted(
@@ -122,6 +131,16 @@ def selected_release_version(selected_release_version):
 
     if len(parts) == 2:
         selected_release_version = all_releases[0]
+
+    # Check if any existing release starts with the provided major version (X.X)
+    if not all_releases:
+        flash("No releases found for the provided major version.", "error")
+        return redirect(url_for("admin_pages.devices_default_table"))
+
+    # Check if the provided release version exists in the list of all releases
+    elif selected_release_version not in all_releases:
+        flash("Selected release version not found.", "error")
+        return redirect(url_for("admin_pages.devices_default_table"))
 
     check_existence = Release.query.filter_by(version=selected_release_version).first()
 
