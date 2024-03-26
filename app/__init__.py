@@ -4,7 +4,7 @@ from app.extensions import db, login_manager, migrate
 from app.errors import register_error_handlers
 from app.models import User, Role, user_datastore
 from app.views.customers import customers
-from app.views.admin_pages import admin_pages
+from app.views.admin_pages import UserAdminView, admin_pages
 from app.forms import ExtendedRegisterForm, ExtendedLoginForm
 from app.security_utils import CustomUsernameUtil
 
@@ -15,26 +15,16 @@ from config import Config
 # Basic flask imports
 from flask import Flask, redirect, url_for
 
-# Imports for Admin page
+# Imports for Admin pages
 from flask_admin import Admin, helpers as admin_helpers
 from flask_admin.base import BaseView, expose
 from flask_admin.menu import MenuLink
-from flask_admin.contrib.sqla import ModelView
 
 # Imports for Flask security
 from flask_security import (
     current_user,
-    hash_password,
     Security,
 )
-
-from markupsafe import Markup
-
-from wtforms import PasswordField, StringField
-from wtforms_alchemy import QuerySelectMultipleField
-from wtforms.validators import DataRequired, Length
-
-import re
 
 
 def create_app(config_class=Config):
@@ -96,51 +86,6 @@ def create_app(config_class=Config):
             admin_role = Role.query.filter_by(name="administrator").first()
             user_datastore.add_role_to_user(first_user, admin_role)
             db.session.commit()
-
-    class UserAdminView(ModelView):
-        # Actual columns' title as seen in the website
-        column_list = ("username", "versions", "active", "roles")
-        # Link the columns' title and the model class attribute, so to make data sortable
-        column_sortable_list = (
-            "username",
-            ("versions", "device_name"),
-            "active",
-            ("roles", "roles.name"),
-        )
-
-        def is_accessible(self):
-            return (
-                current_user.is_active
-                and current_user.is_authenticated
-                and any(role.name == "administrator" for role in current_user.roles)
-            )
-
-        def _handle_view(self, name):
-            if not self.is_accessible():
-                return redirect(url_for("security.login"))
-
-        def _display_roles(view, context, model, name):
-            return ", ".join([role.name.capitalize() for role in model.roles])
-
-        def _display_versions(view, context, model, name):
-            if model.device:
-                # Extract versions and sort them
-                versions = sorted(
-                    (release.version for release in model.device.releases),
-                    key=lambda r: tuple(
-                        int(part) if part.isdigit() else part
-                        for part in re.findall(r"\d+|\D+", r)
-                    ),
-                    reverse=True,
-                )
-                # Return a formatted string with sorted versions
-                return ", ".join(versions)
-            else:
-                return ""
-
-        column_formatters = {"versions": _display_versions, "roles": _display_roles}
-
-        form = ExtendedRegisterForm
 
     class DeviceAdminView(BaseView):
         @expose("/")
