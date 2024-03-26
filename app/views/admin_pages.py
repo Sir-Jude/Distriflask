@@ -71,11 +71,11 @@ admin_pages = Blueprint("admin_pages", __name__)
 @login_required
 @roles_required("administrator")
 def devices_default_table():
-    form = DeviceSearchForm()
+    search_form = DeviceSearchForm()
 
-    if form.validate_on_submit():
-        device_name = form.device_name.data
-        selected_release_version = form.selected_release_version.data
+    if search_form.validate_on_submit():
+        device_name = search_form.device_name.data
+        selected_release_version = search_form.selected_release_version.data
 
         if device_name and selected_release_version:
             flash("Please provide only one search criteria at a time.", "error")
@@ -156,7 +156,7 @@ def devices_default_table():
 @login_required
 @roles_required("administrator")
 def selected_release_version(selected_release_version):
-    form = DeviceSearchForm()
+    search_form = DeviceSearchForm()
 
     parts = selected_release_version.split(".")
 
@@ -268,7 +268,7 @@ def selected_release_version(selected_release_version):
             device_versions=device_versions,
             releases=releases,
             selected_release_version=selected_release_version,
-            form=form,
+            search_form=search_form,
         )
     else:
         flash("No release found.", "error")
@@ -280,7 +280,7 @@ def selected_release_version(selected_release_version):
 @login_required
 @roles_required("administrator")
 def selected_device_name(device_name):
-    form = DeviceSearchForm()  # Instantiate the form
+    search_form = DeviceSearchForm()  # Instantiate the search_form
     all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
     all_device_versions = {
         device: sorted(
@@ -299,7 +299,7 @@ def selected_device_name(device_name):
             "admin/matrix_device.html",
             devices=[filtered_device],
             all_device_versions=all_device_versions,
-            form=form,
+            search_form=search_form,
         )
     else:
         flash("No devices found.", "error")
@@ -310,19 +310,19 @@ def selected_device_name(device_name):
 @login_required
 @roles_required("administrator")
 def upload():
-    form = UploadReleaseForm()
+    upload_form = UploadReleaseForm()
 
-    if form.validate_on_submit():
-        device = form.device.data
-        version = form.version.data
+    if upload_form.validate_on_submit():
+        device = upload_form.device.data
+        version = upload_form.version.data
 
         if not device or not version:  # Check if either field is empty
             flash("Please fill out both the device and version fields.")
 
-        elif not form.path_exists():  # Check if folder path exists
+        elif not upload_form.path_exists():  # Check if folder path exists
             flash("Selected file path does not exist: please, input the correct one.")
 
-        elif not form.allowed_file():  # Check if the file format is allowed
+        elif not upload_form.allowed_file():  # Check if the file format is allowed
             flash("Selected file format is not allowed: please, use only .txt or .deb.")
 
         else:
@@ -332,20 +332,20 @@ def upload():
                 f'The file "{version.filename}" has been uploaded into the folder "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
             )
 
-            # Clear form data after successful submission
-            form.device.data = None
-            form.version.data = None
+            # Clear upload_form data after successful submission
+            upload_form.device.data = None
+            upload_form.version.data = None
 
             return redirect(url_for("admin_pages.upload"))
 
-        # Retain device name on form submission failure due to invalid file format
-        if form.device.data:
-            device_value = form.device.data
+        # Retain device name on upload_form submission failure due to invalid file format
+        if upload_form.device.data:
+            device_value = upload_form.device.data
         else:
             device_value = None
 
         return render_template(
-            "admin/upload.html", form=form, device_value=device_value
+            "admin/upload.html", upload_form=upload_form, device_value=device_value
         )
 
-    return render_template("admin/upload.html", form=form)
+    return render_template("admin/upload.html", upload_form=upload_form)

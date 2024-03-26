@@ -8,17 +8,17 @@
 {% block content %}
 {% include "security/_messages.html" %}
 <div class="search-box">
-  <h2>{{ _fsdomain('Upoload a file') }}</h2>
+  <h2>{{ _fsdomain('Upload a file') }}</h2>
   <form method='POST' enctype='multipart/form-data'>
-    {{ form.hidden_tag() }}
-    {{ render_form_errors(form) }}
+    {{ upload_form.hidden_tag() }}
+    {{ render_form_errors(upload_form) }}
     <div class="form-group">
-      <h3>{{ render_field_with_errors(form.device) }}</h3>
+      <h3>{{ render_field_with_errors(upload_form.device) }}</h3>
     </div>
     <div class="form-group">
-      <h3>{{ render_field_with_errors(form.version) }}</h3>
+      <h3>{{ render_field_with_errors(upload_form.version) }}</h3>
     </div>
-      {{ render_field(form.submit) }}
+      {{ render_field(upload_form.submit) }}
   </form>
 </div>
 
