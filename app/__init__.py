@@ -4,7 +4,11 @@ from app.extensions import db, login_manager, migrate
 from app.errors import register_error_handlers
 from app.models import User, Role, user_datastore
 from app.views.customers import customers
-from app.views.admin_pages import UserAdminView, admin_pages
+from app.views.admin_pages import (
+    UserAdminView,
+    DeviceAdminView,
+    UploadAdminView,
+)
 from app.forms import (
     DeviceSearchForm,
     DownloadReleaseForm,
@@ -14,21 +18,17 @@ from app.forms import (
 )
 from app.security_utils import CustomUsernameUtil
 
-
 # Import app's configurations
 from config import Config
 
 # Basic flask imports
-from flask import Flask, redirect, url_for
+from flask import Flask, url_for
 
-# Imports for Admin pages
+# Imports for Admin page
 from flask_admin import Admin, helpers as admin_helpers
-from flask_admin.base import BaseView, expose
-from flask_admin.menu import MenuLink
 
 # Imports for Flask security
 from flask_security import (
-    current_user,
     Security,
 )
 
@@ -48,7 +48,6 @@ def create_app(config_class=Config):
     )
 
     app.register_blueprint(customers)
-    app.register_blueprint(admin_pages)
     register_error_handlers(app)
 
     # This snippet MUST stay after "app.register_blueprint(admin_pages)"
@@ -99,39 +98,9 @@ def create_app(config_class=Config):
             user_datastore.add_role_to_user(first_user, admin_role)
             db.session.commit()
 
-    class DeviceAdminView(BaseView):
-        @expose("/")
-        def index(self):
-            return redirect(url_for("admin_pages.devices_default_table"))
-
-        def is_accessible(self):
-            return (
-                current_user.is_active
-                and current_user.is_authenticated
-                and any(role.name == "administrator" for role in current_user.roles)
-            )
-
-        def _get_admin_menu(self):
-            return MenuLink("Devices", endpoint="admin_pages.devices_default_table")
-
-    class UploadAdminView(BaseView):
-        @expose("/")
-        def index(self):
-            return redirect(url_for("admin_pages.upload"))
-
-        def is_accessible(self):
-            return (
-                current_user.is_active
-                and current_user.is_authenticated
-                and any(role.name == "administrator" for role in current_user.roles)
-            )
-
-        def _get_admin_menu(self):
-            return MenuLink("Upload", endpoint="admin_pages.upload")
-
     admin.add_view(UserAdminView(User, db.session, name="Users"))
-    admin.add_view(DeviceAdminView(name="Devices"))
-    admin.add_view(UploadAdminView(name="Upload"))
+    admin.add_view(DeviceAdminView(name="Devices", endpoint="device_admin"))
+    admin.add_view(UploadAdminView(name="Upload", endpoint="upload_admin"))
 
     # Flask_login stuff
     login_manager.login_view = "login"

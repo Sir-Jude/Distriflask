@@ -9,7 +9,7 @@
 {% include "security/_messages.html" %}
 <div class="search-box">
   <h2>{{ _fsdomain('Search for a device') }}</h2>
-  <form action="{{ url_for('admin_pages.devices_default_table') }}" method="POST">
+  <form action="{{ url_for('device_admin.devices_default_table') }}" method="POST">
     {{ search_form.hidden_tag() }}
     {{ render_form_errors(search_form) }}
     <div class="form-group">
