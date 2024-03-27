@@ -15,6 +15,8 @@ class Config:
     SECURITY_POST_LOGOUT_VIEW = "/"
     SECURITY_POST_REGISTER_VIEW = "/admin/"
     SECURITY_REGISTERABLE = True
+    # DO NOT REMOVE - This line allows login with username
+    SECURITY_USERNAME_ENABLE = True
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = "uploads/"
