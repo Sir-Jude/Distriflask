@@ -28,7 +28,7 @@ class LoginForm(FlaskForm):
 customers = Blueprint("customers", __name__)
 
 
-@customers.route("/home")
+@customers.route("/home/")
 @customers.route("/")
 def home():
     return render_template("customers/home.html")
