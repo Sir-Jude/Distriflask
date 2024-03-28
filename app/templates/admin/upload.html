@@ -1,28 +1,31 @@
-{% extends "security/base.html" %}
-{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
+{% extends 'admin/master.html' %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='devices_styles.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='devices_styles.css') }}">
 {% endblock head %}
 
-{% block content %}
+{% block body %}
 {% include "security/_messages.html" %}
 <div class="search-box">
-  <h2>{{ _fsdomain('Upload a file') }}</h2>
+  <h3>{{ _fsdomain('Upload a file') }}</h3>
   <form method='POST' enctype='multipart/form-data'>
     {{ upload_form.hidden_tag() }}
-    {{ render_form_errors(upload_form) }}
     <div class="form-group">
-      <h3>{{ render_field_with_errors(upload_form.device) }}</h3>
+      <div class="label-field">
+        <label>Release:</label>
+        <span>{{ upload_form.device}}</span>
+      </div>
     </div>
     <div class="form-group">
-      <h3>{{ render_field_with_errors(upload_form.version) }}</h3>
+      <div class="label-field">
+        <label style="float:left;">Version:</label>
+        <span style="float:right;">{{ upload_form.version }}</span>
+      </div>
     </div>
-      {{ render_field(upload_form.submit) }}
+      {{ upload_form.submit }}
   </form>
 </div>
 
 <div style="clear:both;"></div> <!-- Add this to clear the float -->
 <br>
-{% include "security/_menu.html" %}
-{% endblock content %}
+{% endblock body %}

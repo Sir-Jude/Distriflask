@@ -1,30 +1,32 @@
-{% extends "security/base.html" %}
-{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors %}
+{% extends 'admin/master.html' %}
 
 {% block head %}
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='devices_styles.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='devices_styles.css') }}">
 {% endblock head %}
 
-{% block content %}
-{% include "security/_messages.html" %}
-<div class="search-box">
-  <h2>{{ _fsdomain('Search for a device') }}</h2>
-  <form action="{{ url_for('device_admin.devices_default_table') }}" method="POST">
-    {{ search_form.hidden_tag() }}
-    {{ render_form_errors(search_form) }}
-    <div class="form-group">
-      <h3>{{ render_field_with_errors(search_form.selected_release_version) }}</h3>
-    </div>
-    <div class="form-group">
-      <h3>{{ render_field_with_errors(search_form.device_name) }}</h3>
-    </div>
-    {{ render_field(search_form.submit) }}
-  </form>
-</div>
+{% block body %}
+  <div class="search-box">
+    <h3>{{ _fsdomain('Search for a device') }}</h3>
+    <form action="{{ url_for('device_admin.devices_default_table') }}" method="POST">
+      {{ search_form.hidden_tag() }}
+      <div class="form-group">
+        <div class="label-field">
+          <label>Release:</label>
+          <span>{{ search_form.selected_release_version }}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="label-field">
+          <label>Device:</label>
+          <span>{{ search_form.device_name }}</span>
+        </div>
+      </div>
+      {{ search_form.submit }}
+    </form>
+  </div>
 
 <div style="clear:both;"></div> <!-- Add this to clear the float -->
 {% block table %}
 {% endblock table %}
 <br>
-{% include "security/_menu.html" %}
-{% endblock content %}
+{% endblock body %}
