@@ -2,7 +2,7 @@
 1. [Introduction](#introduction)
 2. [Setting up the web application](#setting)  
 2.1. [Create a virtual environment](#virtual-env)  
-2.2. [2.2. Install the packages "*libldap2-dev*" and "*libsasl2-dev*"](#libldap_libsasl)  
+2.2. [Install the packages "*libldap2-dev*" and "*libsasl2-dev*"](#libldap_libsasl)  
 2.3. [Install the required libraries](#libraries)  
 2.4. [Set up the environmental variables](#variables)  
 2.5. [Create and populate the database with some dummy data](#script)  
@@ -15,6 +15,7 @@
 &nbsp;&nbsp;3.1.4. [The table of releases and devices](#rel_dev)  
 &nbsp;&nbsp;3.1.5. [Upload a file](#upload)  
 3.2. [The customer page](#customer)  
+&nbsp;&nbsp;3.2.2. [download a release](#download)
 4. [Further development](#further)
 
 
@@ -24,11 +25,11 @@ In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of
 
 The app is a prototype of a web application for the distribution of software packages, it is coded in Python and built using the Flask framework. It is a fork of the project I am developing for my internship and, even though it is not finished yet, it already has several functionalities.
 
-For the creation and management of the relational database, I have used:
+For the creation and management of the relational-database, I have used:
 - **SQLite**  
-  A software library that provides a relational database management system. Unlike client-server database management systems, SQLite is serverless and self-contained, meaning it doesn't require a separate server process to operate.  
+  A software library that provides a relational-database management system. Unlike client-server database management systems, SQLite is serverless and self-contained, meaning it doesn't require a separate server process to operate.  
   
-  It is widely used in embedded systems, mobile apps, and small to medium-sized applications where a full-fledged client-server database may be overkill.  
+  It is widely used in embedded systems, mobile apps, and small to medium-sized applications where a full-fledged client-server database may be excessive.  
   
   It implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.
 - **SQLAlchemy**  
@@ -113,12 +114,12 @@ The project comes with a create_tables.py script, which creates:
 # 2. Setting up the web application
 <a id="virtual-env"></a>
 ## 2.1. Create a virtual environment
-First thing first, create a virtual environment
+First things first, create a virtual environment
 ```
 python3 -m venv .venv
 source .venv/bin/activate
 ```
-**TIP**: in the terminal, type "*deactivate*" to switch off the virtual environment.
+**TIP**: in the terminal, type "**deactivate**" to switch off the virtual environment.
 
 
 <a id="libldap_libsasl"></a>
@@ -217,7 +218,7 @@ Log in as an administrator using the following credentials:
 Username: admin
 Password: 12345678
 ```
-**IMPORTANT**: the script assignes this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create a **unique and safer** password for every different user!!!
+**IMPORTANT**: the script assigns this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create a **unique and safer** password for every different user!!!
 
 <a id="user_list"></a>
 ### 3.1.2. The list of Users
@@ -231,26 +232,33 @@ The difference with the second group is that these Users have bought a device (u
 
 <a id="user_create"></a>
 ### 3.1.3. Create a new User
-Open the folder where you cloned the GitHub code and then the one called "**devices**" (it was created by the script): after having choosen the name of a device, click on "**Create**" in the navigation bar of the page with the list of Users.  
+In the page [Users](#user_list), click on **Create**.
 
-Fill the form and click on "**Register**".  
+Then, fill the form in and click on "**Register**".  
 
 If you now go back to the list of Users, you will find that its Username has been added to the list. 
 
 <a id="rel_dev"></a>
 ### 3.1.4. The table of releases and devices
-Note down a release version and then click on "**Devices**" in the navigation bar.
+In the page [Users](#user_list), note down a release version and then click on "**Devices**" in the navigation bar.
 
-Independently from which are the numbers used by the company, the default table always shows the last available minor releases (X.X.X) of the last major version (X.X).
+Independently from which are the numbers used, the default table always shows the lastest available minor releases (X.X.X) of the last major version (X.X).
 
-Now, paste in the form a release or a device number and click "**Search**"   
-- The filter "**Release**", shows a table with the list of all minor releases of the major version, with the column containing the selected one highlighted in red. This allows the employes of the company not only to see how many customers have bought that particular release, but also advise them about the updates which have been released after the version they have bought.
+Now, paste in the form a release number or a device name and click "**Search**"   
+- The filter "**Release**", shows a table with the list of all minor releases of the major version, with the column containing the selected one highlighted in red. This allows the admin not only to see how many customers have bought that particular release, but also advise them about the updates which have been released after the version they have bought.
 - The filter "**Devices**", shows the list of releases available for that particular instrument.
 
 <a id="upload"></a>
 ### 3.1.5. Upload a file
+Click on "**Upload**": you will be redirected to the form which allows you to select the release to be uploaded and the device it belong to.
 
-Work in progress...
+The names of the available devices can be taken from the table in the page [Users](#user_list).
+
+In theory, Flask allows the upload of any file, but for demostration purposes, this app restricts the format to "**.txt**" and "**.deb**"
+
+Once you have chosen a device and an appropriate file, click on "**Upload**".  
+
+Now, if you open the folder "**uploads**", which was created when you launched the [script](#script), you will find the file in a folder with the name of the selected device.
 
 
 <a id="customer"></a>  
@@ -266,12 +274,14 @@ http://127.0.0.1:5000/
 
 Click on "**Login**" in the navigation bar, use the the chosen username and the password "12345678" as credentials and click on the "**Login**" button at the base of the form.
 
-**IMPORTANT**: the script assignes this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create a **unique and safer** password for every different user!!!
+**IMPORTANT**: the script assigns this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create **unique and safer** passwords for every different user!!!
 
-## 3.2.2. Download a release  
-Choose from the dropdown menu the name of a software version and then click on the "**Download**" button.
+<a id="download"></a>
+## 3.2.2. download a release  
+From the dropdown menu, select the name of a software version and then click on the "**Download**" button.
 
-The app will now allow you to save and download the chosen software on your computer.
+The app will now allow you to save and download one of the company's software packages (remember, in this prototype, they are rapresented by some file.txt) on your computer.
+
 
 <a id="further"></a>
 # 4. Further development

@@ -5,20 +5,19 @@
 {% endblock head %}
 
 {% block body %}
-{% include "security/_messages.html" %}
 <div class="search-box">
   <h3>{{ _fsdomain('Upload a file') }}</h3>
   <form method='POST' enctype='multipart/form-data'>
     {{ upload_form.hidden_tag() }}
     <div class="form-group">
       <div class="label-field">
-        <label>Release:</label>
+        <label>Device:</label>
         <span>{{ upload_form.device}}</span>
       </div>
     </div>
     <div class="form-group">
       <div class="label-field">
-        <label style="float:left;">Version:</label>
+        <label style="float:left;">Release:</label>
         <span style="float:right;">{{ upload_form.version }}</span>
       </div>
     </div>

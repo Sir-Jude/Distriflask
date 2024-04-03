@@ -64,7 +64,7 @@ class ExtendedLoginForm(LoginForm):
     username = StringField("Username", [DataRequired()])
 
     def validate(self, **kwargs):
-        self.user = lookup_identity(self.username.data)
+        self.user = lookup_identity(self.username.data.lower())
         # Setting 'ifield' informs the default login form validation
         # handler that the identity has already been confirmed.
         self.ifield = self.username

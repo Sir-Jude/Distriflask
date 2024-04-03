@@ -99,9 +99,9 @@ def create_sample_devices():
     devices = set()
 
     for n in range(200):
-        devices.add(f"Dev0{random.randint(10,2500):04d}")
+        devices.add(f"dev0{random.randint(10,2500):04d}")
     for n in range(20):
-        devices.add(f"Dev100{random.randint(10,70):02d}")
+        devices.add(f"dev100{random.randint(10,70):02d}")
 
     return list(devices)
 

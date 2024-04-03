@@ -38,7 +38,7 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(username=form.username.data.lower()).first()
         if user and user.is_active:
             if verify_password(form.password.data, user.password):
                 login_user(user)
