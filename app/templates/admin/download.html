@@ -1,0 +1,47 @@
+{% extends 'admin/master.html' %}
+
+{% block head %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='devices_styles.css') }}"
+/>
+{% endblock head %} {% block body %}
+<div class="search-box">
+  <h3>{{ _fsdomain('Download a file') }}</h3>
+  <form method="POST" enctype="multipart/form-data">
+    {{ download_form.csrf_token }} {{ download_form.hidden_tag() }}
+    <div class="form-group">
+      <div class="label-field">
+        <label style="float: left">Device:</label>
+        <span>
+          <select name="device">
+            {% for choice_value in download_form.device.choices %}
+              <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </div>
+    </div>
+    {{ download_form.select }}
+    <div style="margin-bottom: 30px;"></div>
+    <div class="form-group">
+      <div class="label-field">
+        <label style="float: left">Version:</label>
+        <span>
+          <select name="version">
+            {% for choice_value in download_form.version.choices %}
+              <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </div>
+    </div>
+    {{ download_form.submit }}
+  </form>
+</div>
+
+<div style="clear: both"></div>
+<!-- Add this to clear the float -->
+<br />
+{% endblock body %}

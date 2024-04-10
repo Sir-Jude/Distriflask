@@ -1,8 +1,13 @@
 from app.extensions import db
-from app.forms import DeviceSearchForm, ExtendedRegisterForm, UploadReleaseForm
+from app.forms import (
+    AdminDownloadForm,
+    DeviceSearchForm,
+    ExtendedRegisterForm,
+    UploadReleaseForm,
+)
 from app.models import User, Role, Device, Release
 from config import basedir, Config
-from flask import flash, redirect, request, session, url_for
+from flask import flash, redirect, request, send_file, session, url_for
 from flask_login import login_required
 from flask_security import current_user, hash_password, roles_required
 from flask_admin.base import BaseView, expose
@@ -343,10 +348,10 @@ class UploadAdminView(BaseView):
         upload_form = UploadReleaseForm()
 
         if upload_form.validate_on_submit():
-            device = upload_form.device.data
+            device_name = upload_form.device.data
             version = upload_form.version.data
 
-            if not device or not version:  # Check if either field is empty
+            if not device_name or not version:  # Check if either field is empty
                 flash("Please fill out both the device and version fields.")
 
             elif not upload_form.path_exists():  # Check if folder path exists
@@ -360,10 +365,28 @@ class UploadAdminView(BaseView):
                 )
 
             else:
-                device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device)
+                # Save the file to the designated folder
+                device = Device.query.filter_by(name=device_name).first()
+                if not device:
+                    flash(f"Device {device_name} does not exist.")
+                    return redirect(url_for("upload_admin.upload"))
+
+                device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device_name)
                 version.save(
                     os.path.join(device_folder, secure_filename(version.filename))
                 )
+
+                # Store the version information in the database
+                new_release = Release(
+                    version=version.filename,
+                    device=device,
+                    release_path=os.path.join(
+                        device_folder, secure_filename(version.filename)
+                    ),
+                )
+                db.session.add(new_release)
+                db.session.commit()
+
                 flash(
                     f'The file "{version.filename}" has been uploaded into the folder "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
                 )
@@ -385,6 +408,63 @@ class UploadAdminView(BaseView):
             )
 
         return self.render("admin/upload.html", upload_form=upload_form)
+
+    def is_accessible(self):
+        return (
+            current_user.is_active
+            and current_user.is_authenticated
+            and any(role.name == "administrator" for role in current_user.roles)
+        )
+
+    def _handle_view(self, name, **kwargs):
+        if not self.is_accessible():
+            return redirect(url_for("security.login"))
+
+
+class DownloadAdminView(BaseView):
+    @expose("/")
+    def index(self):
+        return redirect(url_for("download_admin.download"))
+
+    @expose("/admin/download/", methods=["GET", "POST"])
+    @login_required
+    @roles_required("administrator")
+    def download(self):
+        download_form = AdminDownloadForm(formdata=request.form)
+
+        devices = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
+        download_form.device.choices = [(device, device) for device in devices]
+
+        versions = []
+        selected_device = None
+
+        if download_form.select.data:
+            selected_device = download_form.device.data
+            session["selected_device"] = selected_device
+            flash(f"Device {selected_device} selected.")
+
+        if "selected_device" in session:
+            selected_device = session["selected_device"]
+            versions = sorted(
+                Release.query.join(Device).filter(Device.name == selected_device).all(),
+                key=lambda r: tuple(
+                    int(part) if part.isdigit() else part
+                    for part in re.findall(r"\d+|\D+", r.version)
+                ),
+                reverse=True,
+            )
+            download_form.version.choices = [
+                (version.version, version.version) for version in versions
+            ]
+
+        if download_form.submit.data and download_form.validate_on_submit():
+            selected_version = download_form.version.data
+            release = Release.query.filter_by(version=selected_version).first()
+            version = release.release_path
+            path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
+            return send_file(path_or_file=path, as_attachment=True)
+
+        return self.render("admin/download.html", download_form=download_form)
 
     def is_accessible(self):
         return (

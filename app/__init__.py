@@ -8,10 +8,12 @@ from app.views.admin_pages import (
     UserAdminView,
     DeviceAdminView,
     UploadAdminView,
+    DownloadAdminView,
 )
 from app.forms import (
+    AdminDownloadForm,
     DeviceSearchForm,
-    DownloadReleaseForm,
+    CustomerDownloadForm,
     ExtendedLoginForm,
     ExtendedRegisterForm,
     UploadReleaseForm,
@@ -62,10 +64,12 @@ def create_app(config_class=Config):
     @security.context_processor
     def security_context_processor():
         search_form = DeviceSearchForm()
-        download_form = DownloadReleaseForm()
+        customer_download_form = CustomerDownloadForm()
+        download_form = AdminDownloadForm()
         upload_form = UploadReleaseForm()
         return dict(
             search_form=search_form,
+            customer_download_form=customer_download_form,
             download_form=download_form,
             upload_form=upload_form,
             admin_base_template=admin.base_template,
@@ -101,6 +105,7 @@ def create_app(config_class=Config):
     admin.add_view(UserAdminView(User, db.session, name="Users"))
     admin.add_view(DeviceAdminView(name="Devices", endpoint="device_admin"))
     admin.add_view(UploadAdminView(name="Upload", endpoint="upload_admin"))
+    admin.add_view(DownloadAdminView(name="Download", endpoint="download_admin"))
 
     # Flask_login stuff
     login_manager.login_view = "login"

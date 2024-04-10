@@ -79,8 +79,15 @@ class DeviceSearchForm(FlaskForm):
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
 
-class DownloadReleaseForm(FlaskForm):
+class CustomerDownloadForm(FlaskForm):
     release_version = SelectField("Version: ")
+    submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
+
+
+class AdminDownloadForm(FlaskForm):
+    device = SelectField("Device: ")
+    select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
+    version = SelectField("Version: ")
     submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
 
 
