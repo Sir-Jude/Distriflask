@@ -23,3 +23,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = "uploads/"
     ALLOWED_EXTENSIONS = {"txt", "deb"}
+    
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///test_db.sqlite3"

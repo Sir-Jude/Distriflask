@@ -95,7 +95,6 @@ def create_app(config_class=Config):
                 username="admin", password="12345678"
             )
             user_datastore.activate_user(first_user)
-            db.session.commit()
 
             # Assign the 'administrator' role to the 'admin' user
             admin_role = Role.query.filter_by(name="administrator").first()

@@ -66,11 +66,13 @@ def setup_database():
     subprocess.run(["flask", "db", "migrate"])
 
 
-def create_roles():
-    app = create_app()
+def create_roles(app=None):
+    if app is None:
+        app = create_app()
     with app.app_context():
         for role_name in ROLES:
             existing_role = Role.query.filter_by(name=role_name).first()
+            roles = Role.query.all()
             if existing_role is None:
                 new_role = Role(name=role_name, description=f"{role_name} role")
                 db.session.add(new_role)
