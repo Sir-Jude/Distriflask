@@ -453,9 +453,10 @@ class DownloadAdminView(BaseView):
                 ),
                 reverse=True,
             )
-            download_form.version.choices = [
-                (version.version, version.version) for version in versions
-            ]
+
+        download_form.version.choices = [
+            (version.version, version.version) for version in versions
+        ]
 
         if download_form.submit.data and download_form.validate_on_submit():
             selected_version = download_form.version.data
