@@ -16,14 +16,13 @@ class Config:
     # Change from "/admin/" to "/" to land on customer home view
     SECURITY_POST_LOGOUT_VIEW = "/"
     SECURITY_POST_REGISTER_VIEW = "/admin/"
-    SECURITY_REGISTERABLE = True
     # DO NOT REMOVE - This allows register and login with username
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper}}]
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = "uploads/"
     ALLOWED_EXTENSIONS = {"txt", "deb"}
-    
+
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///test_db.sqlite3"
