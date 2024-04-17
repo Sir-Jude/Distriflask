@@ -6,3 +6,8 @@ def test_home_title_tab(client):
     response = client.get("/")
     assert "<title>Homepage</title>" in response.data.decode()
     assert "<title>Home</title>" not in response.data.decode()
+
+def test_register_user(client):
+    response = client.get("/register")
+    assert response == client.get("/admin/")
+    
