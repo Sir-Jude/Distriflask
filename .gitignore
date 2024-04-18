@@ -1,11 +1,13 @@
 .coverage
+.pytest_cache
+.python-version
 .env
 .venv
 venv
-__pycache__/
 *.pyc
 *.sqlite3
-request.http
-.python-version
+htmlcov
 migrations/env.py
+request.http
 uploads/
+__pycache__/

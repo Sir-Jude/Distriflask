@@ -19,11 +19,9 @@ def app():
 
         create_roles(app=app)
 
-
     yield app
     full_path = Path.cwd() / "instance" / "test_db.sqlite3"
     os.remove(full_path)
-
 
 
 @pytest.fixture()
