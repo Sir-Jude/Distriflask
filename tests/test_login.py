@@ -6,7 +6,6 @@ from sqlalchemy import text
 def test_admin_login(client):
     app = create_app()
     with app.app_context():
-        # Hardcoded test credentials
         test_username = User.query.filter_by(username="admin").first()
         test_password = "12345678"
 
