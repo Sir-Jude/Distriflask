@@ -5,7 +5,7 @@ from app.forms import (
     ExtendedRegisterForm,
     UploadReleaseForm,
 )
-from app.models import User, Role, Device, Release
+from app.models import User, Device, Release
 from config import basedir, Config
 from flask import flash, redirect, request, send_file, session, url_for
 from flask_login import login_required
@@ -18,16 +18,7 @@ import re
 
 
 class UserAdminView(ModelView):
-    # Actual columns' title as seen in the website
-    column_list = ("username", "versions", "active", "roles")
-    # Link the columns' title and the model class attribute, so to make data sortable
-    column_sortable_list = (
-        "username",
-        ("versions", "device_name"),
-        "active",
-        ("roles", "roles.name"),
-    )
-
+    # Customized from BaseView
     def is_accessible(self):
         return (
             current_user.is_active
@@ -35,13 +26,16 @@ class UserAdminView(ModelView):
             and any(role.name == "administrator" for role in current_user.roles)
         )
 
+    # Customized from BaseView
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
 
+    @staticmethod
     def _display_roles(view, context, model, name):
         return ", ".join([role.name.capitalize() for role in model.roles])
 
+    @staticmethod
     def _display_versions(view, context, model, name):
         if model.device:
             # Extract versions and sort them
@@ -58,10 +52,13 @@ class UserAdminView(ModelView):
         else:
             return ""
 
+    # Attribute of the ModelView class
+    # Customize the display of the columns
     column_formatters = {"versions": _display_versions, "roles": _display_roles}
 
     form = ExtendedRegisterForm
 
+    # Customized from BaseModelView
     def on_model_change(self, form, model, is_created):
         # Check if the model being changed is a User model and the current user is an administrator
         if isinstance(model, User) and "administrator" in current_user.roles:
@@ -70,9 +67,23 @@ class UserAdminView(ModelView):
                 # Hash the password before saving it to the database
                 model.password = hash_password(form.password.data)
 
+    # Actual columns' title as seen in the website
+    column_list = ("username", "region", "versions", "active", "roles")
+
+    # Link the columns' title and the model class attribute, so to make data sortable
+    column_sortable_list = (
+        "username",
+        ("region", "region.long_name"),
+        ("versions", "device_name"),
+        "active",
+        ("roles", "roles.name"),
+    )
+
 
 class DeviceAdminView(BaseView):
+    # This decorator exposes the method to be reachable via a specific URL route.
     @expose("/")
+    # The "index" func serves as entry point for this particular app's section
     def index(self):
         return redirect(url_for("device_admin.devices_default_table"))
 
@@ -122,7 +133,8 @@ class DeviceAdminView(BaseView):
                     for part in re.findall(r"\d+|\D+", x.version)
                 ),
             )
-
+            # The three following variables will always return the most updated version
+            # (no matter which numbers/letters are used)
             first_number = str(
                 max(int(release.version.split(".")[0]) for release in all_releases)
             )
@@ -136,7 +148,8 @@ class DeviceAdminView(BaseView):
             )
 
             # Now, we'll use a custom sorting key for the third part
-            third_numbers = [
+            # (since it might contain not just numbers, but also letters)
+            third_number = [
                 (
                     int(part) if part.isdigit() else part
                     for part in release.version.split(".")[2]
@@ -145,10 +158,13 @@ class DeviceAdminView(BaseView):
                 if release.version.startswith(first_number + "." + second_number + ".")
             ]
 
-            # Flatten the list of generators and then find the maximum
+            # Flatten the list of generator (iterables) and then find the maximum
+            # (flatten = convert a list of list into a single list)
+            # (generator = special type of iterator that generates values on-the-fly)
+            # (contrary to list, which store their elements in memory at once)
             third_number = str(
                 max(
-                    [part for generator in third_numbers for part in generator],
+                    [part for generator in third_number for part in generator],
                     key=lambda x: (int(x) if isinstance(x, int) else x),
                 )
             )
@@ -168,7 +184,7 @@ class DeviceAdminView(BaseView):
 
         parts = selected_release_version.split(".")
 
-        # Filter releases based on first two numbers of the selected_release_version in the URL
+        # Filter releases based on first two numbers of selected_release_version in the URL
         if len(parts) < 2:
             flash("Invalid release version format.", "error")
             return redirect(url_for("device_admin.devices_default_table"))
@@ -177,7 +193,7 @@ class DeviceAdminView(BaseView):
             Release.version.like(f"{parts[0]}.{parts[1]}%")
         ).all()
 
-        # Check if there are any filtered releases
+        # Redirect to the default if there is any matching release
         if not filtered_releases:
             flash("No releases found for the provided major version.", "error")
             return redirect(url_for("device_admin.devices_default_table"))
@@ -196,6 +212,7 @@ class DeviceAdminView(BaseView):
         if len(parts) == 2:
             selected_release_version = all_releases[0]
 
+        # Redirect to the default if there is any matching release
         if not all_releases:
             flash("No releases found for the provided major version.", "error")
             return redirect(url_for("device_admin.devices_default_table"))
@@ -292,7 +309,7 @@ class DeviceAdminView(BaseView):
     @login_required
     @roles_required("administrator")
     def selected_device_name(self, device_name):
-        search_form = DeviceSearchForm()  # Instantiate the search_form
+        search_form = DeviceSearchForm()
         all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
         all_device_versions = {
             device: sorted(
@@ -332,7 +349,6 @@ class DeviceAdminView(BaseView):
             if selected_release_version:
                 # Call the relevant view method with the extracted argument
                 return getattr(self, name)(selected_release_version)
-        # Handle other cases or call super if necessary
         return super()._handle_view(name, **kwargs)
 
 
@@ -351,15 +367,15 @@ class UploadAdminView(BaseView):
             device_name = upload_form.device.data
             version = upload_form.version.data
 
-            if not device_name or not version:  # Check if either field is empty
+            if not (device_name and version):
                 flash("Please fill out both the device and version fields.")
 
-            elif not upload_form.path_exists():  # Check if folder path exists
+            elif not upload_form.path_exists():
                 flash(
                     "Selected file path does not exist: please, input the correct one."
                 )
 
-            elif not upload_form.allowed_file():  # Check if the file format is allowed
+            elif not upload_form.allowed_file():
                 flash(
                     "Selected file format is not allowed: please, use only .txt or .deb."
                 )
@@ -376,7 +392,7 @@ class UploadAdminView(BaseView):
                     os.path.join(device_folder, secure_filename(version.filename))
                 )
 
-                # Store the version information in the database
+                # Store the version's info in the database
                 new_release = Release(
                     version=version.filename,
                     device=device,
@@ -388,7 +404,8 @@ class UploadAdminView(BaseView):
                 db.session.commit()
 
                 flash(
-                    f'The file "{version.filename}" has been uploaded into the folder "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
+                    f'The file "{version.filename}" has been uploaded into the folder:'
+                    f' "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
                 )
 
                 # Clear upload_form data after successful submission
@@ -432,19 +449,25 @@ class DownloadAdminView(BaseView):
     def download(self):
         download_form = AdminDownloadForm(formdata=request.form)
 
+        # Sort devices name in "uploads" folder and populate the drop down menu
         devices = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
         download_form.device.choices = [(device, device) for device in devices]
 
         versions = []
         selected_device = None
 
+        # If the user selects a device...
         if download_form.select.data:
             selected_device = download_form.device.data
+            # ...store the selected device in the session
             session["selected_device"] = selected_device
             flash(f"Device {selected_device} selected.")
 
+        # If a selected device is stored in the session...
         if "selected_device" in session:
+            # 1) Retrieve the selected device from the session
             selected_device = session["selected_device"]
+            # 2) Retrieve all releases associated with the selected device and sort them by version
             versions = sorted(
                 Release.query.join(Device).filter(Device.name == selected_device).all(),
                 key=lambda r: tuple(
@@ -453,18 +476,23 @@ class DownloadAdminView(BaseView):
                 ),
                 reverse=True,
             )
-
+        # Populate the version choices in the form with the sorted versions
+        # (empty list [] as default)
         download_form.version.choices = [
             (version.version, version.version) for version in versions
         ]
 
+        # If the form is submitted to initiate a download and the form data is valid...
         if download_form.submit.data and download_form.validate_on_submit():
             selected_version = download_form.version.data
+            # Retrieve the release corresponding to the selected version
             release = Release.query.filter_by(version=selected_version).first()
-            version = release.release_path
-            path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
+            version_path = release.release_path
+            path = os.path.join(basedir, Config.UPLOAD_FOLDER, version_path)
+            # Send the release file to the user as an attachment for download
             return send_file(path_or_file=path, as_attachment=True)
 
+        # Render the download page template with the download form
         return self.render("admin/download.html", download_form=download_form)
 
     def is_accessible(self):
