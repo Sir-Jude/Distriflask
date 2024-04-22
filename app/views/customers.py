@@ -15,6 +15,7 @@ from flask_security import verify_password
 from flask_wtf import FlaskForm
 import re
 import os
+from urllib.parse import urlsplit
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
 
@@ -43,24 +44,17 @@ def login():
             if verify_password(form.password.data, user.password):
                 login_user(user)
                 flash("Logged in successfully.")
-                """
-                IMPORTANT!!!
-                The documentation advises to add this snippet:
-
-                next = flask.request.args.get('next')
-                # url_has_allowed_host_and_scheme should check if the url is safe
-                # for redirects, meaning it matches the request host.
-                # See Django's url_has_allowed_host_and_scheme for an example.
-                if not url_has_allowed_host_and_scheme(next, request.host):
-                    return flask.abort(400)
-                return redirect(next or url_for("user", username=user.username))
-
-                Otherwise the application will be vulnerable to open redirects
-                INFO: flask-login.readthedocs.io/en/latest/#login-example
-                """
-                if "administrator" in [role.name for role in user.roles]:
-                    return redirect(url_for("admin.index"))
-                return redirect(url_for("customers.profile", username=user.username))
+                next_page = request.args.get("next")
+                if next_page == url_for("admin.index") and "administrator" in [
+                    role.name for role in user.roles
+                ]:
+                    next_page = url_for("admin.index")
+                elif next_page is None:
+                    if "administrator" in [role.name for role in user.roles]:
+                        next_page = url_for("admin.index")
+                    else:
+                        next_page = url_for("customers.profile", username=user.username)
+                return redirect(next_page)
             else:
                 flash("Wrong password - Try Again...")
         else:
@@ -71,17 +65,15 @@ def login():
 @customers.route("/customer/<username>/", methods=["GET", "POST"])
 @login_required
 def profile(username):
-    # Assign True to admin_role if current user has an "administrator" role
-    admin_role = "administrator" in [r.name for r in current_user.roles]
-    # Bypass restriction for administrators to access any profile
-    if not admin_role:
+    # Only administrators may access profiles of other users
+    if "administrator" not in [r.name for r in current_user.roles]:
         # Return 403 error if current user is not accessing their own profile
         if current_user.username != username:
             return render_template("errors/403.html"), 403
 
     # Fetch from database the device associated with provided <username>
-    device = Device.query.filter_by(name=username).first()
     country = None  # Initialize country to None initially
+    device = Device.query.filter_by(name=username).first()
     if device:  # Check if User has an associated device
         country = device.country
         releases = sorted(
@@ -96,7 +88,7 @@ def profile(username):
         releases = []  # If device is not available, set releases to an empty list
 
     form = CustomerDownloadForm(formdata=request.form)
-    # Populating the choices for release versions in the form
+    # Populate the choices for release versions in the form
     form.release_version.choices = [
         # (value submitted to the form, text displayed to the user)
         (release.version, release.version)

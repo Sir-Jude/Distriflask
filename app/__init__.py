@@ -1,7 +1,6 @@
-from app.extensions import db, login_manager, migrate
-
 # Imports from otehr files
 from app.errors import register_error_handlers
+from app.extensions import db, login_manager, migrate
 from app.models import User, Role, user_datastore
 from app.views.customers import customers
 from app.views.admin_pages import (
@@ -18,7 +17,6 @@ from app.forms import (
     ExtendedRegisterForm,
     UploadReleaseForm,
 )
-from app.security_utils import CustomUsernameUtil
 
 # Import app's configurations
 from config import Config
@@ -30,9 +28,7 @@ from flask import Flask, url_for
 from flask_admin import Admin, helpers as admin_helpers
 
 # Imports for Flask security
-from flask_security import (
-    Security,
-)
+from flask_security import Security, UsernameUtil
 
 
 def create_app(config_class=Config):
@@ -44,38 +40,41 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
-    # Variable name="Admin" refers to the button "Admn" in the nav-bar
+    button_text = "Admin"
     admin = Admin(
-        app, name="Admin", base_template="master.html", template_mode="bootstrap3"
+        app, name=button_text, base_template="master.html", template_mode="bootstrap3"
     )
 
     app.register_blueprint(customers)
     register_error_handlers(app)
 
-    # This snippet MUST stay after "app.register_blueprint(admin_pages)"
     security = Security(
         app,
         user_datastore,
-        username_util_cls=CustomUsernameUtil,
+        username_util_cls=UsernameUtil,
         register_form=ExtendedRegisterForm,
         login_form=ExtendedLoginForm,
     )
 
+    # Context processors inject new variables into the context of a template, so we
+    # don't need to explicitly pass them around.
+    # The processor runs when the app is created.
     @security.context_processor
     def security_context_processor():
         search_form = DeviceSearchForm()
-        customer_download_form = CustomerDownloadForm()
-        download_form = AdminDownloadForm()
         upload_form = UploadReleaseForm()
+        download_form = AdminDownloadForm()
+        customer_download_form = CustomerDownloadForm()
         return dict(
-            search_form=search_form,
-            customer_download_form=customer_download_form,
-            download_form=download_form,
-            upload_form=upload_form,
             admin_base_template=admin.base_template,
             admin_view=admin.index_view,
-            h=admin_helpers,
-            get_url=url_for,
+            # DO NOT RENAME/REMOVE the next two lines: Flask essential variables
+            h=admin_helpers, # !!!
+            get_url=url_for, # !!!
+            search_form=search_form,
+            upload_form=upload_form,
+            download_form=download_form,
+            customer_download_form=customer_download_form,
         )
 
     @security.register_context_processor
@@ -106,10 +105,14 @@ def create_app(config_class=Config):
     admin.add_view(UploadAdminView(name="Upload", endpoint="upload_admin"))
     admin.add_view(DownloadAdminView(name="Download", endpoint="download_admin"))
 
-    # Flask_login stuff
+    # Redirect users that are not logged in to the default "login" view
     login_manager.login_view = "login"
 
+    # Decorator to call user_loader function for each request to load the user object.
+    # It will be accessible via current_user within the application
     @login_manager.user_loader
+    # Flask-Login will pass the user ID stored in the session to this function
+    # The function is expected to return the corresponding user object.
     def load_user(user_id):
         return User.query.get(user_id)
 
