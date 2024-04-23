@@ -68,12 +68,11 @@ class UserAdminView(ModelView):
                 model.password = hash_password(form.password.data)
 
     # Actual columns' title as seen in the website
-    column_list = ("username", "region", "versions", "active", "roles")
+    column_list = ("username", "versions", "active", "roles")
 
     # Link the columns' title and the model class attribute, so to make data sortable
     column_sortable_list = (
         "username",
-        ("region", "region.long_name"),
         ("versions", "device_name"),
         "active",
         ("roles", "roles.name"),
