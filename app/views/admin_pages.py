@@ -380,6 +380,9 @@ class UploadAdminView(BaseView):
                 )
 
             else:
+                # Split the filename and its extension
+                filename, extension = os.path.splitext(version.filename)
+
                 # Save the file to the designated folder
                 device = Device.query.filter_by(name=device_name).first()
                 if not device:
@@ -387,25 +390,29 @@ class UploadAdminView(BaseView):
                     return redirect(url_for("upload_admin.upload"))
 
                 device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device_name)
-                version.save(
-                    os.path.join(device_folder, secure_filename(version.filename))
-                )
+                filepath = os.path.join(device_folder, secure_filename(version.filename))
+                version.save(filepath)
 
-                # Store the version's info in the database
-                new_release = Release(
-                    version=version.filename,
-                    device=device,
-                    release_path=os.path.join(
-                        device_folder, secure_filename(version.filename)
-                    ),
-                )
-                db.session.add(new_release)
-                db.session.commit()
-
-                flash(
-                    f'The file "{version.filename}" has been uploaded into the folder:'
-                    f' "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
-                )
+                # Check if the release with the same version already exists for the device
+                existing_release = Release.query.filter_by(device=device, version=filename).first()
+                if existing_release:
+                    # Update the existing release
+                    existing_release.release_path = filepath
+                    db.session.commit()
+                    flash(f'The file "{version.filename}" has been updated for device "{device_name}".')
+                else:
+                    # Store the version's info in the database
+                    new_release = Release(
+                        version=filename,
+                        device=device,
+                        release_path=filepath,
+                    )
+                    db.session.add(new_release)
+                    db.session.commit()
+                    flash(
+                        f'The file "{version.filename}" has been uploaded into the folder'
+                        f' "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
+                    )
 
                 # Clear upload_form data after successful submission
                 upload_form.device.data = None
@@ -413,7 +420,8 @@ class UploadAdminView(BaseView):
 
                 return redirect(url_for("upload_admin.upload"))
 
-            # Retain device name on upload_form submission failure due to invalid file format
+            # Retain device name on upload_form submission failure due to invalid file
+            # format
             if upload_form.device.data:
                 device_value = upload_form.device.data
             else:

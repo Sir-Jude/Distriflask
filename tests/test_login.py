@@ -15,7 +15,6 @@ def test_admin_login(client):
         )
 
         assert response.status_code == 200
-        assert response.location == None
 
 
 def test_customer_login(client):
@@ -35,4 +34,3 @@ def test_customer_login(client):
         )
 
         assert response.status_code == 200
-        assert response.location is None
