@@ -27,3 +27,4 @@ class Config:
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///test_db.sqlite3"
+    WTF_CSRF_ENABLED = False

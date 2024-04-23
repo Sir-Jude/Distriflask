@@ -54,7 +54,7 @@ def create_app(config_class=Config):
         app,
         name=button_text,
         base_template="master.html",
-        template_mode="bootstrap3"
+        template_mode="bootstrap3",
     )
 
     app.register_blueprint(customers)

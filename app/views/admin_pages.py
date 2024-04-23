@@ -390,16 +390,22 @@ class UploadAdminView(BaseView):
                     return redirect(url_for("upload_admin.upload"))
 
                 device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device_name)
-                filepath = os.path.join(device_folder, secure_filename(version.filename))
+                filepath = os.path.join(
+                    device_folder, secure_filename(version.filename)
+                )
                 version.save(filepath)
 
                 # Check if the release with the same version already exists for the device
-                existing_release = Release.query.filter_by(device=device, version=filename).first()
+                existing_release = Release.query.filter_by(
+                    device=device, version=filename
+                ).first()
                 if existing_release:
                     # Update the existing release
                     existing_release.release_path = filepath
                     db.session.commit()
-                    flash(f'The file "{version.filename}" has been updated for device "{device_name}".')
+                    flash(
+                        f'The file "{version.filename}" has been updated for device "{device_name}".'
+                    )
                 else:
                     # Store the version's info in the database
                     new_release = Release(
