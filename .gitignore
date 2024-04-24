@@ -6,7 +6,7 @@
 venv
 *.pyc
 *.sqlite3
-htmlcov
+htmlcov/
 migrations/env.py
 request.http
 uploads/
