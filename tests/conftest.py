@@ -64,7 +64,7 @@ def runner(app):
 
 
 @pytest.fixture()
-def admin_login(client):
+def admin_user(client):
     """
     This fixture sets up a test environment for an admin user login.
     It creates a new admin user, logs them in, and yields the test client,
@@ -86,19 +86,12 @@ def admin_login(client):
             admin = User.query.filter_by(username="test_admin").first()
             admin_username = admin.username
             admin_password = "12345678"
-            response = client.post(
-                "/login",
-                data=dict(
-                    username=admin_username,
-                    password=admin_password,
-                ),
-            )
 
             yield client, admin_username, admin_password
 
 
 @pytest.fixture()
-def customer_login(client):
+def customer_user(client):
     """
     This fixture sets up a test environment for a customer user login.
     It creates a new customer user, logs them in, and yields the test client,
@@ -125,9 +118,5 @@ def customer_login(client):
             # Loop through each customer and test login
             customer_username = customer.username
             customer_password = "12345678"
-            response = client.post(
-                "/customer_login",
-                data=dict(username=customer_username, password=customer_password),
-            )
 
             yield client, customer_username, customer_password
