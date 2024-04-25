@@ -97,7 +97,7 @@ The code is split into chunks to improve its readability, debugging and further 
 ├── .env
 ├── .gitignore
 ├── config.py
-├── s.py
+├── create_tables.py
 ├── README.md
 └── requirements.txt
 ```

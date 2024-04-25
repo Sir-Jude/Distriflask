@@ -12,7 +12,8 @@ def test_users_button(admin_user):
         "/admin/user/"
     )
 
-    # Assert the presence of the button "Create"
-    # (visible only in the /admin/user/ page)
+    # Assert the presence of the button "Create" and "With selected"
+    # (visible on the /admin/user/ page)
     assert response.status_code == 200
     assert b"Create" in response.data
+    assert b"With selected" in response.data
