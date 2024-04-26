@@ -73,7 +73,7 @@ def profile(username):
 
     # Fetch from database the device associated with provided <username>
     country = None  # Initialize country to None initially
-    device = Device.query.filter_by(name=current_user.device_name).first()
+    device = Device.query.filter_by(name=username).first()
     if device:  # Check if User has an associated device
         country = device.country
         releases = sorted(
