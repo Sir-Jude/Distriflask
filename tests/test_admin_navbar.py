@@ -1,13 +1,6 @@
-def test_users_button(admin_user):
-    client, admin_username, admin_password = admin_user
+def test_users_button(admin_login):
+    client = admin_login
 
-    response = client.post(
-        "/login",
-        data=dict(
-            username=admin_username,
-            password=admin_password,
-        ),
-    )
     response = client.get(
         "/admin/user/"
     )
@@ -17,3 +10,27 @@ def test_users_button(admin_user):
     assert response.status_code == 200
     assert b"Create" in response.data
     assert b"With selected" in response.data
+
+
+def test_upload_button(admin_login):
+    client = admin_login
+
+    response = client.get(
+        "/admin/upload_admin/admin/upload/"
+    )
+
+    # Assert the presence of the string "Upload a file"
+    assert response.status_code == 200
+    assert b"Upload a file" in response.data
+
+
+def test_download_button(admin_login):
+    client = admin_login
+
+    response = client.get(
+        "/admin/download_admin/admin/download/"
+    )
+
+    # Assert the presence of the string "Download a file"
+    assert response.status_code == 200
+    assert b"Download a file" in response.data

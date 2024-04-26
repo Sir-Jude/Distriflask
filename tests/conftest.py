@@ -18,10 +18,10 @@ import os
 def app():
     """
     This fixture creates a Flask application instance with a specific
-    configuration class for testing purposes. It then sets up the application
-    context, creates necessary database tables, roles, and regions. After
-    yielding the application instance to the test function, it performs
-    teardown actions by removing the test database file.
+    configuration class for testing purposes. It then sets up the
+    application context, creates necessary database tables and roles.
+    After yielding the application instance to the test function, it
+    performs teardown actions by removing the test database file.
     """
 
     app = create_app(config_class=TestConfig)
@@ -66,9 +66,8 @@ def runner(app):
 @pytest.fixture()
 def admin_user(client):
     """
-    This fixture sets up a test environment for an admin user login.
-    It creates a new admin user, logs them in, and yields the test client,
-    admin username, and admin password.
+    This fixture creates a new admin user, logs them in, and yields the test
+    client, admin username, and admin password.
     """
     app = create_app(config_class=TestConfig)
     with app.app_context():
@@ -93,9 +92,8 @@ def admin_user(client):
 @pytest.fixture()
 def customer_user(client):
     """
-    This fixture sets up a test environment for a customer user login.
-    It creates a new customer user, logs them in, and yields the test client,
-    customer username, and customer password.
+    This fixture creates a new customer user, logs them in, and yields the
+    test client, customer username, and customer password.
     """
     app = create_app(config_class=TestConfig)
     with app.app_context():
@@ -120,3 +118,20 @@ def customer_user(client):
             customer_password = "12345678"
 
             yield client, customer_username, customer_password
+
+@pytest.fixture()
+def admin_login(admin_user):
+    """
+    This fixture logs in an existing admin user and yields the test client.
+    """
+    client, admin_username, admin_password = admin_user
+
+    response = client.post(
+        "/login",
+        data=dict(
+            username=admin_username,
+            password=admin_password,
+        ),
+    )
+
+    yield client
