@@ -1,25 +1,25 @@
-# Table of Contents
+# Table of Contents  
 1. [Introduction](#introduction)
-2. [Setting up the web application](#setting)
-2.1. [Create a virtual environment](#virtual-env)
-2.2. [Install the packages "*libldap2-dev*" and "*libsasl2-dev*"](#libldap_libsasl)
-2.3. [Install the required libraries](#libraries)
-2.4. [Set up the environmental variables](#variables)
-2.5. [Create and populate the database with some dummy data](#script)
-2.6. [Launch the application](#launching)
-3. [Using the application](#using)
-3.1. [The admin pages](#admin)
-&nbsp;&nbsp;3.1.1. [Login as an admin](#admin_login)
-&nbsp;&nbsp;3.1.2. [The list of Users](#user_list)
-&nbsp;&nbsp;3.1.3. [Create a new User](#user_create)
-&nbsp;&nbsp;3.1.4. [The table of releases and devices](#rel_dev)
-&nbsp;&nbsp;3.1.5. [Upload a file](#upload)
-&nbsp;&nbsp;3.1.6. [Download a release from the admin pages](#download)
-3.2. [The customer page](#customer)
-&nbsp;&nbsp;3.2.2. [Download a release from a customer's page](#customer_download)
-4. [Testing the aplication](#testing)
-5. [Further development](#further)
-<br/><br/><br/>
+2. [Setting up the web application](#setting)  
+2.1. [Create a virtual environment](#virtual-env)  
+2.2. [Install the packages "*libldap2-dev*" and "*libsasl2-dev*"](#libldap_libsasl)  
+2.3. [Install the required libraries](#libraries)  
+2.4. [Set up the environmental variables](#variables)  
+2.5. [Create and populate the database with some dummy data](#script)  
+2.6. [Launch the application](#launching)  
+3. [Using the application](#using)  
+3.1. [The admin pages](#admin)  
+&nbsp;&nbsp;3.1.1. [Login as an admin](#admin_login)  
+&nbsp;&nbsp;3.1.2. [The list of Users](#user_list)  
+&nbsp;&nbsp;3.1.3. [Create a new User](#user_create)  
+&nbsp;&nbsp;3.1.4. [The table of releases and devices](#rel_dev)  
+&nbsp;&nbsp;3.1.5. [Upload a file](#upload)  
+&nbsp;&nbsp;3.1.6. [Download a release from the admin pages](#download)  
+3.2. [The customer page](#customer)  
+&nbsp;&nbsp;3.2.2. [Download a release from a customer's page](#customer_download)  
+4. [Testing the aplication](#testing)  
+5. [Further development](#further)  
+<br/><br/>
 
 <a id="introduction"></a>
 # 1. Introduction
@@ -190,24 +190,24 @@ The "**--debug**" option provides:
 
 Now, if you have done everything correctly, the following text should appear in your second terminal:
 
-\* Serving Flask app 'app'
-\* Debug mode: on
+\* Serving Flask app 'app'  
+\* Debug mode: on  
 <span style="color:red">
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.  
 </span>
-\* Running on http://127.0.0.1:5000
+\* Running on http://127.0.0.1:5000  
 <span style="color:yellow">
 Press CTRL+C to quit
-</span>
-\* Restarting with watchdog (inotify)
-\* Debugger is active!
+</span>  
+\* Restarting with watchdog (inotify)  
+\* Debugger is active!  
 \* Debugger PIN: 490-161-154
 
 Finally, click on the following link to launch the application:
 ```
 http://127.0.0.1:5000
 ```
-<br/><br/>
+<br/>
 
 <a id="using"></a>
 # 3. Using the application
@@ -306,7 +306,6 @@ To quickly launch all the available tests, run the command
 pytest
 ```
 For each failed test, a debugger of the error is provided.
-<br/><br/><br/>
 
 Alternatively, if you would like to check how much of the app is covered by the tests, run the code:
 ```
