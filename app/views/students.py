@@ -26,16 +26,16 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login", render_kw={"class": "btn btn-primary"})
 
 
-customers = Blueprint("customers", __name__)
+students = Blueprint("students", __name__)
 
 
-@customers.route("/home/")
-@customers.route("/")
+@students.route("/home/")
+@students.route("/")
 def home():
-    return render_template("customers/home.html")
+    return render_template("students/home.html")
 
 
-@customers.route("/customer_login", methods=["GET", "POST"])
+@students.route("/customer_login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -53,16 +53,16 @@ def login():
                     if "administrator" in [role.name for role in user.roles]:
                         next_page = url_for("admin.index")
                     else:
-                        next_page = url_for("customers.profile", username=user.username)
+                        next_page = url_for("students.profile", username=user.username)
                 return redirect(next_page)
             else:
                 flash("Wrong password - Try Again...")
         else:
             flash("Invalid username.")
-    return render_template("customers/login.html", form=form)
+    return render_template("students/login.html", form=form)
 
 
-@customers.route("/customer/<username>/", methods=["GET", "POST"])
+@students.route("/student/<username>/", methods=["GET", "POST"])
 @login_required
 def profile(username):
     # Only administrators may access profiles of other users
@@ -101,12 +101,12 @@ def profile(username):
 
         if release:
             version = release.release_path
-            return redirect(url_for("customers.download_version", version=version))
+            return redirect(url_for("students.download_version", version=version))
         else:
             flash("Release not found.", "error")
 
     return render_template(
-        "customers/profile.html",
+        "students/profile.html",
         username=username,
         device=device,
         country=country,
@@ -115,7 +115,7 @@ def profile(username):
     )
 
 
-@customers.route("/device/<path:version>", methods=["GET", "POST"])
+@students.route("/device/<path:version>", methods=["GET", "POST"])
 @login_required
 def download_version(version):
     release = Release.query.filter_by(release_path=version).first()
@@ -125,9 +125,9 @@ def download_version(version):
     return send_file(path_or_file=path, as_attachment=True)
 
 
-@customers.route("/logout/", methods=["GET", "POST"])
+@students.route("/logout/", methods=["GET", "POST"])
 @login_required
 def logout():
     logout_user()
     flash("You have been logged out.")
-    return redirect(url_for("customers.login"))
+    return redirect(url_for("students.login"))

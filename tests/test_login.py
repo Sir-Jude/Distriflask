@@ -6,7 +6,7 @@ def test_customer_login(customer_user):
     )
 
     assert response.status_code == 302
-    assert response.location == f"/customer/{customer_username}/"
+    assert response.location == f"/student/{customer_username}/"
 
 
 def test_admin_login_from_customer_endpoint(admin_user):

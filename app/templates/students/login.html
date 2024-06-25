@@ -1,4 +1,4 @@
-{% extends 'customers/index.html' %}
+{% extends 'students/index.html' %}
 {% block title %}
 <title>Login</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='customer_styles.css') }}">
@@ -13,8 +13,8 @@
 <p>
     <h3>Login</h3>
 </p>
-<div class="customer-login">
-  <form method="POST" action="{{ url_for('customers.login') }}">
+<div class="student-login">
+  <form method="POST" action="{{ url_for('students.login') }}">
     {{ form.csrf_token }}
     {{ form.hidden_tag() }}
     <div>

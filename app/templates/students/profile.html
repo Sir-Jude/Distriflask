@@ -1,4 +1,4 @@
-{% extends 'customers/index.html' %}
+{% extends 'students/index.html' %}
 {% block title %}
   <title>{{ current_user.username.title() }}</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='customer_styles.css') }}">
@@ -12,23 +12,23 @@
 {% endfor %}
   <p>
     {% if "administrator" in current_user.roles %}
-      <h3>{{ current_user.username.title() }}'s view of customer: {{ device }}.</h3>
+      <h3>{{ current_user.username.title() }}'s view of student: {{ device }}.</h3>
     {% else %}
       <h3>{{ current_user.username.title() }}'s profile.</h3>
     {% endif %}
   </p>
-  <div class="customer-profile">
+  <div class="student-profile">
     {% if device or ("administrator" in current_user.roles) %}
       {% if device %}
         <p><h5>Device: </h5>{{ device }}</p>
         <p><h5>Country: </h5>{{ country }} </p>
       {% endif %}
       <h5>
-        Select software version:
+        Select exercise:
         <h6>
           {# Change username=current_user.username to username=username #}
-          {# This allows admin to behave as customers and download any available software #}
-          <form action="{{ url_for('customers.profile', username=username) }}" method="POST">
+          {# This allows admin to behave as students and download any available exercise #}
+          <form action="{{ url_for('students.profile', username=username) }}" method="POST">
             {{ form.csrf_token }}
             {{ form.hidden_tag() }}
             <select name="release_version">

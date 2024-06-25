@@ -1,4 +1,4 @@
-{% extends 'customers/index.html' %}
+{% extends 'students/index.html' %}
 {% block title %}
 <title>Homepage</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='customer_styles.css') }}">
@@ -10,8 +10,8 @@
       {% else %}
         <h3>Welcome to Your Company!</h3>
     </p>
-      <div class="customer-home">
-        <h4>Please, <a href="{{ url_for('customers.login') }}">log in!</h4>
+      <div class="student-home">
+        <h4>Please, <a href="{{ url_for('students.login') }}">log in!</h4>
         </div>   
     {% endif %}
 {% endblock %}

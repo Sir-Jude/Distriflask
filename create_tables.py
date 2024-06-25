@@ -16,11 +16,10 @@ fake = Faker()
 N_USERS = 15
 ROLES = [
     "administrator",
-    "customer",
+    "student",
     "sales",
     "production",
     "application",
-    "software",
 ]
 
 countries = list(pycountry.countries)
@@ -199,12 +198,12 @@ def create_users():
             # Give the new user up to 3 roles:
             for _ in range(random.randint(1, 3)):
                 role = random.choice(ROLES)
-                if role != "customer":
+                if role != "student":
                     roles.add(role)
 
-            # If no non-"administrator" nor "customer" roles were added, add one at random
+            # If no non-"administrator" nor "student" roles were added, add one at random
             if not roles:
-                role = random.choice([r for r in ROLES if r != "customer"])
+                role = random.choice([r for r in ROLES if r != "student"])
                 roles.add(role)
 
             # Assign roles to the user
@@ -215,7 +214,7 @@ def create_users():
 
             # Named (= in-house) users do not have devices.
             # We can create users like 'dev01234' if we want to simulate
-            # customer user accounts.
+            # student user accounts.
             new_user.device_id = None
 
             # Indicate progress
@@ -223,7 +222,7 @@ def create_users():
             sys.stdout.flush()
         print()
 
-        print("Creating customers")
+        print("Creating students")
         DEVICES = create_sample_devices()
         for device_name in DEVICES:
             new_user = User(
@@ -233,7 +232,7 @@ def create_users():
             )
             db.session.add(new_user)
 
-            new_role = Role.query.filter_by(name="customer").first()
+            new_role = Role.query.filter_by(name="student").first()
             new_user.roles.append(new_role)
 
             new_user.device_name = new_user.username

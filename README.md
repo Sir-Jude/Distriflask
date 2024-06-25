@@ -15,8 +15,8 @@
 &nbsp;&nbsp;3.1.4. [The table of releases and devices](#rel_dev)  
 &nbsp;&nbsp;3.1.5. [Upload a file](#upload)  
 &nbsp;&nbsp;3.1.6. [Download a release from the admin pages](#download)  
-3.2. [The customer page](#customer)  
-&nbsp;&nbsp;3.2.2. [Download a release from a customer's page](#customer_download)  
+3.2. [The student page](#student)  
+&nbsp;&nbsp;3.2.2. [Download a release from a student's page](#customer_download)  
 4. [Testing the aplication](#testing)  
 5. [Further development](#further)  
 <br/><br/>
@@ -25,7 +25,7 @@
 # 1. Introduction
 In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of this Markdown file.
 
-The app is a prototype of a web application for the distribution of software packages, it is coded in Python and built using the Flask framework. It is a fork of the project I am developing for my internship and, even though it is not finished yet, it already has several functionalities.
+The app is a prototype of a web application for the distribution of exercises, it is coded in Python and built using the Flask framework. It is a fork of the project I am developing for my internship and, even though it is not finished yet, it already has several functionalities.
 
 For the creation and management of the relational-database, I have used:
 - **SQLite**
@@ -62,7 +62,7 @@ The code is split into chunks to improve its readability, debugging and further 
 │   │   │   ├── index.html
 │   │   │   ├── ...
 |   |   |
-│   │   ├── customers
+│   │   ├── students
 │   │   │   ├── login.html
 │   │   │   ├── ...
 |   |   |
@@ -108,7 +108,7 @@ The project comes with a create_tables.py script, which creates:
 - a new database
 - some dummy data, which are then saved into the database
 - a folder "devises" containing a subfolder for each device
-- some file.txt (representing the company's software packages), which are then saved into the device folders.
+- some file.txt (representing the company's exercises), which are then saved into the device folders.
 <br/><br/><br/>
 
 <a id="setting"></a>
@@ -226,11 +226,11 @@ Password: 12345678
 ### 3.1.2. The list of Users
 Click on "**Users**" to see the list of Users. They are essentially divided in two main groups:
 - the employees hired by the company
-- the customers
+- the students
 
 In the first, only those who have been assigend the role of "administrator" can see the pages with the list of Users and Devices.
 
-The difference with the second group is that these Users have bought a device (used as their username) and a software package, which can be downloaded from the website.
+The difference with the second group is that these Users have bought a device (used as their username) and a exercise, which can be downloaded from the website.
 
 <a id="user_create"></a>
 ### 3.1.3. Create a new User
@@ -247,7 +247,7 @@ In the page [Users](#user_list), note down a release version and then click on "
 Independently from which are the numbers used, the default table always shows the lastest available minor releases (X.X.X) of the last major version (X.X).
 
 Now, paste in the form a release number or a device name and click "**Search**"
-- The filter "**Release**", shows a table with the list of all minor releases of the major version, with the column containing the selected one highlighted in red. This allows the admin not only to see how many customers have bought that particular release, but also advise them about the updates which have been released after the version they have bought.
+- The filter "**Release**", shows a table with the list of all minor releases of the major version, with the column containing the selected one highlighted in red. This allows the admin not only to see how many students have bought that particular release, but also advise them about the updates which have been released after the version they have bought.
 - The filter "**Devices**", shows the list of releases available for that particular instrument.
 
 <a id="upload"></a>
@@ -264,7 +264,7 @@ Now, if you open the folder "**uploads**", which was created when you launched t
 
 <a id="download"></a>
 ### 3.1.5. Download a release from the admin pages
-Click on "**Download**": you will be redirected to page with the form which allows you to download and save one of the company's software packages (remember, in this prototype, they are rapresented by some file.txt) on your computer.
+Click on "**Download**": you will be redirected to page with the form which allows you to download and save one of the company's exercises (remember, in this prototype, they are rapresented by some file.txt) on your computer.
 
 Choose a device from the top drop-down menu and click on "**Select**".
 
@@ -272,11 +272,11 @@ This, will automatically populate the second drop-down menu with the available r
 
 
 
-<a id="customer"></a>
-## 3.2. The customer page
-## 3.2.1. Login as a customer
+<a id="student"></a>
+## 3.2. The student page
+## 3.2.1. Login as a student
 
-Login as an admin (if you have not done it yet, please, read how to do it in the previous [chapter](#admin)) and choose from the list of Users the username of a customer account.
+Login as an admin (if you have not done it yet, please, read how to do it in the previous [chapter](#admin)) and choose from the list of Users the username of a student account.
 
 Visit the link:
 ```
@@ -288,10 +288,10 @@ Click on "**Login**" in the navigation bar, use the the chosen username and the 
 **IMPORTANT**: the script assigns this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create **unique and safer** passwords for every different user!!!
 
 <a id="customer_download"></a>
-## 3.2.2. download a release from a customer's page
-From the dropdown menu, select the name of a software version and then click on the "**Download**" button.
+## 3.2.2. download a release from a student's page
+From the dropdown menu, select the name of a exercise and then click on the "**Download**" button.
 
-The app will now allow you to download and save one of the company's software packages (remember, in this prototype, they are rapresented by some file.txt) on your computer.
+The app will now allow you to download and save one of the company's exercises (remember, in this prototype, they are rapresented by some file.txt) on your computer.
 <br/><br/><br/>
 
 <a id="testing"></a>

@@ -25,26 +25,26 @@
               <ul class="navbar-nav">
                 {% if not current_user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('customers.home') }}">Home</a>
+                    <a class="nav-link" href="{{ url_for('students.home') }}">Home</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('customers.login') }}">Login</a>
+                  <a class="nav-link" href="{{ url_for('students.login') }}">Login</a>
                 </li>
                 {% else %}
                 <!-- Code for authenticated users -->
                 {% if 'home' in request.endpoint %}
                 <!-- If on home page, link to profile -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('customers.profile', username=current_user.username) }}">Profile</a>
+                    <a class="nav-link" href="{{ url_for('students.profile', username=current_user.username) }}">Profile</a>
                 </li>
                 {% else %}
                 <!-- If on profile page, link to home -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('customers.home') }}">Home</a>
+                    <a class="nav-link" href="{{ url_for('students.home') }}">Home</a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('customers.logout') }}">Logout</a>
+                  <a class="nav-link" href="{{ url_for('students.logout') }}">Logout</a>
                 </li>
                 {% endif %}
                 <li class="nav-item dropdown">

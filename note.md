@@ -16,7 +16,7 @@ The app is split into chunks to improve its redability, debugging and further ex
 │   │   │   ├── index.html
 │   │   │   ├── ...
 |   |   |    
-│   │   ├── customers
+│   │   ├── students
 │   │   │   ├── login.html
 │   │   │   ├── ...
 |   |   |
@@ -231,7 +231,7 @@ class Users(db.Model, UserMixin):
 class Roles(db.Model, RoleMixin):
     """The role of a user.
 
-    E.g. customer, administrator, sales.
+    E.g. student, administrator, sales.
 
     """
 
@@ -304,7 +304,7 @@ from flask_migrate import Migrate
 # Imports from other files
 from app.errors import register_error_handlers
 from app.models import Users, Roles, user_datastore
-from app.views.customers import customers
+from app.views.students import students
 from app.views.admin_pages import admin_pages
 from app.forms import ExtendedRegisterForm, ExtendedLoginForm
 ```
@@ -339,7 +339,7 @@ The **templates** folder is going to store the files with the code for the html 
 ├── admin
 │   ├── index.html
 │   └── master.html
-├── customers
+├── students
 │   ├── login.html
 │   └── profile.html
 ├── errors

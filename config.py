@@ -13,7 +13,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
     SECURITY_POST_LOGIN_VIEW = "/admin/"
-    # Change from "/admin/" to "/" to land on customer home view
+    # Change from "/admin/" to "/" to land on student home view
     SECURITY_POST_LOGOUT_VIEW = "/"
     SECURITY_POST_REGISTER_VIEW = "/admin/"
     # DO NOT REMOVE - This allows register and login with username

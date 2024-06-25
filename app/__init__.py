@@ -2,7 +2,7 @@
 from app.errors import register_error_handlers
 from app.extensions import db, login_manager, migrate
 from app.models import User, Role, user_datastore
-from app.views.customers import customers
+from app.views.students import students
 from app.views.admin_pages import (
     UserAdminView,
     DeviceAdminView,
@@ -57,7 +57,7 @@ def create_app(config_class=Config):
         template_mode="bootstrap3",
     )
 
-    app.register_blueprint(customers)
+    app.register_blueprint(students)
     register_error_handlers(app)
 
     security = Security(

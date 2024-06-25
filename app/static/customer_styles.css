@@ -1,6 +1,6 @@
-.customer-home,
-.customer-login,
-.customer-profile {
+.student-home,
+.student-login,
+.student-profile {
   margin-top: 20px;
   margin-bottom: 20px;
   background-color: #e9ecef;
@@ -8,20 +8,20 @@
   border-radius: 10px;
 }
 
-.customer-login form {
+.student-login form {
   display: flex;
   flex-direction: column;
 }
 
-.customer-login label {
+.student-login label {
   width: 100px;
 }
 
-.customer-login input {
+.student-login input {
   margin-bottom: 10px;
 }
 
-.customer-login button {
+.student-login button {
   margin-top: 10px;
   width: 100px; /* Set button width to auto */
 }
