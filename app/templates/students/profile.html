@@ -1,7 +1,7 @@
 {% extends 'students/index.html' %}
 {% block title %}
   <title>{{ current_user.username.title() }}</title>
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='customer_styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='student_styles.css') }}">
 {% endblock %}
 {% block content %}
 {% for message in get_flashed_messages() %}
@@ -20,7 +20,7 @@
   <div class="student-profile">
     {% if device or ("administrator" in current_user.roles) %}
       {% if device %}
-        <p><h5>Device: </h5>{{ device }}</p>
+        <p><h5>Course: </h5>{{ device }}</p>
         <p><h5>Country: </h5>{{ country }} </p>
       {% endif %}
       <h5>
@@ -41,7 +41,7 @@
         </h6>
       </h5>
       {% if "administrator" in current_user.roles %}
-        <a href="{{ url_for('device_admin.selected_device_name', device_name=device.name) }}">Back to the device search</a>
+        <a href="{{ url_for('device_admin.selected_device_name', device_name=device.name) }}">Back to the course search</a>
       {% endif %}
     {% else %}
       <p>No device associated with this user.</p>

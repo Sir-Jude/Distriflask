@@ -17,9 +17,7 @@ N_USERS = 15
 ROLES = [
     "administrator",
     "student",
-    "sales",
-    "production",
-    "application",
+    "teacher",
 ]
 
 countries = list(pycountry.countries)
@@ -35,8 +33,8 @@ def main():
         setup_database()
         create_roles()
         create_countries()
-        devices = create_sample_devices()
-        releases = create_sample_releases()
+        devices = create_sample_courses()
+        releases = create_sample_exercises()
         populate_tables(devices, releases)
         create_users()
         db.session.commit()
@@ -75,7 +73,7 @@ def create_roles(app=None):
             if existing_role is None:
                 new_role = Role(name=role_name, description=f"{role_name} role")
                 db.session.add(new_role)
-                print(f'Role "{new_role.name}" has beeen created')
+                print(f'Role "{new_role.name}" has been created')
 
         db.session.commit()
 
@@ -94,7 +92,7 @@ def create_countries():
         db.session.commit()
 
 
-def create_sample_devices():
+def create_sample_courses():
     random.seed(42)
 
     devices = set()
@@ -107,7 +105,7 @@ def create_sample_devices():
     return list(devices)
 
 
-def create_sample_releases():
+def create_sample_exercises():
     random.seed(17)
 
     releases = set()
@@ -223,7 +221,7 @@ def create_users():
         print()
 
         print("Creating students")
-        DEVICES = create_sample_devices()
+        DEVICES = create_sample_courses()
         for device_name in DEVICES:
             new_user = User(
                 username=device_name,

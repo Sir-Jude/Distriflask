@@ -7,18 +7,18 @@
 {% block body %}
   {{ super() }}
   <div class="search-box">
-    <h3>{{ _fsdomain('Search for a device') }}</h3>
+    <h3>{{ _fsdomain('Search for a course / exercise') }}</h3>
     <form action="{{ url_for('device_admin.devices_default_table') }}" method="POST">
       {{ search_form.hidden_tag() }}
       <div class="form-group">
         <div class="label-field">
-          <label>Device:</label>
+          <label>Course:</label>
           <span>{{ search_form.device_name }}</span>
         </div>
       </div>
       <div class="form-group">
         <div class="label-field">
-          <label>Release:</label>
+          <label>Exercise:</label>
           <span>{{ search_form.selected_release_version }}</span>
         </div>
       </div>

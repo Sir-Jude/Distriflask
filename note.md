@@ -8,7 +8,7 @@ The app is split into chunks to improve its redability, debugging and further ex
 |   ├── static
 │   │   ├── images
 │   │   |    └── your_company.png
-|   |   ├── customer_style.css
+|   |   ├── student_styles.css
 |   |   ├── ...
 |   |
 |   ├── templates

@@ -292,7 +292,7 @@ class DeviceAdminView(BaseView):
             )
 
             return self.render(
-                "admin/matrix_release.html",
+                "admin/matrix_exercise.html",
                 devices_in_rows=devices_in_rows,
                 device_versions=device_versions,
                 releases=releases,
@@ -324,7 +324,7 @@ class DeviceAdminView(BaseView):
         filtered_device = Device.query.filter_by(name=device_name).first()
         if filtered_device:
             return self.render(
-                "admin/matrix_device.html",
+                "admin/matrix_course.html",
                 devices=[filtered_device],
                 all_device_versions=all_device_versions,
                 search_form=search_form,
