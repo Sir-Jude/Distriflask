@@ -22,7 +22,7 @@ class User(db.Model, UserMixin):
     roles = relationship(
         "Role", secondary="roles_users", back_populates="users", lazy=True
     )
-    device = relationship("Device", back_populates="user", uselist=False)
+    device = relationship("Course", back_populates="user", uselist=False)
     fs_uniquifier = Column(
         String(255),
         unique=True,
@@ -58,33 +58,33 @@ class Country(db.Model):
     __tablename__ = "countries"
     country_id = Column(Integer, primary_key=True)
     name = Column(String(40), unique=True)
-    devices = relationship("Device", back_populates="country", lazy=True)
+    devices = relationship("Course", back_populates="country", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
 
 
-class Device(db.Model):
+class Course(db.Model):
     __tablename__ = "devices"
     device_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     country_id = Column(Integer, ForeignKey("countries.country_id"))
     user = relationship("User", back_populates="device", uselist=False, lazy=True)
-    releases = relationship("Release", back_populates="device", lazy=True)
+    releases = relationship("Exercise", back_populates="device", lazy=True)
     country = relationship("Country", back_populates="devices", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
 
 
-class Release(db.Model):
+class Exercise(db.Model):
     __tablename__ = "releases"
     release_id = Column(Integer, primary_key=True)
     device_id = Column(Integer, ForeignKey("devices.device_id"))
     version = Column(String(20))  # e.g. 8.0.122
     release_path = Column(String(255))
     flag_visible = Column(Boolean())
-    device = relationship("Device", back_populates="releases", uselist=False, lazy=True)
+    device = relationship("Course", back_populates="releases", uselist=False, lazy=True)
 
     def __repr__(self):
         return f"{self.version}"

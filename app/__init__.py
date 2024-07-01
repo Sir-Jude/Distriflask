@@ -5,17 +5,17 @@ from app.models import User, Role, user_datastore
 from app.views.students import students
 from app.views.admin_pages import (
     UserAdminView,
-    DeviceAdminView,
+    CourseAdminView,
     UploadAdminView,
     DownloadAdminView,
 )
 from app.forms import (
     AdminDownloadForm,
-    DeviceSearchForm,
+    CourseSearchForm,
     CustomerDownloadForm,
     ExtendedLoginForm,
     ExtendedRegisterForm,
-    UploadReleaseForm,
+    UploadExerciseForm,
 )
 
 # Import app's configurations
@@ -73,8 +73,8 @@ def create_app(config_class=Config):
     # The processor runs when the app is created.
     @security.context_processor
     def security_context_processor():
-        search_form = DeviceSearchForm()
-        upload_form = UploadReleaseForm()
+        search_form = CourseSearchForm()
+        upload_form = UploadExerciseForm()
         download_form = AdminDownloadForm()
         customer_download_form = CustomerDownloadForm()
         return dict(
@@ -113,7 +113,7 @@ def create_app(config_class=Config):
             db.session.commit()
 
     admin.add_view(UserAdminView(User, db.session, name="Users"))
-    admin.add_view(DeviceAdminView(name="Courses", endpoint="device_admin"))
+    admin.add_view(CourseAdminView(name="Courses", endpoint="device_admin"))
     admin.add_view(UploadAdminView(name="Upload", endpoint="upload_admin"))
     admin.add_view(DownloadAdminView(name="Download", endpoint="download_admin"))
 

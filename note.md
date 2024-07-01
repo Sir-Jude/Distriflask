@@ -199,8 +199,8 @@ Create a class for each of the follwoing models:
 - RoleUsers
 - Users
 - Roles
-- Devices
-- Release
+- Courses
+- Exercise
 ```
 roles_users_table = db.Table(
     "roles_users",
@@ -245,20 +245,20 @@ class Roles(db.Model, RoleMixin):
         return f"Role(role_id={self.role_id}, name={self.name})"
 
 
-class Device(db.Model):
+class Course(db.Model):
     """A device, like dev01234 or C15."""
 
-    __tablename__ = "devices"
+    __tablename__ = "courses"
 
     device_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
     country = db.Column(db.String(3), nullable=True)
 
     def __repr__(self):
-        return f"Device(device_id={self.device_id}, name={self.name})"
+        return f"Course(device_id={self.device_id}, name={self.name})"
 
 
-class Release(db.Model):
+class Exercise(db.Model):
     __tablename__ = "releases"
 
     release_id = db.Column(db.Integer, primary_key=True)
@@ -267,7 +267,7 @@ class Release(db.Model):
     flag_visible = db.Column(db.Boolean())
 
     def __repr__(self):
-        return f"Release(release_id={self.id}, name={self.name})"
+        return f"Exercise(release_id={self.id}, name={self.name})"
 ```
 
 The extension "**Flask security too**" (which substitues the previous and deprecated *Flask security*), requires to create an instance attribute called **fs_uniquifier** to identify unequivocally the different users:
@@ -518,7 +518,7 @@ class RegisterForm(FlaskForm):
     )
 
     device = StringField(
-        render_kw={"placeholder": "Device"},
+        render_kw={"placeholder": "Course"},
     )
 
     role = SelectField(

@@ -25,7 +25,7 @@
 # 1. Introduction
 In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of this Markdown file.
 
-The app is a prototype of a web application for the distribution of exercises to some students who are attending an online course, it is coded in Python and built using the Flask framework. It is a fork of the project I am developing for my internship and, even though it is not finished yet, it already has several functionalities.
+The app is a prototype of a web application for the distribution of exercises to those students who are attending an online course, it is coded in Python and built using the Flask framework. It is a fork of the project I am developing for my internship and, even though it is not finished yet, it already has several functionalities.
 
 For the creation and management of the relational-database, I have used:
 - **SQLite**
@@ -245,29 +245,29 @@ If you now go back to the list of Users, you will find that its Username has bee
 ### 3.1.4. The table of courses and exercises
 In the page [Users](#user_list), note down a exercise number and then click on "**Courses**" in the navigation bar.
 
-Now, paste in the form a release number or a device name and click "**Search**"
-- The filter "**Release**", shows a table with the list of all minor releases of the major version, with the column containing the selected one highlighted in red. This allows the admin not only to see how many students have bought that particular release, but also advise them about the updates which have been released after the version they have bought.
-- The filter "**Devices**", shows the list of releases available for that particular instrument.
+Now, paste in the form a exercise number or a course name and click "**Search**"
+- The filter "**Exercise**", shows a table with the list of all exercises, with the column containing the selected one highlighted in red.
+- The filter "**Courses**", shows the list of exercises available for that particular instrument.
 
 <a id="upload"></a>
 ### 3.1.5. Upload a file
-Click on "**Upload**": you will be redirected to the form which allows you to select the release to be uploaded and the device it belong to.
+Click on "**Upload**": you will be redirected to the form which allows you to select the exercise to be uploaded and the course it belong to.
 
-The names of the available devices can be taken from the table in the page [Users](#user_list).
+The names of the available courses can be taken from the table in the page [Users](#user_list).
 
-In theory, Flask allows the upload of any file, but for demostration purposes, this app restricts the format to "**.txt**" and "**.deb**"
+In theory, Flask allows the upload of any file, but for demonstration purposes, this app restricts the format to "**.txt**" and "**.deb**"
 
-Once you have chosen a device and an appropriate file, click on "**Upload**".
+Once you have chosen a course and an appropriate file, click on "**Upload**".
 
-Now, if you open the folder "**uploads**", which was created when you launched the [script](#script), you will find the file in a folder with the name of the selected device.
+Now, if you open the folder "**uploads**", which was created when you launched the [script](#script), you will find the file in a folder with the name of the selected course.
 
 <a id="download"></a>
 ### 3.1.5. Download a file from the admin pages
 Click on "**Download**": you will be redirected to page with the form which allows you to download and save one of the company's exercises (remember, in this prototype, they are represented by some file.txt) on your computer.
 
-Choose a device from the top drop-down menu and click on "**Select**".
+Choose a course from the top drop-down menu and click on "**Select**".
 
-This, will automatically populate the second drop-down menu with the available releases for that particular device.
+This, will automatically populate the second drop-down menu with the available exercises for that particular course.
 
 
 
@@ -327,5 +327,5 @@ htmlcov/open index.html
 # 5. Further development
 The project is still in full development and there is still a lot of work to do, but some features are already in progress:
 - Write more unit tests with pytest and improve the app test coverage
-- For the users with role "Application", restrict the access to the devices linked to their own region.
+- For the users with role "Application", restrict the access to the courses linked to their own region.
 - Write the code for adding some extensions to the main file and create the final .deb package to be dowloaded.

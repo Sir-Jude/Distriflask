@@ -1,5 +1,5 @@
 from app.forms import CustomerDownloadForm
-from app.models import User, Device, Release
+from app.models import User, Course, Exercise
 from config import basedir, Config
 from flask import (
     Blueprint,
@@ -73,11 +73,11 @@ def profile(username):
 
     # Fetch from database the device associated with provided <username>
     country = None  # Initialize country to None initially
-    device = Device.query.filter_by(name=username).first()
+    device = Course.query.filter_by(name=username).first()
     if device:  # Check if User has an associated device
         country = device.country
         releases = sorted(
-            Release.query.join(Device).filter(Device.name == str(device)).all(),
+            Exercise.query.join(Course).filter(Course.name == str(device)).all(),
             key=lambda r: tuple(
                 int(part) if part.isdigit() else part
                 for part in re.findall(r"\d+|\D+", r.version)
@@ -97,13 +97,13 @@ def profile(username):
 
     if form.validate_on_submit():
         release_version = form.release_version.data
-        release = Release.query.filter_by(version=release_version).first()
+        release = Exercise.query.filter_by(version=release_version).first()
 
         if release:
             version = release.release_path
             return redirect(url_for("students.download_version", version=version))
         else:
-            flash("Release not found.", "error")
+            flash("Exercise not found.", "error")
 
     return render_template(
         "students/profile.html",
@@ -118,7 +118,7 @@ def profile(username):
 @students.route("/device/<path:version>", methods=["GET", "POST"])
 @login_required
 def download_version(version):
-    release = Release.query.filter_by(release_path=version).first()
+    release = Exercise.query.filter_by(release_path=version).first()
 
     version = release.release_path
     path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)

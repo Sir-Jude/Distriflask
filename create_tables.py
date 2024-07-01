@@ -7,7 +7,7 @@ import sys
 
 from app import create_app
 from app.extensions import db
-from app.models import Country, Device, Release, Role, User
+from app.models import Country, Course, Exercise, Role, User
 from faker import Faker
 from flask_security import SQLAlchemyUserDatastore, hash_password
 
@@ -33,9 +33,9 @@ def main():
         setup_database()
         create_roles()
         create_countries()
-        devices = create_sample_courses()
-        releases = create_sample_exercises()
-        populate_tables(devices, releases)
+        courses = create_sample_courses()
+        exercises = create_sample_exercises()
+        populate_tables(courses, exercises)
         create_users()
         db.session.commit()
 
@@ -95,20 +95,20 @@ def create_countries():
 def create_sample_courses():
     random.seed(42)
 
-    devices = set()
+    courses = set()
 
     for n in range(100):
-        devices.add(f"dev0{random.randint(10,2500):04d}")
+        courses.add(f"crs0{random.randint(10,2500):04d}")
     for n in range(10):
-        devices.add(f"dev100{random.randint(10,70):02d}")
+        courses.add(f"crs100{random.randint(10,70):02d}")
 
-    return list(devices)
+    return list(courses)
 
 
 def create_sample_exercises():
     random.seed(17)
 
-    releases = set()
+    exercises = set()
 
     for main, max in [
         ("3.1", 12),
@@ -120,47 +120,47 @@ def create_sample_exercises():
         for i in range(1, max + 1):
             # Include only every 3rd possible release
             if random.randint(1, 3) == 1:
-                releases.add(f"{main}.{i}")
-                # Add A (and maybe B and C) variants for some of the releases
+                exercises.add(f"{main}.{i}")
+                # Add A (and maybe B and C) variants for some of the exercises
                 if random.randint(1, 50) == 1:
-                    releases.add(f"{main}.{i}A")
-                    releases.add(f"{main}.{i}B")
-                    releases.add(f"{main}.{i}C")
+                    exercises.add(f"{main}.{i}A")
+                    exercises.add(f"{main}.{i}B")
+                    exercises.add(f"{main}.{i}C")
                 elif random.randint(1, 30) == 1:
-                    releases.add(f"{main}.{i}A")
-                    releases.add(f"{main}.{i}B")
+                    exercises.add(f"{main}.{i}A")
+                    exercises.add(f"{main}.{i}B")
                 elif random.randint(1, 10) == 1:
-                    releases.add(f"{main}.{i}A")
-    return list(releases)
+                    exercises.add(f"{main}.{i}A")
+    return list(exercises)
 
 
-def populate_tables(devices, releases):
+def populate_tables(courses, exercises):
     random.seed(22)
 
-    device_map = {}
+    course_map = {}
     countries = Country.query.all()
 
-    for dev_name in devices:
+    for dev_name in courses:
         country = random.choice(countries)
-        device = Device(
+        course = Course(
             name=dev_name,
             country_id=country.country_id,
         )
-        db.session.add(device)
-        device_map[dev_name] = device
+        db.session.add(course)
+        course_map[dev_name] = course
 
-    # Finalize device entries, so the objects get a device_id
+    # Finalize course entries, so the objects get a device_id
     db.session.commit()
 
-    for rel_number in releases:
-        # Hide one out of 5 releases
+    for rel_number in exercises:
+        # Hide one out of 5 exercises
         visible = random.randint(1, 5) > 1
-        for dev_name in devices:
+        for dev_name in courses:
             # Include only every 4th combination
             if random.randint(1, 4) == 1:
-                release = Release(
+                release = Exercise(
                     version=rel_number,
-                    device_id=device_map[dev_name].device_id,
+                    device_id=course_map[dev_name].device_id,
                     flag_visible=visible,
                 )
 
@@ -170,7 +170,7 @@ def populate_tables(devices, releases):
                 release.release_path = f"{rel_path}.txt"
 
                 with open(f"uploads/{release.release_path}", "w") as file:
-                    file.write(f"This is the release {release.version}")
+                    file.write(f"This is the exercise {release.version}")
 
                 db.session.add(release)
 
@@ -204,10 +204,10 @@ def create_users():
         print()
 
         print("Creating students")
-        DEVICES = create_sample_courses()
-        for device_name in DEVICES:
+        COURSES = create_sample_courses()
+        for course_name in COURSES:
             new_user = User(
-                username=device_name,
+                username=course_name,
                 password=hash_password("12345678"),
                 active=True,
             )

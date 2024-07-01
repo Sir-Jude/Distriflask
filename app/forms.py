@@ -3,7 +3,7 @@ from flask import current_app
 from flask_security.forms import RegisterForm, LoginForm
 from flask_security import lookup_identity
 from flask_wtf import FlaskForm
-from app.models import Role, Device
+from app.models import Role, Course
 from sqlalchemy import func
 from wtforms import (
     BooleanField,
@@ -39,8 +39,8 @@ class ExtendedRegisterForm(RegisterForm):
         ],
     )
     device = QuerySelectField(
-        "Device",
-        query_factory=lambda: Device.query.order_by(func.lower(Device.name)).all(),
+        "Course",
+        query_factory=lambda: Course.query.order_by(func.lower(Course.name)).all(),
         get_label="name",
         allow_blank=True,
         blank_text="None",
@@ -73,9 +73,9 @@ class ExtendedLoginForm(LoginForm):
         return True
 
 
-class DeviceSearchForm(FlaskForm):
-    device_name = StringField("Device: ")
-    selected_release_version = StringField("Release: ")
+class CourseSearchForm(FlaskForm):
+    device_name = StringField("Course: ")
+    selected_release_version = StringField("Exercise: ")
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
 
@@ -85,19 +85,19 @@ class CustomerDownloadForm(FlaskForm):
 
 
 class AdminDownloadForm(FlaskForm):
-    device = SelectField("Device: ")
+    device = SelectField("Course: ")
     select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
     version = SelectField("Version: ")
     submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
 
 
-class UploadReleaseForm(FlaskForm):
-    device = StringField("Device: ")
+class UploadExerciseForm(FlaskForm):
+    device = StringField("Course: ")
     version = FileField("Version: ")
     submit = SubmitField("Upload", render_kw={"class": "btn btn-primary"})
 
     def __init__(self, device_value=None, *args, **kwargs):
-        super(UploadReleaseForm, self).__init__(*args, **kwargs)
+        super(UploadExerciseForm, self).__init__(*args, **kwargs)
         if device_value:
             self.device.data = device_value
 

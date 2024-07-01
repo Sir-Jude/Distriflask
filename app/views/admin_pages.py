@@ -1,11 +1,11 @@
 from app.extensions import db
 from app.forms import (
     AdminDownloadForm,
-    DeviceSearchForm,
+    CourseSearchForm,
     ExtendedRegisterForm,
-    UploadReleaseForm,
+    UploadExerciseForm,
 )
-from app.models import User, Device, Release
+from app.models import User, Course, Exercise
 from config import basedir, Config
 from flask import flash, redirect, request, send_file, session, url_for
 from flask_login import login_required
@@ -79,7 +79,7 @@ class UserAdminView(ModelView):
     )
 
 
-class DeviceAdminView(BaseView):
+class CourseAdminView(BaseView):
     # This decorator exposes the method to be reachable via a specific URL route.
     @expose("/")
     # The "index" func serves as entry point for this particular app's section
@@ -90,7 +90,7 @@ class DeviceAdminView(BaseView):
     @login_required
     @roles_required("administrator")
     def devices_default_table(self):
-        search_form = DeviceSearchForm()
+        search_form = CourseSearchForm()
 
         if search_form.validate_on_submit():
             device_name = search_form.device_name.data
@@ -100,7 +100,7 @@ class DeviceAdminView(BaseView):
                 flash("Please provide only one search criteria at a time.", "error")
                 return redirect(url_for("device_admin.devices_default_table"))
 
-            # Resulting table of the Release search
+            # Resulting table of the Exercise search
             if selected_release_version:
                 # Redirect to the new route for selected_release_version filtering
                 return redirect(
@@ -110,7 +110,7 @@ class DeviceAdminView(BaseView):
                     )
                 )
 
-            # Resulting table of the Device search
+            # Resulting table of the Course search
             elif device_name:
                 # Redirect to the new route for device_name filtering
                 return redirect(
@@ -126,7 +126,7 @@ class DeviceAdminView(BaseView):
         # Default table
         else:
             all_releases = sorted(
-                Release.query.all(),
+                Exercise.query.all(),
                 key=lambda x: tuple(
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", x.version)
@@ -179,7 +179,7 @@ class DeviceAdminView(BaseView):
     @login_required
     @roles_required("administrator")
     def selected_release_version(self, selected_release_version):
-        search_form = DeviceSearchForm()
+        search_form = CourseSearchForm()
 
         parts = selected_release_version.split(".")
 
@@ -188,8 +188,8 @@ class DeviceAdminView(BaseView):
             flash("Invalid release version format.", "error")
             return redirect(url_for("device_admin.devices_default_table"))
 
-        filtered_releases = Release.query.filter(
-            Release.version.like(f"{parts[0]}.{parts[1]}%")
+        filtered_releases = Exercise.query.filter(
+            Exercise.version.like(f"{parts[0]}.{parts[1]}%")
         ).all()
 
         # Redirect to the default if there is any matching release
@@ -221,7 +221,7 @@ class DeviceAdminView(BaseView):
             flash("Selected release version not found.", "error")
             return redirect(url_for("device_admin.devices_default_table"))
 
-        check_existence = Release.query.filter_by(
+        check_existence = Exercise.query.filter_by(
             version=selected_release_version
         ).first()
 
@@ -243,8 +243,8 @@ class DeviceAdminView(BaseView):
             ]
 
             # Query devices that have releases matching the major version
-            devices_in_rows = Device.query.filter(
-                Device.releases.any(Release.version.like(f"{release_version_X_X}%"))
+            devices_in_rows = Course.query.filter(
+                Course.releases.any(Exercise.version.like(f"{release_version_X_X}%"))
             ).all()
 
             # Find the index of the selected release version in the list of all releases.
@@ -308,8 +308,8 @@ class DeviceAdminView(BaseView):
     @login_required
     @roles_required("administrator")
     def selected_device_name(self, device_name):
-        search_form = DeviceSearchForm()
-        all_devices = sorted(Device.query.all(), key=lambda d: d.name, reverse=True)
+        search_form = CourseSearchForm()
+        all_devices = sorted(Course.query.all(), key=lambda d: d.name, reverse=True)
         all_device_versions = {
             device: sorted(
                 [r.version for r in device.releases],
@@ -321,7 +321,7 @@ class DeviceAdminView(BaseView):
             )
             for device in all_devices
         }
-        filtered_device = Device.query.filter_by(name=device_name).first()
+        filtered_device = Course.query.filter_by(name=device_name).first()
         if filtered_device:
             return self.render(
                 "admin/matrix_course.html",
@@ -360,7 +360,7 @@ class UploadAdminView(BaseView):
     @login_required
     @roles_required("administrator")
     def upload(self):
-        upload_form = UploadReleaseForm()
+        upload_form = UploadExerciseForm()
 
         if upload_form.validate_on_submit():
             device_name = upload_form.device.data
@@ -384,9 +384,9 @@ class UploadAdminView(BaseView):
                 filename, extension = os.path.splitext(version.filename)
 
                 # Save the file to the designated folder
-                device = Device.query.filter_by(name=device_name).first()
+                device = Course.query.filter_by(name=device_name).first()
                 if not device:
-                    flash(f"Device {device_name} does not exist.")
+                    flash(f"Course {device_name} does not exist.")
                     return redirect(url_for("upload_admin.upload"))
 
                 device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device_name)
@@ -396,7 +396,7 @@ class UploadAdminView(BaseView):
                 version.save(filepath)
 
                 # Check if the release with the same version already exists for the device
-                existing_release = Release.query.filter_by(
+                existing_release = Exercise.query.filter_by(
                     device=device, version=filename
                 ).first()
                 if existing_release:
@@ -408,7 +408,7 @@ class UploadAdminView(BaseView):
                     )
                 else:
                     # Store the version's info in the database
-                    new_release = Release(
+                    new_release = Exercise(
                         version=filename,
                         device=device,
                         release_path=filepath,
@@ -474,7 +474,7 @@ class DownloadAdminView(BaseView):
             selected_device = download_form.device.data
             # ...store the selected device in the session
             session["selected_device"] = selected_device
-            flash(f"Device {selected_device} selected.")
+            flash(f"Course {selected_device} selected.")
 
         # If a selected device is stored in the session...
         if "selected_device" in session:
@@ -482,7 +482,7 @@ class DownloadAdminView(BaseView):
             selected_device = session["selected_device"]
             # 2) Retrieve all releases associated with the selected device and sort them by version
             versions = sorted(
-                Release.query.join(Device).filter(Device.name == selected_device).all(),
+                Exercise.query.join(Course).filter(Course.name == selected_device).all(),
                 key=lambda r: tuple(
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", r.version)
@@ -499,7 +499,7 @@ class DownloadAdminView(BaseView):
         if download_form.submit.data and download_form.validate_on_submit():
             selected_version = download_form.version.data
             # Retrieve the release corresponding to the selected version
-            release = Release.query.filter_by(version=selected_version).first()
+            release = Exercise.query.filter_by(version=selected_version).first()
             version_path = release.release_path
             path = os.path.join(basedir, Config.UPLOAD_FOLDER, version_path)
             # Send the release file to the user as an attachment for download
