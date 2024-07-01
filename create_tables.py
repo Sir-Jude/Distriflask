@@ -97,9 +97,9 @@ def create_sample_courses():
 
     devices = set()
 
-    for n in range(200):
+    for n in range(100):
         devices.add(f"dev0{random.randint(10,2500):04d}")
-    for n in range(20):
+    for n in range(10):
         devices.add(f"dev100{random.randint(10,70):02d}")
 
     return list(devices)
@@ -181,9 +181,9 @@ def create_users():
     app = create_app()
     random.seed(151)
     with app.app_context():
-        print("Creating in-house users")
-        # Fetch all roles from the database
-        all_roles = Role.query.all()
+        print("Creating teachers users")
+        # Fetch the "teacher" role from the database
+        teacher_role = Role.query.filter_by(name="teacher").first()
         for _ in range(N_USERS):
             new_user = User(
                 username=fake.name(),
@@ -192,27 +192,10 @@ def create_users():
             )
             db.session.add(new_user)
 
-            roles = set()
-            # Give the new user up to 3 roles:
-            for _ in range(random.randint(1, 3)):
-                role = random.choice(ROLES)
-                if role != "student":
-                    roles.add(role)
+            # Assign the "teacher" role to the new user
+            new_user.roles.append(teacher_role)
 
-            # If no non-"administrator" nor "student" roles were added, add one at random
-            if not roles:
-                role = random.choice([r for r in ROLES if r != "student"])
-                roles.add(role)
-
-            # Assign roles to the user
-            for role_name in roles:
-                for role_obj in all_roles:
-                    if role_obj.name == role_name:
-                        new_user.roles.append(role_obj)
-
-            # Named (= in-house) users do not have devices.
-            # We can create users like 'dev01234' if we want to simulate
-            # student user accounts.
+            # Teacher users do not initially have am assigned course.
             new_user.device_id = None
 
             # Indicate progress
