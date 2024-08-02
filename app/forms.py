@@ -74,7 +74,7 @@ class ExtendedLoginForm(LoginForm):
 
 
 class CourseSearchForm(FlaskForm):
-    device_name = StringField("Course: ")
+    course_name = StringField("Course: ")
     selected_release_version = StringField("Exercise: ")
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
@@ -96,10 +96,10 @@ class UploadExerciseForm(FlaskForm):
     version = FileField("Version: ")
     submit = SubmitField("Upload", render_kw={"class": "btn btn-primary"})
 
-    def __init__(self, device_value=None, *args, **kwargs):
+    def __init__(self, course_value=None, *args, **kwargs):
         super(UploadExerciseForm, self).__init__(*args, **kwargs)
-        if device_value:
-            self.device.data = device_value
+        if course_value:
+            self.device.data = course_value
 
     def allowed_file(self):
         version = self.version.data

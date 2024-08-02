@@ -25,7 +25,7 @@
 # 1. Introduction
 In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of this Markdown file.
 
-The app is a prototype of a web application for the distribution of exercises to those students who are attending an online course, it is coded in Python and built using the Flask framework. It is a fork of the project I am developing for my internship and, even though it is not finished yet, it already has several functionalities.
+The app is a prototype of a web application for the distribution of exercises to those students who are attending an online course, it is coded in Python and built using the Flask framework. It is a fork of the project I developed during my internship and, even though it is not finished yet, it already has several functionalities.
 
 For the creation and management of the relational-database, I have used:
 - **SQLite**
@@ -102,7 +102,7 @@ The code is split into chunks to improve its readability, debugging and further 
 └── requirements.txt
 ```
 
-These goals are reached also thanks to the implementation of [Flask's Blueprint](https://exploreflask.com/en/latest/blueprints.html) architecture.
+These goals are reached also thanks to the implementation of [Flask's Blueprint](https://flask.palletsprojects.com/en/2.3.x/blueprints/) architecture.
 
 The project comes with a create_tables.py script, which creates:
 - a new database

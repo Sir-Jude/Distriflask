@@ -41,7 +41,7 @@
         </h6>
       </h5>
       {% if "administrator" in current_user.roles %}
-        <a href="{{ url_for('device_admin.selected_device_name', device_name=device.name) }}">Back to the course search</a>
+        <a href="{{ url_for('course_admin.selected_course_name', course_name=device.name) }}">Back to the course search</a>
       {% endif %}
     {% else %}
       <p>No device associated with this user.</p>

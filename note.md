@@ -250,12 +250,12 @@ class Course(db.Model):
 
     __tablename__ = "courses"
 
-    device_id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
     country = db.Column(db.String(3), nullable=True)
 
     def __repr__(self):
-        return f"Course(device_id={self.device_id}, name={self.name})"
+        return f"Course(course_id={self.course_id}, name={self.name})"
 
 
 class Exercise(db.Model):
@@ -263,7 +263,7 @@ class Exercise(db.Model):
 
     release_id = db.Column(db.Integer, primary_key=True)
     main_version = db.Column(db.String(20))  # e.g. 8.0.122
-    device_id = db.Column(db.Integer)
+    course_id = db.Column(db.Integer)
     flag_visible = db.Column(db.Boolean())
 
     def __repr__(self):

@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     user_id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True)
     password = Column(String(80))
-    device_name = Column(String, ForeignKey("devices.name"), unique=True)
+    course_name = Column(String, ForeignKey("devices.name"), unique=True)
     active = Column(Boolean())
     roles = relationship(
         "Role", secondary="roles_users", back_populates="users", lazy=True
@@ -66,7 +66,7 @@ class Country(db.Model):
 
 class Course(db.Model):
     __tablename__ = "devices"
-    device_id = Column(Integer, primary_key=True)
+    course_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     country_id = Column(Integer, ForeignKey("countries.country_id"))
     user = relationship("User", back_populates="device", uselist=False, lazy=True)
@@ -80,7 +80,7 @@ class Course(db.Model):
 class Exercise(db.Model):
     __tablename__ = "releases"
     release_id = Column(Integer, primary_key=True)
-    device_id = Column(Integer, ForeignKey("devices.device_id"))
+    course_id = Column(Integer, ForeignKey("devices.course_id"))
     version = Column(String(20))  # e.g. 8.0.122
     release_path = Column(String(255))
     flag_visible = Column(Boolean())

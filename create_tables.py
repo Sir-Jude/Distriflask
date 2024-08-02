@@ -149,7 +149,7 @@ def populate_tables(courses, exercises):
         db.session.add(course)
         course_map[dev_name] = course
 
-    # Finalize course entries, so the objects get a device_id
+    # Finalize course entries, so the objects get a course_id
     db.session.commit()
 
     for rel_number in exercises:
@@ -160,7 +160,7 @@ def populate_tables(courses, exercises):
             if random.randint(1, 4) == 1:
                 release = Exercise(
                     version=rel_number,
-                    device_id=course_map[dev_name].device_id,
+                    course_id=course_map[dev_name].course_id,
                     flag_visible=visible,
                 )
 
@@ -196,7 +196,7 @@ def create_users():
             new_user.roles.append(teacher_role)
 
             # Teacher users do not initially have am assigned course.
-            new_user.device_id = None
+            new_user.course_id = None
 
             # Indicate progress
             print(".", end="")
@@ -216,7 +216,7 @@ def create_users():
             new_role = Role.query.filter_by(name="student").first()
             new_user.roles.append(new_role)
 
-            new_user.device_name = new_user.username
+            new_user.course_name = new_user.username
 
             # Indicate progress
             print(".", end="")

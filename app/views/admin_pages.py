@@ -73,7 +73,7 @@ class UserAdminView(ModelView):
     # Link the columns' title and the model class attribute, so to make data sortable
     column_sortable_list = (
         "username",
-        ("versions", "device_name"),
+        ("versions", "course_name"),
         "active",
         ("roles", "roles.name"),
     )
@@ -84,7 +84,7 @@ class CourseAdminView(BaseView):
     @expose("/")
     # The "index" func serves as entry point for this particular app's section
     def index(self):
-        return redirect(url_for("device_admin.devices_default_table"))
+        return redirect(url_for("course_admin.devices_default_table"))
 
     @expose("/admin/device/", methods=["GET", "POST"])
     @login_required
@@ -93,35 +93,35 @@ class CourseAdminView(BaseView):
         search_form = CourseSearchForm()
 
         if search_form.validate_on_submit():
-            device_name = search_form.device_name.data
+            course_name = search_form.course_name.data
             selected_release_version = search_form.selected_release_version.data
 
-            if device_name and selected_release_version:
+            if course_name and selected_release_version:
                 flash("Please provide only one search criteria at a time.", "error")
-                return redirect(url_for("device_admin.devices_default_table"))
+                return redirect(url_for("course_admin.devices_default_table"))
 
             # Resulting table of the Exercise search
             if selected_release_version:
                 # Redirect to the new route for selected_release_version filtering
                 return redirect(
                     url_for(
-                        "device_admin.selected_release_version",
+                        "course_admin.selected_release_version",
                         selected_release_version=selected_release_version,
                     )
                 )
 
             # Resulting table of the Course search
-            elif device_name:
-                # Redirect to the new route for device_name filtering
+            elif course_name:
+                # Redirect to the new route for course_name filtering
                 return redirect(
                     url_for(
-                        "device_admin.selected_device_name", device_name=device_name
+                        "course_admin.selected_course_name", course_name=course_name
                     )
                 )
 
             else:
                 flash("Please, provide at least one search criteria.", "error")
-                return redirect(url_for("device_admin.devices_default_table"))
+                return redirect(url_for("course_admin.devices_default_table"))
 
         # Default table
         else:
@@ -170,7 +170,7 @@ class CourseAdminView(BaseView):
 
             return redirect(
                 url_for(
-                    "device_admin.selected_release_version",
+                    "course_admin.selected_release_version",
                     selected_release_version=f"{first_number}.{second_number}.{third_number}",
                 )
             )
@@ -186,7 +186,7 @@ class CourseAdminView(BaseView):
         # Filter releases based on first two numbers of selected_release_version in the URL
         if len(parts) < 2:
             flash("Invalid release version format.", "error")
-            return redirect(url_for("device_admin.devices_default_table"))
+            return redirect(url_for("course_admin.devices_default_table"))
 
         filtered_releases = Exercise.query.filter(
             Exercise.version.like(f"{parts[0]}.{parts[1]}%")
@@ -195,7 +195,7 @@ class CourseAdminView(BaseView):
         # Redirect to the default if there is any matching release
         if not filtered_releases:
             flash("No releases found for the provided major version.", "error")
-            return redirect(url_for("device_admin.devices_default_table"))
+            return redirect(url_for("course_admin.devices_default_table"))
 
         # Get all unique releases matching the major version
         all_releases = sorted(
@@ -214,12 +214,12 @@ class CourseAdminView(BaseView):
         # Redirect to the default if there is any matching release
         if not all_releases:
             flash("No releases found for the provided major version.", "error")
-            return redirect(url_for("device_admin.devices_default_table"))
+            return redirect(url_for("course_admin.devices_default_table"))
 
         # Check if the provided release version exists in the list of all releases
         elif selected_release_version not in all_releases:
             flash("Selected release version not found.", "error")
-            return redirect(url_for("device_admin.devices_default_table"))
+            return redirect(url_for("course_admin.devices_default_table"))
 
         check_existence = Exercise.query.filter_by(
             version=selected_release_version
@@ -302,12 +302,12 @@ class CourseAdminView(BaseView):
         else:
             flash("No release found.", "error")
             # Redirect to the default devices table
-            return redirect(url_for("device_admin.devices_default_table"))
+            return redirect(url_for("course_admin.devices_default_table"))
 
-    @expose("/device/<device_name>", methods=["GET", "POST"])
+    @expose("/device/<course_name>", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
-    def selected_device_name(self, device_name):
+    def selected_course_name(self, course_name):
         search_form = CourseSearchForm()
         all_devices = sorted(Course.query.all(), key=lambda d: d.name, reverse=True)
         all_device_versions = {
@@ -321,7 +321,7 @@ class CourseAdminView(BaseView):
             )
             for device in all_devices
         }
-        filtered_device = Course.query.filter_by(name=device_name).first()
+        filtered_device = Course.query.filter_by(name=course_name).first()
         if filtered_device:
             return self.render(
                 "admin/matrix_course.html",
@@ -331,7 +331,7 @@ class CourseAdminView(BaseView):
             )
         else:
             flash("No devices found.", "error")
-            return redirect(url_for("device_admin.devices_default_table"))
+            return redirect(url_for("course_admin.devices_default_table"))
 
     def is_accessible(self):
         return (
@@ -363,10 +363,10 @@ class UploadAdminView(BaseView):
         upload_form = UploadExerciseForm()
 
         if upload_form.validate_on_submit():
-            device_name = upload_form.device.data
+            course_name = upload_form.device.data
             version = upload_form.version.data
 
-            if not (device_name and version):
+            if not (course_name and version):
                 flash("Please fill out both the device and version fields.")
 
             elif not upload_form.path_exists():
@@ -384,14 +384,14 @@ class UploadAdminView(BaseView):
                 filename, extension = os.path.splitext(version.filename)
 
                 # Save the file to the designated folder
-                device = Course.query.filter_by(name=device_name).first()
+                device = Course.query.filter_by(name=course_name).first()
                 if not device:
-                    flash(f"Course {device_name} does not exist.")
+                    flash(f"Course {course_name} does not exist.")
                     return redirect(url_for("upload_admin.upload"))
 
-                device_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, device_name)
+                course_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, course_name)
                 filepath = os.path.join(
-                    device_folder, secure_filename(version.filename)
+                    course_folder, secure_filename(version.filename)
                 )
                 version.save(filepath)
 
@@ -404,7 +404,7 @@ class UploadAdminView(BaseView):
                     existing_release.release_path = filepath
                     db.session.commit()
                     flash(
-                        f'The file "{version.filename}" has been updated for device "{device_name}".'
+                        f'The file "{version.filename}" has been updated for device "{course_name}".'
                     )
                 else:
                     # Store the version's info in the database
@@ -429,12 +429,12 @@ class UploadAdminView(BaseView):
             # Retain device name on upload_form submission failure due to invalid file
             # format
             if upload_form.device.data:
-                device_value = upload_form.device.data
+                course_value = upload_form.device.data
             else:
-                device_value = None
+                course_value = None
 
             return self.render(
-                "admin/upload.html", upload_form=upload_form, device_value=device_value
+                "admin/upload.html", upload_form=upload_form, course_value=course_value
             )
 
         return self.render("admin/upload.html", upload_form=upload_form)

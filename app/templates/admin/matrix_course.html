@@ -18,7 +18,7 @@
         {# Iterate over each release #}
         {% for release in releases %}
           {# Create a link for each release pointing to selected_release_version view #}
-          <a href="{{ url_for('device_admin.selected_release_version', selected_release_version=release) }}">{{ release }}</a>
+          <a href="{{ url_for('course_admin.selected_release_version', selected_release_version=release) }}">{{ release }}</a>
           {# Add a comma after each release except the last one #}
           {% if not loop.last %}, {% endif %}
         {% endfor %}

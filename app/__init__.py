@@ -113,7 +113,7 @@ def create_app(config_class=Config):
             db.session.commit()
 
     admin.add_view(UserAdminView(User, db.session, name="Users"))
-    admin.add_view(CourseAdminView(name="Courses", endpoint="device_admin"))
+    admin.add_view(CourseAdminView(name="Courses", endpoint="course_admin"))
     admin.add_view(UploadAdminView(name="Upload", endpoint="upload_admin"))
     admin.add_view(DownloadAdminView(name="Download", endpoint="download_admin"))
 
