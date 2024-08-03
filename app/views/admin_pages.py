@@ -242,7 +242,7 @@ class CourseAdminView(BaseView):
                 release.device for release in filtered_releases
             ]
 
-            # Query devices that have releases matching the major version
+            # Query courses that have releases matching the major version
             courses_in_rows = Course.query.filter(
                 Course.releases.any(Exercise.version.like(f"{release_version_X_X}%"))
             ).all()
@@ -301,7 +301,7 @@ class CourseAdminView(BaseView):
             )
         else:
             flash("No release found.", "error")
-            # Redirect to the default devices table
+            # Redirect to the default courses table
             return redirect(url_for("course_admin.courses_default_table"))
 
     @expose("/device/<course_name>", methods=["GET", "POST"])
@@ -309,7 +309,7 @@ class CourseAdminView(BaseView):
     @roles_required("administrator")
     def selected_course_name(self, course_name):
         search_form = CourseSearchForm()
-        all_devices = sorted(Course.query.all(), key=lambda d: d.name, reverse=True)
+        all_courses = sorted(Course.query.all(), key=lambda d: d.name, reverse=True)
         all_device_versions = {
             device: sorted(
                 [r.version for r in device.releases],
@@ -319,18 +319,18 @@ class CourseAdminView(BaseView):
                 ),
                 reverse=True,
             )
-            for device in all_devices
+            for device in all_courses
         }
         filtered_device = Course.query.filter_by(name=course_name).first()
         if filtered_device:
             return self.render(
                 "admin/matrix_course.html",
-                devices=[filtered_device],
+                courses=[filtered_device],
                 all_device_versions=all_device_versions,
                 search_form=search_form,
             )
         else:
-            flash("No devices found.", "error")
+            flash("No courses found.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
     def is_accessible(self):

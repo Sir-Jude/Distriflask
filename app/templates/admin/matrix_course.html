@@ -11,10 +11,10 @@
   <tbody>
     <tr>
       {# Display the device name #}
-      <td><a href="{{ url_for('students.profile', username=devices[0].name) }}">{{ devices[0].name }}</a></td>
+      <td><a href="{{ url_for('students.profile', username=courses[0].name) }}">{{ courses[0].name }}</a></td>
       <td>
         {# Get all releases for the device #}
-        {% set releases = all_device_versions[devices[0]] %}
+        {% set releases = all_device_versions[courses[0]] %}
         {# Iterate over each release #}
         {% for release in releases %}
           {# Create a link for each release pointing to selected_exercise view #}

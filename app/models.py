@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     user_id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True)
     password = Column(String(80))
-    course_name = Column(String, ForeignKey("devices.name"), unique=True)
+    course_name = Column(String, ForeignKey("courses.name"), unique=True)
     active = Column(Boolean())
     roles = relationship(
         "Role", secondary="roles_users", back_populates="users", lazy=True
@@ -32,8 +32,8 @@ class User(db.Model, UserMixin):
     )
 
     def versions(self):
-        if self.devices:
-            return ", ".join(release.version for release in self.devices.releases)
+        if self.courses:
+            return ", ".join(release.version for release in self.courses.releases)
         else:
             return ""
 
@@ -58,20 +58,20 @@ class Country(db.Model):
     __tablename__ = "countries"
     country_id = Column(Integer, primary_key=True)
     name = Column(String(40), unique=True)
-    devices = relationship("Course", back_populates="country", lazy=True)
+    courses = relationship("Course", back_populates="country", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
 
 
 class Course(db.Model):
-    __tablename__ = "devices"
+    __tablename__ = "courses"
     course_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     country_id = Column(Integer, ForeignKey("countries.country_id"))
     user = relationship("User", back_populates="device", uselist=False, lazy=True)
     releases = relationship("Exercise", back_populates="device", lazy=True)
-    country = relationship("Country", back_populates="devices", lazy=True)
+    country = relationship("Country", back_populates="courses", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
@@ -80,7 +80,7 @@ class Course(db.Model):
 class Exercise(db.Model):
     __tablename__ = "releases"
     release_id = Column(Integer, primary_key=True)
-    course_id = Column(Integer, ForeignKey("devices.course_id"))
+    course_id = Column(Integer, ForeignKey("courses.course_id"))
     version = Column(String(20))  # e.g. 8.0.122
     exercise_path = Column(String(255))
     flag_visible = Column(Boolean())
