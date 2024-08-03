@@ -100,7 +100,7 @@ def profile(username):
         release = Exercise.query.filter_by(version=release_version).first()
 
         if release:
-            version = release.release_path
+            version = release.exercise_path
             return redirect(url_for("students.download_version", version=version))
         else:
             flash("Exercise not found.", "error")
@@ -118,9 +118,9 @@ def profile(username):
 @students.route("/device/<path:version>", methods=["GET", "POST"])
 @login_required
 def download_version(version):
-    release = Exercise.query.filter_by(release_path=version).first()
+    release = Exercise.query.filter_by(exercise_path=version).first()
 
-    version = release.release_path
+    version = release.exercise_path
     path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
     return send_file(path_or_file=path, as_attachment=True)
 

@@ -82,7 +82,7 @@ class Exercise(db.Model):
     release_id = Column(Integer, primary_key=True)
     course_id = Column(Integer, ForeignKey("devices.course_id"))
     version = Column(String(20))  # e.g. 8.0.122
-    release_path = Column(String(255))
+    exercise_path = Column(String(255))
     flag_visible = Column(Boolean())
     device = relationship("Course", back_populates="releases", uselist=False, lazy=True)
 

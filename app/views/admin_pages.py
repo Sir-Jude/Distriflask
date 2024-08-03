@@ -84,29 +84,29 @@ class CourseAdminView(BaseView):
     @expose("/")
     # The "index" func serves as entry point for this particular app's section
     def index(self):
-        return redirect(url_for("course_admin.devices_default_table"))
+        return redirect(url_for("course_admin.courses_default_table"))
 
     @expose("/admin/device/", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
-    def devices_default_table(self):
+    def courses_default_table(self):
         search_form = CourseSearchForm()
 
         if search_form.validate_on_submit():
             course_name = search_form.course_name.data
-            selected_release_version = search_form.selected_release_version.data
+            selected_exercise = search_form.selected_exercise.data
 
-            if course_name and selected_release_version:
+            if course_name and selected_exercise:
                 flash("Please provide only one search criteria at a time.", "error")
-                return redirect(url_for("course_admin.devices_default_table"))
+                return redirect(url_for("course_admin.courses_default_table"))
 
             # Resulting table of the Exercise search
-            if selected_release_version:
-                # Redirect to the new route for selected_release_version filtering
+            if selected_exercise:
+                # Redirect to the new route for selected_exercise filtering
                 return redirect(
                     url_for(
-                        "course_admin.selected_release_version",
-                        selected_release_version=selected_release_version,
+                        "course_admin.selected_exercise",
+                        selected_exercise=selected_exercise,
                     )
                 )
 
@@ -121,7 +121,7 @@ class CourseAdminView(BaseView):
 
             else:
                 flash("Please, provide at least one search criteria.", "error")
-                return redirect(url_for("course_admin.devices_default_table"))
+                return redirect(url_for("course_admin.courses_default_table"))
 
         # Default table
         else:
@@ -170,23 +170,23 @@ class CourseAdminView(BaseView):
 
             return redirect(
                 url_for(
-                    "course_admin.selected_release_version",
-                    selected_release_version=f"{first_number}.{second_number}.{third_number}",
+                    "course_admin.selected_exercise",
+                    selected_exercise=f"{first_number}.{second_number}.{third_number}",
                 )
             )
 
-    @expose("/release-table/<selected_release_version>", methods=["GET", "POST"])
+    @expose("/students-table/<selected_exercise>", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
-    def selected_release_version(self, selected_release_version):
+    def selected_exercise(self, selected_exercise):
         search_form = CourseSearchForm()
 
-        parts = selected_release_version.split(".")
+        parts = selected_exercise.split(".")
 
-        # Filter releases based on first two numbers of selected_release_version in the URL
+        # Filter releases based on first two numbers of selected_exercise in the URL
         if len(parts) < 2:
             flash("Invalid release version format.", "error")
-            return redirect(url_for("course_admin.devices_default_table"))
+            return redirect(url_for("course_admin.courses_default_table"))
 
         filtered_releases = Exercise.query.filter(
             Exercise.version.like(f"{parts[0]}.{parts[1]}%")
@@ -195,7 +195,7 @@ class CourseAdminView(BaseView):
         # Redirect to the default if there is any matching release
         if not filtered_releases:
             flash("No releases found for the provided major version.", "error")
-            return redirect(url_for("course_admin.devices_default_table"))
+            return redirect(url_for("course_admin.courses_default_table"))
 
         # Get all unique releases matching the major version
         all_releases = sorted(
@@ -209,20 +209,20 @@ class CourseAdminView(BaseView):
 
         # Check if the provided release version exists in the list of all releases
         if len(parts) == 2:
-            selected_release_version = all_releases[0]
+            selected_exercise = all_releases[0]
 
         # Redirect to the default if there is any matching release
         if not all_releases:
             flash("No releases found for the provided major version.", "error")
-            return redirect(url_for("course_admin.devices_default_table"))
+            return redirect(url_for("course_admin.courses_default_table"))
 
         # Check if the provided release version exists in the list of all releases
-        elif selected_release_version not in all_releases:
+        elif selected_exercise not in all_releases:
             flash("Selected release version not found.", "error")
-            return redirect(url_for("course_admin.devices_default_table"))
+            return redirect(url_for("course_admin.courses_default_table"))
 
         check_existence = Exercise.query.filter_by(
-            version=selected_release_version
+            version=selected_exercise
         ).first()
 
         # Check if there are any filtered releases
@@ -232,23 +232,23 @@ class CourseAdminView(BaseView):
                     str(part)
                     for part in list(
                         int(part) if part.isdigit() else part
-                        for part in re.findall(r"\d+|\D+", selected_release_version)
+                        for part in re.findall(r"\d+|\D+", selected_exercise)
                     )[:3]
                 ]
             )
 
-            # Extract devices associated with the filtered releases
-            devices_with_matching_releases = [
+            # Extract courses associated with the filtered student
+            courses_with_matching_students = [
                 release.device for release in filtered_releases
             ]
 
             # Query devices that have releases matching the major version
-            devices_in_rows = Course.query.filter(
+            courses_in_rows = Course.query.filter(
                 Course.releases.any(Exercise.version.like(f"{release_version_X_X}%"))
             ).all()
 
             # Find the index of the selected release version in the list of all releases.
-            index = all_releases.index(selected_release_version)
+            index = all_releases.index(selected_exercise)
 
             # Define a variable to store set number of newer/older releases
             halfwith = 10
@@ -283,26 +283,26 @@ class CourseAdminView(BaseView):
                     for release in device.releases
                     if release.version in all_releases
                 ]
-                for device in devices_with_matching_releases
+                for device in courses_with_matching_students
             }
 
-            # Sort devices by name in reverse order
-            devices_in_rows = sorted(
-                devices_in_rows, key=lambda x: x.name, reverse=True
+            # Sort courses by name in reverse order
+            courses_in_rows = sorted(
+                courses_in_rows, key=lambda x: x.name, reverse=True
             )
 
             return self.render(
                 "admin/matrix_exercise.html",
-                devices_in_rows=devices_in_rows,
+                courses_in_rows=courses_in_rows,
                 device_versions=device_versions,
                 releases=releases,
-                selected_release_version=selected_release_version,
+                selected_exercise=selected_exercise,
                 search_form=search_form,
             )
         else:
             flash("No release found.", "error")
             # Redirect to the default devices table
-            return redirect(url_for("course_admin.devices_default_table"))
+            return redirect(url_for("course_admin.courses_default_table"))
 
     @expose("/device/<course_name>", methods=["GET", "POST"])
     @login_required
@@ -331,7 +331,7 @@ class CourseAdminView(BaseView):
             )
         else:
             flash("No devices found.", "error")
-            return redirect(url_for("course_admin.devices_default_table"))
+            return redirect(url_for("course_admin.courses_default_table"))
 
     def is_accessible(self):
         return (
@@ -342,12 +342,12 @@ class CourseAdminView(BaseView):
 
     def _handle_view(self, name, **kwargs):
         # Adjust _handle_view to accept additional arguments
-        if name == "selected_release_version":
-            # Extract 'selected_release_version' from kwargs
-            selected_release_version = kwargs.pop("selected_release_version", None)
-            if selected_release_version:
+        if name == "selected_exercise":
+            # Extract 'selected_exercise' from kwargs
+            selected_exercise = kwargs.pop("selected_exercise", None)
+            if selected_exercise:
                 # Call the relevant view method with the extracted argument
-                return getattr(self, name)(selected_release_version)
+                return getattr(self, name)(selected_exercise)
         return super()._handle_view(name, **kwargs)
 
 
@@ -401,7 +401,7 @@ class UploadAdminView(BaseView):
                 ).first()
                 if existing_release:
                     # Update the existing release
-                    existing_release.release_path = filepath
+                    existing_release.exercise_path = filepath
                     db.session.commit()
                     flash(
                         f'The file "{version.filename}" has been updated for device "{course_name}".'
@@ -411,7 +411,7 @@ class UploadAdminView(BaseView):
                     new_release = Exercise(
                         version=filename,
                         device=device,
-                        release_path=filepath,
+                        exercise_path=filepath,
                     )
                     db.session.add(new_release)
                     db.session.commit()
@@ -462,27 +462,27 @@ class DownloadAdminView(BaseView):
     def download(self):
         download_form = AdminDownloadForm(formdata=request.form)
 
-        # Sort devices name in "uploads" folder and populate the drop down menu
-        devices = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
-        download_form.device.choices = [(device, device) for device in devices]
+        # Sort courses' name in "uploads" folder and populate the drop down menu
+        courses = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
+        download_form.course.choices = [(course, course) for course in courses]
 
         versions = []
-        selected_device = None
+        selected_course = None
 
-        # If the user selects a device...
+        # If the user selects a course...
         if download_form.select.data:
-            selected_device = download_form.device.data
-            # ...store the selected device in the session
-            session["selected_device"] = selected_device
-            flash(f"Course {selected_device} selected.")
+            selected_course = download_form.course.data
+            # ...store the selected course in the session
+            session["selected_course"] = selected_course
+            flash(f"Course {selected_course} selected.")
 
-        # If a selected device is stored in the session...
-        if "selected_device" in session:
-            # 1) Retrieve the selected device from the session
-            selected_device = session["selected_device"]
-            # 2) Retrieve all releases associated with the selected device and sort them by version
+        # If a selected course is stored in the session...
+        if "selected_course" in session:
+            # 1) Retrieve the selected course from the session
+            selected_course = session["selected_course"]
+            # 2) Retrieve all releases associated with the selected course and sort them by version
             versions = sorted(
-                Exercise.query.join(Course).filter(Course.name == selected_device).all(),
+                Exercise.query.join(Course).filter(Course.name == selected_course).all(),
                 key=lambda r: tuple(
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", r.version)
@@ -500,7 +500,7 @@ class DownloadAdminView(BaseView):
             selected_version = download_form.version.data
             # Retrieve the release corresponding to the selected version
             release = Exercise.query.filter_by(version=selected_version).first()
-            version_path = release.release_path
+            version_path = release.exercise_path
             path = os.path.join(basedir, Config.UPLOAD_FOLDER, version_path)
             # Send the release file to the user as an attachment for download
             return send_file(path_or_file=path, as_attachment=True)

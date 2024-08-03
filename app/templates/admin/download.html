@@ -15,8 +15,8 @@
       <div class="label-field">
         <label style="float: left">Course:</label>
         <span>
-          <select name="device">
-            {% for choice_value in download_form.device.choices %}
+          <select name="course">
+            {% for choice_value in download_form.course.choices %}
               <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
             {% endfor %}
           </select>

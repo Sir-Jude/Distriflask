@@ -167,9 +167,9 @@ def populate_tables(courses, exercises):
                 os.makedirs(f"uploads/{dev_name}", exist_ok=True)
                 rel_path = os.path.join(dev_name, release.version)
 
-                release.release_path = f"{rel_path}.txt"
+                release.exercise_path = f"{rel_path}.txt"
 
-                with open(f"uploads/{release.release_path}", "w") as file:
+                with open(f"uploads/{release.exercise_path}", "w") as file:
                     file.write(f"This is the exercise {release.version}")
 
                 db.session.add(release)

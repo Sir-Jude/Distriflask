@@ -1,21 +1,21 @@
 {% extends "admin/courses_base.html" %}
 
 {% block table %}
-<h2>Filtered exercises</h2>
-<table class="release-table" border="3" bordercolor="#ffffff">
+<h2>Filtered students</h2>
+<table class="students-table" border="3" bordercolor="#ffffff">
   <thead>
     <tr>
       <th></th>
       <!-- This loop renders the headers of the table -->
       {% for release in releases %}
-        {% if release == selected_release_version %}
+        {% if release == selected_exercise %}
           <th class="rotated-header highlight-column" style="font-weight:bold">
-            <div><span><a href="{{ url_for('course_admin.selected_release_version', selected_release_version=release) }}">{{ release }}</a></span></div>
+            <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=release) }}">{{ release }}</a></span></div>
           </th>
           {% else %}
           {% if release != "..." %}
             <th class="rotated-header">
-              <div><span><a href="{{ url_for('course_admin.selected_release_version', selected_release_version=release) }}">{{ release }}</a></span></div>
+              <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=release) }}">{{ release }}</a></span></div>
             </th>
           {% else %}
             <th class="rotated-header">
@@ -27,11 +27,11 @@
     </tr>
   </thead>
   <tbody>
-    {% for device in devices_in_rows %}
+    {% for device in courses_in_rows %}
       <tr>
         <td><a href="{{ url_for('course_admin.selected_course_name', course_name=device.name) }}">{{ device.name }}</a></td>
         {% for release in releases %}
-          {% if release == selected_release_version %}
+          {% if release == selected_exercise %}
             <td class="highlight-column" style="font-weight:bold">
               {% if release in device_versions[device]%}
                 *

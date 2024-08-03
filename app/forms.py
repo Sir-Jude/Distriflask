@@ -75,7 +75,7 @@ class ExtendedLoginForm(LoginForm):
 
 class CourseSearchForm(FlaskForm):
     course_name = StringField("Course: ")
-    selected_release_version = StringField("Exercise: ")
+    selected_exercise = StringField("Exercise: ")
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
 
@@ -85,7 +85,7 @@ class CustomerDownloadForm(FlaskForm):
 
 
 class AdminDownloadForm(FlaskForm):
-    device = SelectField("Course: ")
+    course = SelectField("Course: ")
     select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
     version = SelectField("Version: ")
     submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})

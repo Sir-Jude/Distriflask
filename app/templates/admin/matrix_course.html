@@ -1,7 +1,7 @@
 {% extends "admin/courses_base.html" %}
 {% block table %}
 <h2>Filtered course</h2>
-<table class="device-table" border="3" bordercolor="#ffffff">
+<table class="course-table" border="3" bordercolor="#ffffff">
   <thead>
     <tr>
       <th>Student profile</th>
@@ -17,8 +17,8 @@
         {% set releases = all_device_versions[devices[0]] %}
         {# Iterate over each release #}
         {% for release in releases %}
-          {# Create a link for each release pointing to selected_release_version view #}
-          <a href="{{ url_for('course_admin.selected_release_version', selected_release_version=release) }}">{{ release }}</a>
+          {# Create a link for each release pointing to selected_exercise view #}
+          <a href="{{ url_for('course_admin.selected_exercise', selected_exercise=release) }}">{{ release }}</a>
           {# Add a comma after each release except the last one #}
           {% if not loop.last %}, {% endif %}
         {% endfor %}
