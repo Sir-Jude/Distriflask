@@ -16,16 +16,21 @@
 &nbsp;&nbsp;3.1.5. [Upload a file](#upload)  
 &nbsp;&nbsp;3.1.6. [Download a file from the admin pages](#download)  
 3.2. [The student page](#student)  
-&nbsp;&nbsp;3.2.2. [Download a file from a student's page](#customer_download)  
+&nbsp;&nbsp;3.2.2. [Download a file from a student's page](#student_download)  
 4. [Testing the application](#testing)  
 5. [Further development](#further)  
 <br/><br/>
 
 <a id="introduction"></a>
 # 1. Introduction
-In VSCode, press on your keyboard Ctrl+"K" and then just "V" to see a preview of this Markdown file.
+In VSCode, press on your keyboard Ctrl+"K" followed by "V" to see a preview of this Markdown file.
 
-The app is a prototype of a web application for the distribution of exercises to those students who are attending an online course, it is coded in Python and built using the Flask framework. It is a fork of the project I developed during my internship and, even though it is not finished yet, it already has several functionalities.
+The application is a prototype for a web-based platform designed to distribute exercises to students enrolled in online courses. Built using **Python** and the **Flask** framework, it is a fork of a project I worked on during my internship. Although still under development, the app already includes several key features.
+- **CRUD operations**, for performing the four (**C**reate, **R**ead, **U**pdate and **D**elete) basic operations on a persistent storage. 
+- **User authentication**, for managing the login/logout functionality.
+- **Role-based-access control**, for restricting admin pages to users labelled with specific roles.
+- **File management**, for enabling the uploading/downloading of files.
+- **Automated testing**, for quickly verifying the app's functionality after code changes.
 
 For the creation and management of the relational-database, I have used:
 - **SQLite**
@@ -286,7 +291,7 @@ Click on "**Login**" in the navigation bar, use the the chosen username and the 
 
 **IMPORTANT**: the script assigns this password to every user, but this is just a prototype and the app is running in a development environment: in case you decide to use this code to deploy the app, it is highly recommended to create **unique and safer** passwords for every different user!!!
 
-<a id="customer_download"></a>
+<a id="student_download"></a>
 ## 3.2.2. download a file from a student's page
 From the dropdown menu, select the name of a exercise and then click on the "**Download**" button.
 

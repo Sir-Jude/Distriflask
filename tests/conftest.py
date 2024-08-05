@@ -90,7 +90,7 @@ def admin_user(client):
 
 
 @pytest.fixture()
-def customer_user(client):
+def student_user(client):
     """
     This fixture creates a new student user, logs them in, and yields the
     test client, student username, and student password.
@@ -98,14 +98,14 @@ def customer_user(client):
     app = create_app(config_class=TestConfig)
     with app.app_context():
         with client:
-            new_customer = User(
-                username="test_customer",
+            new_student = User(
+                username="test_student",
                 password=hash_password("12345678"),
                 roles=[Role.query.filter_by(name="student").first()],
                 active=True,
             )
 
-            db.session.add(new_customer)
+            db.session.add(new_student)
             db.session.commit()
 
             # Query users with roles containing "student"
@@ -114,10 +114,10 @@ def customer_user(client):
             )
 
             # Loop through each student and test login
-            customer_username = student.username
-            customer_password = "12345678"
+            student_username = student.username
+            student_password = "12345678"
 
-            yield client, customer_username, customer_password
+            yield client, student_username, student_password
 
 @pytest.fixture()
 def admin_login(admin_user):

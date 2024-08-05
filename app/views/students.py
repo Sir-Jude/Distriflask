@@ -1,4 +1,4 @@
-from app.forms import CustomerDownloadForm
+from app.forms import StudentdownloadForm
 from app.models import User, Course, Exercise
 from config import basedir, Config
 from flask import (
@@ -35,7 +35,7 @@ def home():
     return render_template("students/home.html")
 
 
-@students.route("/customer_login", methods=["GET", "POST"])
+@students.route("/student_login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -87,7 +87,7 @@ def profile(username):
     else:
         releases = []  # If device is not available, set releases to an empty list
 
-    form = CustomerDownloadForm(formdata=request.form)
+    form = StudentdownloadForm(formdata=request.form)
     # Populate the choices for release versions in the form
     form.release_version.choices = [
         # (value submitted to the form, text displayed to the user)
