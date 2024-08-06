@@ -324,7 +324,7 @@ coverage html
 ```
 It will create a new folder called "**htmlcoiv**" and generate inside it an HTML report named "**index.html**" that displays the code lines and indicates which lines were executed during the test runs and which were not. The report can then be opened in a web browser running the code
 ```
-htmlcov/open index.html
+open htmlcov/index.html
 ```
 <br/><br/>
 

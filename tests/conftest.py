@@ -84,8 +84,9 @@ def admin_user(app, client):
             admin = User.query.filter_by(username="test_admin").first()
             admin_username = admin.username
             admin_password = "12345678"
+            admin_roles = [admin.roles]
 
-            yield client, admin_username, admin_password
+            yield client, admin_username, admin_password, admin_roles
 
 
 @pytest.fixture()
@@ -121,7 +122,7 @@ def admin_login(admin_user):
     """
     This fixture logs in an existing admin user and yields the test client.
     """
-    client, admin_username, admin_password = admin_user
+    client, admin_username, admin_password, admin_roles = admin_user
 
     response = client.post(
         "/login",
