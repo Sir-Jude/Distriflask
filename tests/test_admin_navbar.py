@@ -1,9 +1,7 @@
 def test_users_button(admin_login):
     client = admin_login
 
-    response = client.get(
-        "/admin/user/"
-    )
+    response = client.get("/admin/user/")
 
     # Assert the presence of the button "Create" and "With selected"
     # (visible on the /admin/user/ page)
@@ -15,9 +13,7 @@ def test_users_button(admin_login):
 def test_upload_button(admin_login):
     client = admin_login
 
-    response = client.get(
-        "/admin/upload_admin/admin/upload/"
-    )
+    response = client.get("/admin/upload_admin/admin/upload/")
 
     # Assert the presence of the string "Upload a file"
     assert response.status_code == 200
@@ -27,9 +23,7 @@ def test_upload_button(admin_login):
 def test_download_button(admin_login):
     client = admin_login
 
-    response = client.get(
-        "/admin/download_admin/admin/download/"
-    )
+    response = client.get("/admin/download_admin/admin/download/")
 
     # Assert the presence of the string "Download a file"
     assert response.status_code == 200

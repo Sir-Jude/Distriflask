@@ -221,9 +221,7 @@ class CourseAdminView(BaseView):
             flash("Selected release version not found.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
-        check_existence = Exercise.query.filter_by(
-            version=selected_exercise
-        ).first()
+        check_existence = Exercise.query.filter_by(version=selected_exercise).first()
 
         # Check if there are any filtered releases
         if check_existence:
@@ -482,7 +480,9 @@ class DownloadAdminView(BaseView):
             selected_course = session["selected_course"]
             # 2) Retrieve all releases associated with the selected course and sort them by version
             versions = sorted(
-                Exercise.query.join(Course).filter(Course.name == selected_course).all(),
+                Exercise.query.join(Course)
+                .filter(Course.name == selected_course)
+                .all(),
                 key=lambda r: tuple(
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", r.version)
