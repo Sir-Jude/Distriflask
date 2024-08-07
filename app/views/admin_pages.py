@@ -225,7 +225,7 @@ class CourseAdminView(BaseView):
 
         # Check if there are any filtered releases
         if check_existence:
-            release_version_X_X = "".join(
+            exercise_number = "".join(
                 [
                     str(part)
                     for part in list(
@@ -242,7 +242,7 @@ class CourseAdminView(BaseView):
 
             # Query courses that have releases matching the major version
             courses_in_rows = Course.query.filter(
-                Course.releases.any(Exercise.version.like(f"{release_version_X_X}%"))
+                Course.releases.any(Exercise.version.like(f"{exercise_number}%"))
             ).all()
 
             # Find the index of the selected release version in the list of all releases.
@@ -361,8 +361,8 @@ class UploadAdminView(BaseView):
         upload_form = UploadExerciseForm()
 
         if upload_form.validate_on_submit():
-            course_name = upload_form.device.data
-            version = upload_form.version.data
+            course_name = upload_form.course.data
+            version = upload_form.exercise.data
 
             if not (course_name and version):
                 flash("Please fill out both the device and version fields.")
@@ -394,12 +394,12 @@ class UploadAdminView(BaseView):
                 version.save(filepath)
 
                 # Check if the release with the same version already exists for the device
-                existing_release = Exercise.query.filter_by(
+                existing_exercise = Exercise.query.filter_by(
                     device=device, version=filename
                 ).first()
-                if existing_release:
+                if existing_exercise:
                     # Update the existing release
-                    existing_release.exercise_path = filepath
+                    existing_exercise.exercise_path = filepath
                     db.session.commit()
                     flash(
                         f'The file "{version.filename}" has been updated for device "{course_name}".'
@@ -419,15 +419,15 @@ class UploadAdminView(BaseView):
                     )
 
                 # Clear upload_form data after successful submission
-                upload_form.device.data = None
-                upload_form.version.data = None
+                upload_form.course.data = None
+                upload_form.exercise.data = None
 
                 return redirect(url_for("upload_admin.upload"))
 
             # Retain device name on upload_form submission failure due to invalid file
             # format
-            if upload_form.device.data:
-                course_value = upload_form.device.data
+            if upload_form.course.data:
+                course_value = upload_form.course.data
             else:
                 course_value = None
 
@@ -464,7 +464,7 @@ class DownloadAdminView(BaseView):
         courses = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
         download_form.course.choices = [(course, course) for course in courses]
 
-        versions = []
+        exercises = []
         selected_course = None
 
         # If the user selects a course...
@@ -479,7 +479,7 @@ class DownloadAdminView(BaseView):
             # 1) Retrieve the selected course from the session
             selected_course = session["selected_course"]
             # 2) Retrieve all releases associated with the selected course and sort them by version
-            versions = sorted(
+            exercises = sorted(
                 Exercise.query.join(Course)
                 .filter(Course.name == selected_course)
                 .all(),
@@ -491,16 +491,16 @@ class DownloadAdminView(BaseView):
             )
         # Populate the version choices in the form with the sorted versions
         # (empty list [] as default)
-        download_form.version.choices = [
-            (version.version, version.version) for version in versions
+        download_form.exercise.choices = [
+            (exercise.version, exercise.version) for exercise in exercises
         ]
 
         # If the form is submitted to initiate a download and the form data is valid...
         if download_form.submit.data and download_form.validate_on_submit():
-            selected_version = download_form.version.data
+            selected_exercise = download_form.exercise.data
             # Retrieve the release corresponding to the selected version
-            release = Exercise.query.filter_by(version=selected_version).first()
-            version_path = release.exercise_path
+            exercise = Exercise.query.filter_by(version=selected_exercise).first()
+            version_path = exercise.exercise_path
             path = os.path.join(basedir, Config.UPLOAD_FOLDER, version_path)
             # Send the release file to the user as an attachment for download
             return send_file(path_or_file=path, as_attachment=True)

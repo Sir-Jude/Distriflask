@@ -29,8 +29,8 @@
       <div class="label-field">
         <label style="float: left">Exercise:</label>
         <span>
-          <select name="version">
-            {% for choice_value in download_form.version.choices %}
+          <select name="exercise">
+            {% for choice_value in download_form.exercise.choices %}
               <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
             {% endfor %}
           </select>

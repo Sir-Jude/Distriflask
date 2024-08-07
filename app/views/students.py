@@ -89,18 +89,18 @@ def profile(username):
 
     form = StudentdownloadForm(formdata=request.form)
     # Populate the choices for release versions in the form
-    form.release_version.choices = [
+    form.exercise_number.choices = [
         # (value submitted to the form, text displayed to the user)
         (release.version, release.version)
         for release in releases
     ]
 
     if form.validate_on_submit():
-        release_version = form.release_version.data
-        release = Exercise.query.filter_by(version=release_version).first()
+        exercise_number = form.exercise_number.data
+        exercise = Exercise.query.filter_by(version=exercise_number).first()
 
-        if release:
-            version = release.exercise_path
+        if exercise:
+            version = exercise.exercise_path
             return redirect(url_for("students.download_version", version=version))
         else:
             flash("Exercise not found.", "error")
@@ -118,9 +118,9 @@ def profile(username):
 @students.route("/device/<path:version>", methods=["GET", "POST"])
 @login_required
 def download_version(version):
-    release = Exercise.query.filter_by(exercise_path=version).first()
+    exercise = Exercise.query.filter_by(exercise_path=version).first()
 
-    version = release.exercise_path
+    version = exercise.exercise_path
     path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
     return send_file(path_or_file=path, as_attachment=True)
 

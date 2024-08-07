@@ -31,7 +31,7 @@
           <form action="{{ url_for('students.profile', username=username) }}" method="POST">
             {{ form.csrf_token }}
             {{ form.hidden_tag() }}
-            <select name="release_version">
+            <select name="exercise_number">
             {% for release in releases %}
               <option value="{{ release.version }}">{{ release.version }}</option>
             {% endfor %}

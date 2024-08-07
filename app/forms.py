@@ -80,35 +80,35 @@ class CourseSearchForm(FlaskForm):
 
 
 class StudentdownloadForm(FlaskForm):
-    release_version = SelectField("Version: ")
+    exercise_number = SelectField("Exercise: ")
     submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
 
 
 class AdminDownloadForm(FlaskForm):
     course = SelectField("Course: ")
     select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
-    version = SelectField("Version: ")
+    exercise = SelectField("Exercise: ")
     submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
 
 
 class UploadExerciseForm(FlaskForm):
-    device = StringField("Course: ")
-    version = FileField("Version: ")
+    course = StringField("Course: ")
+    exercise = FileField("Exercise: ")
     submit = SubmitField("Upload", render_kw={"class": "btn btn-primary"})
 
     def __init__(self, course_value=None, *args, **kwargs):
         super(UploadExerciseForm, self).__init__(*args, **kwargs)
         if course_value:
-            self.device.data = course_value
+            self.course.data = course_value
 
     def allowed_file(self):
-        version = self.version.data
+        exercise = self.exercise.data
         return (
-            "." in version.filename
-            and version.filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+            "." in exercise.filename
+            and exercise.filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
         )
 
     def path_exists(self):
-        upload_path = os.path.join(basedir, Config.UPLOAD_FOLDER, self.device.data)
+        upload_path = os.path.join(basedir, Config.UPLOAD_FOLDER, self.course.data)
         print(upload_path)
         return os.path.exists(upload_path)
