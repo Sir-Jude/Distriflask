@@ -10,11 +10,11 @@
   </thead>
   <tbody>
     <tr>
-      {# Display the device name #}
+      {# Display the course name #}
       <td> {{ courses[0].name }} </td>
       <td>
-        {# Get all releases for the device #}
-        {% set releases = all_device_versions[courses[0]] %}
+        {# Get all exercises for the course #}
+        {% set releases = all_exercises[courses[0]] %}
         {# Iterate over each release #}
         {% for release in releases %}
           {# Create a link for each release pointing to selected_exercise view #}

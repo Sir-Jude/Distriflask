@@ -27,18 +27,18 @@
     </tr>
   </thead>
   <tbody>
-    {% for device in courses_in_rows %}
+    {% for course in courses_in_rows %}
       <tr>
-        <td><a href="{{ url_for('course_admin.selected_course_name', course_name=device.name) }}">{{ device.name }}</a></td>
+        <td><a href="{{ url_for('course_admin.selected_course_name', course_name=course.name) }}">{{ course.name }}</a></td>
         {% for release in releases %}
           {% if release == selected_exercise %}
             <td class="highlight-column" style="font-weight:bold">
-              {% if release in device_versions[device]%}
+              {% if release in all_exercise_numbers[course]%}
                 *
               {% endif %}</td>
           {% else %}
             <td>
-              {% if release in device_versions[device]%}
+              {% if release in all_exercise_numbers[course]%}
                 *
               {% endif %}
             </td>
