@@ -118,19 +118,9 @@ def create_sample_exercises():
         ("1.1", 220),
     ]:
         for i in range(1, max + 1):
-            # Include only every 3rd possible release
+            # Include only every 3rd possible exercise
             if random.randint(1, 3) == 1:
                 exercises.add(f"{main}.{i}")
-                # Add A (and maybe B and C) variants for some of the exercises
-                if random.randint(1, 50) == 1:
-                    exercises.add(f"{main}.{i}A")
-                    exercises.add(f"{main}.{i}B")
-                    exercises.add(f"{main}.{i}C")
-                elif random.randint(1, 30) == 1:
-                    exercises.add(f"{main}.{i}A")
-                    exercises.add(f"{main}.{i}B")
-                elif random.randint(1, 10) == 1:
-                    exercises.add(f"{main}.{i}A")
     return list(exercises)
 
 
@@ -140,14 +130,14 @@ def populate_tables(courses, exercises):
     course_map = {}
     countries = Country.query.all()
 
-    for dev_name in courses:
+    for course_name in courses:
         country = random.choice(countries)
         course = Course(
-            name=dev_name,
+            name=course_name,
             country_id=country.country_id,
         )
         db.session.add(course)
-        course_map[dev_name] = course
+        course_map[course_name] = course
 
     # Finalize course entries, so the objects get a course_id
     db.session.commit()
@@ -155,24 +145,24 @@ def populate_tables(courses, exercises):
     for rel_number in exercises:
         # Hide one out of 5 exercises
         visible = random.randint(1, 5) > 1
-        for dev_name in courses:
+        for course_name in courses:
             # Include only every 4th combination
             if random.randint(1, 4) == 1:
-                release = Exercise(
+                exercise = Exercise(
                     version=rel_number,
-                    course_id=course_map[dev_name].course_id,
+                    course_id=course_map[course_name].course_id,
                     flag_visible=visible,
                 )
 
-                os.makedirs(f"uploads/{dev_name}", exist_ok=True)
-                rel_path = os.path.join(dev_name, release.version)
+                os.makedirs(f"uploads/{course_name}", exist_ok=True)
+                rel_path = os.path.join(course_name, exercise.version)
 
-                release.exercise_path = f"{rel_path}.txt"
+                exercise.exercise_path = f"{rel_path}.txt"
 
-                with open(f"uploads/{release.exercise_path}", "w") as file:
-                    file.write(f"This is the exercise {release.version}")
+                with open(f"uploads/{exercise.exercise_path}", "w") as file:
+                    file.write(f"This is the exercise {exercise.version}")
 
-                db.session.add(release)
+                db.session.add(exercise)
 
     db.session.commit()
 

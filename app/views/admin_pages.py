@@ -45,7 +45,7 @@ class UserAdminView(ModelView):
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", r)
                 ),
-                reverse=True,
+                reverse=False,
             )
             # Return a formatted string with sorted versions
             return ", ".join(versions)
@@ -204,7 +204,7 @@ class CourseAdminView(BaseView):
                 int(part) if part.isdigit() else part
                 for part in re.findall(r"\d+|\D+", x)
             ),
-            reverse=True,
+            reverse=False,
         )
 
         # Check if the provided release version exists in the list of all releases
@@ -284,9 +284,9 @@ class CourseAdminView(BaseView):
                 for device in courses_with_matching_students
             }
 
-            # Sort courses by name in reverse order
+            # Sort courses by name
             courses_in_rows = sorted(
-                courses_in_rows, key=lambda x: x.name, reverse=True
+                courses_in_rows, key=lambda x: x.name, reverse=False
             )
 
             return self.render(
@@ -307,7 +307,7 @@ class CourseAdminView(BaseView):
     @roles_required("administrator")
     def selected_course_name(self, course_name):
         search_form = CourseSearchForm()
-        all_courses = sorted(Course.query.all(), key=lambda d: d.name, reverse=True)
+        all_courses = sorted(Course.query.all(), key=lambda d: d.name, reverse=False)
         all_device_versions = {
             device: sorted(
                 [r.version for r in device.releases],
@@ -315,7 +315,7 @@ class CourseAdminView(BaseView):
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", x)
                 ),
-                reverse=True,
+                reverse=False,
             )
             for device in all_courses
         }
@@ -382,8 +382,8 @@ class UploadAdminView(BaseView):
                 filename, extension = os.path.splitext(version.filename)
 
                 # Save the file to the designated folder
-                device = Course.query.filter_by(name=course_name).first()
-                if not device:
+                course = Course.query.filter_by(name=course_name).first()
+                if not course:
                     flash(f"Course {course_name} does not exist.")
                     return redirect(url_for("upload_admin.upload"))
 
@@ -393,29 +393,29 @@ class UploadAdminView(BaseView):
                 )
                 version.save(filepath)
 
-                # Check if the release with the same version already exists for the device
+                # Check if the release with the same version already exists for the course
                 existing_exercise = Exercise.query.filter_by(
-                    device=device, version=filename
+                    device=course, version=filename
                 ).first()
                 if existing_exercise:
                     # Update the existing release
                     existing_exercise.exercise_path = filepath
                     db.session.commit()
                     flash(
-                        f'The file "{version.filename}" has been updated for device "{course_name}".'
+                        f'The file "{version.filename}" has been updated for course "{course_name}".'
                     )
                 else:
                     # Store the version's info in the database
                     new_release = Exercise(
                         version=filename,
-                        device=device,
+                        device=course,
                         exercise_path=filepath,
                     )
                     db.session.add(new_release)
                     db.session.commit()
                     flash(
                         f'The file "{version.filename}" has been uploaded into the folder'
-                        f' "{basedir}/{Config.UPLOAD_FOLDER}/{device}/".'
+                        f' "{basedir}/{Config.UPLOAD_FOLDER}/{course}/".'
                     )
 
                 # Clear upload_form data after successful submission
@@ -424,7 +424,7 @@ class UploadAdminView(BaseView):
 
                 return redirect(url_for("upload_admin.upload"))
 
-            # Retain device name on upload_form submission failure due to invalid file
+            # Retain course name on upload_form submission failure due to invalid file
             # format
             if upload_form.course.data:
                 course_value = upload_form.course.data
@@ -487,7 +487,7 @@ class DownloadAdminView(BaseView):
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", r.version)
                 ),
-                reverse=True,
+                reverse=False,
             )
         # Populate the version choices in the form with the sorted versions
         # (empty list [] as default)

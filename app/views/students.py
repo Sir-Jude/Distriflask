@@ -71,28 +71,28 @@ def profile(username):
         if current_user.username != username:
             return render_template("errors/403.html"), 403
 
-    # Fetch from database the device associated with provided <username>
+    # Fetch from database the course associated with provided <username>
     country = None  # Initialize country to None initially
-    device = Course.query.filter_by(name=username).first()
-    if device:  # Check if User has an associated device
-        country = device.country
-        releases = sorted(
-            Exercise.query.join(Course).filter(Course.name == str(device)).all(),
+    course = Course.query.filter_by(name=username).first()
+    if course:  # Check if User has an associated course
+        country = course.country
+        exercises = sorted(
+            Exercise.query.join(Course).filter(Course.name == str(course)).all(),
             key=lambda r: tuple(
                 int(part) if part.isdigit() else part
                 for part in re.findall(r"\d+|\D+", r.version)
             ),
-            reverse=True,
+            reverse=False,
         )
     else:
-        releases = []  # If device is not available, set releases to an empty list
+        exercises = []  # If course is not available, set exercises to an empty list
 
     form = StudentdownloadForm(formdata=request.form)
     # Populate the choices for release versions in the form
     form.exercise_number.choices = [
         # (value submitted to the form, text displayed to the user)
         (release.version, release.version)
-        for release in releases
+        for release in exercises
     ]
 
     if form.validate_on_submit():
@@ -108,9 +108,9 @@ def profile(username):
     return render_template(
         "students/profile.html",
         username=username,
-        device=device,
+        course=course,
         country=country,
-        releases=releases,
+        exercises=exercises,
         form=form,
     )
 

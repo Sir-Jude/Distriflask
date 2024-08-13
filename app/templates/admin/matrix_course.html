@@ -4,14 +4,14 @@
 <table class="course-table" border="3" bordercolor="#ffffff">
   <thead>
     <tr>
-      <th>Student profile</th>
+      <th>Student's name </th>
       <th>Available exercises</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       {# Display the device name #}
-      <td><a href="{{ url_for('students.profile', username=courses[0].name) }}">{{ courses[0].name }}</a></td>
+      <td> {{ courses[0].name }} </td>
       <td>
         {# Get all releases for the device #}
         {% set releases = all_device_versions[courses[0]] %}

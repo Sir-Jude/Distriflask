@@ -11,18 +11,12 @@
   </div>
 {% endfor %}
   <p>
-    {% if "administrator" in current_user.roles %}
-      <h3>{{ current_user.username.title() }}'s view of student: {{ device }}.</h3>
-    {% else %}
-      <h3>{{ current_user.username.title() }}'s profile.</h3>
-    {% endif %}
+    <h3>{{ current_user.username.title() }}'s profile.</h3>
   </p>
   <div class="student-profile">
-    {% if device or ("administrator" in current_user.roles) %}
-      {% if device %}
-        <p><h5>Course: </h5>{{ device }}</p>
+    {% if course %}
+        <p><h5>Course: </h5>{{ course }}</p>
         <p><h5>Country: </h5>{{ country }} </p>
-      {% endif %}
       <h5>
         Select exercise:
         <h6>
@@ -32,7 +26,7 @@
             {{ form.csrf_token }}
             {{ form.hidden_tag() }}
             <select name="exercise_number">
-            {% for release in releases %}
+            {% for release in exercises %}
               <option value="{{ release.version }}">{{ release.version }}</option>
             {% endfor %}
             </select>
@@ -40,11 +34,8 @@
           </form>
         </h6>
       </h5>
-      {% if "administrator" in current_user.roles %}
-        <a href="{{ url_for('course_admin.selected_course_name', course_name=device.name) }}">Back to the course search</a>
-      {% endif %}
     {% else %}
-      <p>No device associated with this user.</p>
+      <p>No course associated with this user.</p>
     {% endif %}
   </div>
 {% endblock %}
