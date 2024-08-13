@@ -142,25 +142,25 @@ def populate_tables(courses, exercises):
     # Finalize course entries, so the objects get a course_id
     db.session.commit()
 
-    for rel_number in exercises:
+    for exr_number in exercises:
         # Hide one out of 5 exercises
         visible = random.randint(1, 5) > 1
         for course_name in courses:
             # Include only every 4th combination
             if random.randint(1, 4) == 1:
                 exercise = Exercise(
-                    version=rel_number,
+                    number=exr_number,
                     course_id=course_map[course_name].course_id,
                     flag_visible=visible,
                 )
 
                 os.makedirs(f"uploads/{course_name}", exist_ok=True)
-                rel_path = os.path.join(course_name, exercise.version)
+                exr_path = os.path.join(course_name, exercise.number)
 
-                exercise.exercise_path = f"{rel_path}.txt"
+                exercise.exercise_path = f"{exr_path}.txt"
 
                 with open(f"uploads/{exercise.exercise_path}", "w") as file:
-                    file.write(f"This is the exercise {exercise.version}")
+                    file.write(f"This is the exercise {exercise.number}")
 
                 db.session.add(exercise)
 

@@ -7,15 +7,15 @@
     <tr>
       <th></th>
       <!-- This loop renders the headers of the table -->
-      {% for release in releases %}
-        {% if release == selected_exercise %}
+      {% for exercise in exercises %}
+        {% if exercise == selected_exercise %}
           <th class="rotated-header highlight-column" style="font-weight:bold">
-            <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=release) }}">{{ release }}</a></span></div>
+            <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=exercise) }}">{{ exercise }}</a></span></div>
           </th>
           {% else %}
-          {% if release != "..." %}
+          {% if exercise != "..." %}
             <th class="rotated-header">
-              <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=release) }}">{{ release }}</a></span></div>
+              <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=exercise) }}">{{ exercise }}</a></span></div>
             </th>
           {% else %}
             <th class="rotated-header">
@@ -30,15 +30,15 @@
     {% for course in courses_in_rows %}
       <tr>
         <td><a href="{{ url_for('course_admin.selected_course_name', course_name=course.name) }}">{{ course.name }}</a></td>
-        {% for release in releases %}
-          {% if release == selected_exercise %}
+        {% for exercise in exercises %}
+          {% if exercise == selected_exercise %}
             <td class="highlight-column" style="font-weight:bold">
-              {% if release in all_exercise_numbers[course]%}
+              {% if exercise in all_exercise_numbers[course]%}
                 *
               {% endif %}</td>
           {% else %}
             <td>
-              {% if release in all_exercise_numbers[course]%}
+              {% if exercise in all_exercise_numbers[course]%}
                 *
               {% endif %}
             </td>

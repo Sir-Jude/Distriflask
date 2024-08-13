@@ -26,8 +26,8 @@
             {{ form.csrf_token }}
             {{ form.hidden_tag() }}
             <select name="exercise_number">
-            {% for release in exercises %}
-              <option value="{{ release.version }}">{{ release.version }}</option>
+            {% for exercise in exercises %}
+              <option value="{{ exercise.number }}">{{ exercise.number }}</option>
             {% endfor %}
             </select>
             <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Download</button>

@@ -38,7 +38,7 @@ class ExtendedRegisterForm(RegisterForm):
             DataRequired(),
         ],
     )
-    device = QuerySelectField(
+    course = QuerySelectField(
         "Course",
         query_factory=lambda: Course.query.order_by(func.lower(Course.name)).all(),
         get_label="name",

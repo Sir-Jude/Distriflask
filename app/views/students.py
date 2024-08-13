@@ -66,7 +66,7 @@ def login():
 @login_required
 def profile(username):
     # Only administrators may access profiles of other users
-    if "administrator" not in [r.name for r in current_user.roles]:
+    if "administrator" not in [exr.name for exr in current_user.roles]:
         # Return 403 error if current user is not accessing their own profile
         if current_user.username != username:
             return render_template("errors/403.html"), 403
@@ -78,9 +78,9 @@ def profile(username):
         country = course.country
         exercises = sorted(
             Exercise.query.join(Course).filter(Course.name == str(course)).all(),
-            key=lambda r: tuple(
+            key=lambda exr: tuple(
                 int(part) if part.isdigit() else part
-                for part in re.findall(r"\d+|\D+", r.version)
+                for part in re.findall(r"\d+|\D+", exr.number)
             ),
             reverse=False,
         )
@@ -88,20 +88,20 @@ def profile(username):
         exercises = []  # If course is not available, set exercises to an empty list
 
     form = StudentdownloadForm(formdata=request.form)
-    # Populate the choices for release versions in the form
+    # Populate the choices for exercise numbers in the form
     form.exercise_number.choices = [
         # (value submitted to the form, text displayed to the user)
-        (release.version, release.version)
-        for release in exercises
+        (exercise.number, exercise.number)
+        for exercise in exercises
     ]
 
     if form.validate_on_submit():
         exercise_number = form.exercise_number.data
-        exercise = Exercise.query.filter_by(version=exercise_number).first()
+        exercise = Exercise.query.filter_by(number=exercise_number).first()
 
         if exercise:
-            version = exercise.exercise_path
-            return redirect(url_for("students.download_version", version=version))
+            number = exercise.exercise_path
+            return redirect(url_for("students.download_number", number=number))
         else:
             flash("Exercise not found.", "error")
 
@@ -115,13 +115,13 @@ def profile(username):
     )
 
 
-@students.route("/device/<path:version>", methods=["GET", "POST"])
+@students.route("/course/<path:number>", methods=["GET", "POST"])
 @login_required
-def download_version(version):
-    exercise = Exercise.query.filter_by(exercise_path=version).first()
+def download_number(number):
+    exercise = Exercise.query.filter_by(exercise_path=number).first()
 
-    version = exercise.exercise_path
-    path = os.path.join(basedir, Config.UPLOAD_FOLDER, version)
+    number = exercise.exercise_path
+    path = os.path.join(basedir, Config.UPLOAD_FOLDER, number)
     return send_file(path_or_file=path, as_attachment=True)
 
 

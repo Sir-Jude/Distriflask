@@ -22,7 +22,7 @@ class User(db.Model, UserMixin):
     roles = relationship(
         "Role", secondary="roles_users", back_populates="users", lazy=True
     )
-    device = relationship("Course", back_populates="user", uselist=False)
+    course = relationship("Course", back_populates="user", uselist=False)
     fs_uniquifier = Column(
         String(255),
         unique=True,
@@ -31,9 +31,9 @@ class User(db.Model, UserMixin):
         name="unique_fs_uniquifier_constraint",
     )
 
-    def versions(self):
+    def numbers(self):
         if self.courses:
-            return ", ".join(release.version for release in self.courses.releases)
+            return ", ".join(exercise.number for exercise in self.courses.exercises)
         else:
             return ""
 
@@ -69,8 +69,8 @@ class Course(db.Model):
     course_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     country_id = Column(Integer, ForeignKey("countries.country_id"))
-    user = relationship("User", back_populates="device", uselist=False, lazy=True)
-    releases = relationship("Exercise", back_populates="device", lazy=True)
+    user = relationship("User", back_populates="course", uselist=False, lazy=True)
+    exercises = relationship("Exercise", back_populates="course", lazy=True)
     country = relationship("Country", back_populates="courses", lazy=True)
 
     def __repr__(self):
@@ -78,16 +78,18 @@ class Course(db.Model):
 
 
 class Exercise(db.Model):
-    __tablename__ = "releases"
-    release_id = Column(Integer, primary_key=True)
+    __tablename__ = "exercises"
+    exercise_id = Column(Integer, primary_key=True)
     course_id = Column(Integer, ForeignKey("courses.course_id"))
-    version = Column(String(20))  # e.g. 8.0.122
+    number = Column(String(20))  # e.g. 8.0.122
     exercise_path = Column(String(255))
     flag_visible = Column(Boolean())
-    device = relationship("Course", back_populates="releases", uselist=False, lazy=True)
+    course = relationship(
+        "Course", back_populates="exercises", uselist=False, lazy=True
+    )
 
     def __repr__(self):
-        return f"{self.version}"
+        return f"{self.number}"
 
 
 # Generate a random fs_uniquifier: users cannot login without it

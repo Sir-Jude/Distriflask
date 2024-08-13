@@ -9,7 +9,7 @@ class TestStudent:
 
         # Check if request was successful
         assert response.status_code == 200
-        
+
         # Check if the content includes the username
         assert (
             f"<h3>{student_username.title()}'s profile.</h3>".encode() in response.data
@@ -70,10 +70,11 @@ class TestAdmin:
         assert b"Welcome to Your Company!" in response.data
         assert response.request.path == "/"
 
-class TestWrongLogin:    
+
+class TestWrongLogin:
     def test_wrong_username_from_student_endpoint(self, admin_user):
         client, admin_username, admin_password, admin_roles = admin_user
-        
+
         response = client.post(
             "/student_login",
             data=dict(
@@ -81,7 +82,7 @@ class TestWrongLogin:
             ),
             follow_redirects=True,
         )
-        
+
         assert response.status_code == 200
         assert b"Invalid username." in response.data
         assert response.request.path == "/student_login"
@@ -100,7 +101,7 @@ class TestWrongLogin:
 
     def test_wrong_admin_password_from_admin_endpoint(self, admin_user):
         client, admin_username, admin_password, admin_roles = admin_user
-        
+
         response = client.post(
             "/login",
             data=dict(
@@ -108,7 +109,7 @@ class TestWrongLogin:
             ),
             follow_redirects=True,
         )
-        
+
         assert response.status_code == 200
         assert b"Invalid password" in response.data
         assert response.request.path == "/login"

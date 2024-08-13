@@ -1,11 +1,12 @@
 # Pytest's configuration file
-from app.models import User, Role
+from app.models import User, Role, Course, Exercise
 from flask_security import hash_password
 
 import pytest
 from pathlib import Path
+import shutil
 
-from config import TestConfig
+from config import TestConfig, basedir
 from app import create_app
 from app.extensions import db
 
@@ -133,3 +134,36 @@ def admin_login(admin_user):
     )
 
     yield client
+
+
+@pytest.fixture(scope="function")
+def setup_course_and_exercise_data(app):
+    """
+    Fixture to set up course and exercise data before each test.
+    """
+    # Create a test course directory
+    course_name = "Test Course"
+    course_path = os.path.join(basedir, TestConfig.UPLOAD_FOLDER, course_name)
+    os.makedirs(course_path, exist_ok=True)
+
+    exercise_file_path = os.path.join(course_path, "test_file.txt")
+    with open(exercise_file_path, "w") as f:
+        f.write("Test content")
+
+    # Create course and exercise records
+    course = Course(name=course_name)
+    exercise = Exercise(
+        number="1.0.1",
+        exercise_path=exercise_file_path,
+        course=course,
+    )
+
+    db.session.add(course)
+    db.session.add(exercise)
+    db.session.commit()
+
+    yield course_name, exercise_file_path
+
+    # Cleanup after test
+    if os.path.exists(course_path):
+        shutil.rmtree(course_path)

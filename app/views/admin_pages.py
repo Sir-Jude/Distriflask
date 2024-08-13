@@ -36,25 +36,25 @@ class UserAdminView(ModelView):
         return ", ".join([role.name.capitalize() for role in model.roles])
 
     @staticmethod
-    def _display_versions(view, context, model, name):
-        if model.device:
-            # Extract versions and sort them
-            versions = sorted(
-                (release.version for release in model.device.releases),
-                key=lambda r: tuple(
+    def _display_numbers(view, context, model, name):
+        if model.course:
+            # Extract numbers and sort them
+            numbers = sorted(
+                (exercise.number for exercise in model.course.exercises),
+                key=lambda exr: tuple(
                     int(part) if part.isdigit() else part
-                    for part in re.findall(r"\d+|\D+", r)
+                    for part in re.findall(r"\d+|\D+", exr)
                 ),
                 reverse=False,
             )
-            # Return a formatted string with sorted versions
-            return ", ".join(versions)
+            # Return a formatted string with sorted numbers
+            return ", ".join(numbers)
         else:
             return ""
 
     # Attribute of the ModelView class
     # Customize the display of the columns
-    column_formatters = {"versions": _display_versions, "roles": _display_roles}
+    column_formatters = {"numbers": _display_numbers, "roles": _display_roles}
 
     form = ExtendedRegisterForm
 
@@ -68,12 +68,12 @@ class UserAdminView(ModelView):
                 model.password = hash_password(form.password.data)
 
     # Actual columns' title as seen in the website
-    column_list = ("username", "versions", "active", "roles")
+    column_list = ("username", "numbers", "active", "roles")
 
     # Link the columns' title and the model class attribute, so to make data sortable
     column_sortable_list = (
         "username",
-        ("versions", "course_name"),
+        ("numbers", "course_name"),
         "active",
         ("roles", "roles.name"),
     )
@@ -86,7 +86,7 @@ class CourseAdminView(BaseView):
     def index(self):
         return redirect(url_for("course_admin.courses_default_table"))
 
-    @expose("/admin/device/", methods=["GET", "POST"])
+    @expose("/admin/course/", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
     def courses_default_table(self):
@@ -129,20 +129,20 @@ class CourseAdminView(BaseView):
                 Exercise.query.all(),
                 key=lambda x: tuple(
                     int(part) if part.isdigit() else part
-                    for part in re.findall(r"\d+|\D+", x.version)
+                    for part in re.findall(r"\d+|\D+", x.number)
                 ),
             )
-            # The three following variables will always return the most updated version
-            # (no matter which numbers/letters are used)
+            # The three following variables will always return the most updated number
+            # (no matter which numbers are used)
             first_number = str(
-                max(int(release.version.split(".")[0]) for release in all_exercises)
+                max(int(exercise.number.split(".")[0]) for exercise in all_exercises)
             )
 
             second_number = str(
                 max(
-                    int(release.version.split(".")[1])
-                    for release in all_exercises
-                    if release.version.startswith(first_number + ".")
+                    int(exercise.number.split(".")[1])
+                    for exercise in all_exercises
+                    if exercise.number.startswith(first_number + ".")
                 )
             )
 
@@ -151,10 +151,10 @@ class CourseAdminView(BaseView):
             third_number = [
                 (
                     int(part) if part.isdigit() else part
-                    for part in release.version.split(".")[2]
+                    for part in exercise.number.split(".")[2]
                 )
-                for release in all_exercises
-                if release.version.startswith(first_number + "." + second_number + ".")
+                for exercise in all_exercises
+                if exercise.number.startswith(first_number + "." + second_number + ".")
             ]
 
             # Flatten the list of generator (iterables) and then find the maximum
@@ -183,23 +183,23 @@ class CourseAdminView(BaseView):
 
         parts = selected_exercise.split(".")
 
-        # Filter releases based on first two numbers of selected_exercise in the URL
+        # Filter exercises based on first two numbers of selected_exercise in the URL
         if len(parts) < 2:
-            flash("Invalid release version format.", "error")
+            flash("Invalid exercise number.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
         filtered_exercises = Exercise.query.filter(
-            Exercise.version.like(f"{parts[0]}.{parts[1]}%")
+            Exercise.number.like(f"{parts[0]}.{parts[1]}%")
         ).all()
 
-        # Redirect to the default if there is any matching release
+        # Redirect to the default if there is any matching exercise
         if not filtered_exercises:
-            flash("No releases found for the provided major version.", "error")
+            flash("No exercises found for the provided number.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
-        # Get all unique releases matching the major version
+        # Get all unique exercises matching the provided number
         all_exercises = sorted(
-            set([release.version for release in filtered_exercises]),
+            set([exercise.number for exercise in filtered_exercises]),
             key=lambda x: tuple(
                 int(part) if part.isdigit() else part
                 for part in re.findall(r"\d+|\D+", x)
@@ -207,23 +207,23 @@ class CourseAdminView(BaseView):
             reverse=False,
         )
 
-        # Check if the provided release version exists in the list of all releases
+        # Check if the provided exercise number exists in the list of all exercises
         if len(parts) == 2:
             selected_exercise = all_exercises[0]
 
-        # Redirect to the default if there is any matching release
+        # Redirect to the default if there is any matching exercise
         if not all_exercises:
-            flash("No releases found for the provided major version.", "error")
+            flash("No exercises found for the provided number.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
-        # Check if the provided release version exists in the list of all releases
+        # Check if the provided exercise number exists in the list of all exercises
         elif selected_exercise not in all_exercises:
-            flash("Selected release version not found.", "error")
+            flash("Selected exercise number not found.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
-        check_existence = Exercise.query.filter_by(version=selected_exercise).first()
+        check_existence = Exercise.query.filter_by(number=selected_exercise).first()
 
-        # Check if there are any filtered releases
+        # Check if there are any filtered exercises
         if check_existence:
             exercise_number = "".join(
                 [
@@ -237,51 +237,51 @@ class CourseAdminView(BaseView):
 
             # Extract courses associated with the filtered student
             courses_with_matching_students = [
-                release.device for release in filtered_exercises
+                exercise.course for exercise in filtered_exercises
             ]
 
-            # Query courses that have releases matching the major version
+            # Query courses that have exercises matching the provided number
             courses_in_rows = Course.query.filter(
-                Course.releases.any(Exercise.version.like(f"{exercise_number}%"))
+                Course.exercises.any(Exercise.number.like(f"{exercise_number}%"))
             ).all()
 
-            # Find the index of the selected release version in the list of all releases.
+            # Find the index of the selected exercise number in the list of all exercises.
             index = all_exercises.index(selected_exercise)
 
-            # Define a variable to store set number of newer/older releases
+            # Define a variable to store set number of newer/older exercises
             halfwith = 10
 
-            # Initialize lists to store newer and older releases.
+            # Initialize lists to store newer and older exercises.
             newer = []
             older = all_exercises[index + 1 : index + halfwith + 1]
 
-            # Check if there are fewer than 10 releases before the selected one.
+            # Check if there are fewer than 10 exercises before the selected one.
             if index - halfwith < 0:
-                # If yes, include releases from beginning up to selected one.
+                # If yes, include exercises from beginning up to selected one.
                 newer = all_exercises[:index]
             else:
-                # Otherwise, include the 10 releases before the selected one.
+                # Otherwise, include the 10 exercises before the selected one.
                 newer = all_exercises[index - halfwith : index]
 
-            # Reorder all releases to have newer : selected :older
-            releases = newer + [all_exercises[index]] + older
+            # Reorder all exercises to have newer : selected :older
+            exercises = newer + [all_exercises[index]] + older
 
-            # Check if there are more releases after the selected one.
+            # Check if there are more exercises after the selected one.
             if (index + halfwith + 1) < len(all_exercises):
-                # If yes, add ellipsis to indicate more releases.
-                releases = releases + ["..."]
+                # If yes, add ellipsis to indicate more exercises.
+                exercises = exercises + ["..."]
 
-            # Check if there are more releases before the selected one.
+            # Check if there are more exercises before the selected one.
             if (index - halfwith) > 0:
-                releases = ["..."] + releases
+                exercises = ["..."] + exercises
 
             all_exercise_numbers = {
-                device: [
-                    release.version
-                    for release in device.releases
-                    if release.version in all_exercises
+                course: [
+                    exercise.number
+                    for exercise in course.exercises
+                    if exercise.number in all_exercises
                 ]
-                for device in courses_with_matching_students
+                for course in courses_with_matching_students
             }
 
             # Sort courses by name
@@ -293,31 +293,31 @@ class CourseAdminView(BaseView):
                 "admin/matrix_exercise.html",
                 courses_in_rows=courses_in_rows,
                 all_exercise_numbers=all_exercise_numbers,
-                releases=releases,
+                exercises=exercises,
                 selected_exercise=selected_exercise,
                 search_form=search_form,
             )
         else:
-            flash("No release found.", "error")
+            flash("No exercise found.", "error")
             # Redirect to the default courses table
             return redirect(url_for("course_admin.courses_default_table"))
 
-    @expose("/device/<course_name>", methods=["GET", "POST"])
+    @expose("/course/<course_name>", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
     def selected_course_name(self, course_name):
         search_form = CourseSearchForm()
         all_courses = sorted(Course.query.all(), key=lambda d: d.name, reverse=False)
         all_exercises = {
-            device: sorted(
-                [r.version for r in device.releases],
+            course: sorted(
+                [e.number for e in course.exercises],
                 key=lambda x: tuple(
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", x)
                 ),
                 reverse=False,
             )
-            for device in all_courses
+            for course in all_courses
         }
         filtered_course = Course.query.filter_by(name=course_name).first()
         if filtered_course:
@@ -362,9 +362,9 @@ class UploadAdminView(BaseView):
 
         if upload_form.validate_on_submit():
             course_name = upload_form.course.data
-            version = upload_form.exercise.data
+            number = upload_form.exercise.data
 
-            if not (course_name and version):
+            if not (course_name and number):
                 flash("Please fill out both the course and exercise fields.")
 
             elif not upload_form.path_exists():
@@ -379,7 +379,7 @@ class UploadAdminView(BaseView):
 
             else:
                 # Split the filename and its extension
-                filename, extension = os.path.splitext(version.filename)
+                filename, extension = os.path.splitext(number.filename)
 
                 # Save the file to the designated folder
                 course = Course.query.filter_by(name=course_name).first()
@@ -388,33 +388,31 @@ class UploadAdminView(BaseView):
                     return redirect(url_for("upload_admin.upload"))
 
                 course_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, course_name)
-                filepath = os.path.join(
-                    course_folder, secure_filename(version.filename)
-                )
-                version.save(filepath)
+                filepath = os.path.join(course_folder, secure_filename(number.filename))
+                number.save(filepath)
 
-                # Check if the release with the same version already exists for the course
+                # Check if an exercise with the same number already exists for this course
                 existing_exercise = Exercise.query.filter_by(
-                    device=course, version=filename
+                    course=course, number=filename
                 ).first()
                 if existing_exercise:
-                    # Update the existing release
+                    # Update the existing exercise
                     existing_exercise.exercise_path = filepath
                     db.session.commit()
                     flash(
-                        f'The file "{version.filename}" has been updated for course "{course_name}".'
+                        f'The file "{number.filename}" has been updated for course "{course_name}".'
                     )
                 else:
-                    # Store the version's info in the database
-                    new_release = Exercise(
-                        version=filename,
-                        device=course,
+                    # Store the exercise number info in the database
+                    new_exercise = Exercise(
+                        number=filename,
+                        course=course,
                         exercise_path=filepath,
                     )
-                    db.session.add(new_release)
+                    db.session.add(new_exercise)
                     db.session.commit()
                     flash(
-                        f'The file "{version.filename}" has been uploaded into the folder'
+                        f'The file "{number.filename}" has been uploaded into the folder'
                         f' "{basedir}/{Config.UPLOAD_FOLDER}/{course}/".'
                     )
 
@@ -478,31 +476,31 @@ class DownloadAdminView(BaseView):
         if "selected_course" in session:
             # 1) Retrieve the selected course from the session
             selected_course = session["selected_course"]
-            # 2) Retrieve all releases associated with the selected course and sort them by version
+            # 2) Retrieve all exercises associated with the selected course and sort them by number
             exercises = sorted(
                 Exercise.query.join(Course)
                 .filter(Course.name == selected_course)
                 .all(),
-                key=lambda r: tuple(
+                key=lambda exr: tuple(
                     int(part) if part.isdigit() else part
-                    for part in re.findall(r"\d+|\D+", r.version)
+                    for part in re.findall(r"\d+|\D+", exr.number)
                 ),
                 reverse=False,
             )
-        # Populate the version choices in the form with the sorted versions
+        # Populate the number choices in the form with the sorted numbers
         # (empty list [] as default)
         download_form.exercise.choices = [
-            (exercise.version, exercise.version) for exercise in exercises
+            (exercise.number, exercise.number) for exercise in exercises
         ]
 
         # If the form is submitted to initiate a download and the form data is valid...
         if download_form.submit.data and download_form.validate_on_submit():
             selected_exercise = download_form.exercise.data
-            # Retrieve the release corresponding to the selected version
-            exercise = Exercise.query.filter_by(version=selected_exercise).first()
-            version_path = exercise.exercise_path
-            path = os.path.join(basedir, Config.UPLOAD_FOLDER, version_path)
-            # Send the release file to the user as an attachment for download
+            # Retrieve the exercise corresponding to the selected number
+            exercise = Exercise.query.filter_by(number=selected_exercise).first()
+            number_path = exercise.exercise_path
+            path = os.path.join(basedir, Config.UPLOAD_FOLDER, number_path)
+            # Send the exercise file to the user as an attachment for download
             return send_file(path_or_file=path, as_attachment=True)
 
         # Render the download page template with the download form

@@ -14,12 +14,12 @@
       <td> {{ courses[0].name }} </td>
       <td>
         {# Get all exercises for the course #}
-        {% set releases = all_exercises[courses[0]] %}
-        {# Iterate over each release #}
-        {% for release in releases %}
-          {# Create a link for each release pointing to selected_exercise view #}
-          <a href="{{ url_for('course_admin.selected_exercise', selected_exercise=release) }}">{{ release }}</a>
-          {# Add a comma after each release except the last one #}
+        {% set exercises = all_exercises[courses[0]] %}
+        {# Iterate over each exercise #}
+        {% for exercise in exercises %}
+          {# Create a link for each exercise pointing to selected_exercise view #}
+          <a href="{{ url_for('course_admin.selected_exercise', selected_exercise=exercise) }}">{{ exercise }}</a>
+          {# Add a comma after each exercise except the last one #}
           {% if not loop.last %}, {% endif %}
         {% endfor %}
       </td>
