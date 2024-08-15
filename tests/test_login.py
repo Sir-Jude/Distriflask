@@ -1,6 +1,6 @@
 class TestStudent:
     def test_student_login(self, student_user):
-        client, student_username, student_password = student_user
+        client, student_username, student_password, _ = student_user
         response = client.post(
             "/student_login",
             data=dict(username=student_username, password=student_password),
@@ -21,13 +21,12 @@ class TestStudent:
         # Also assert that the final location URL is correct
         assert response.request.path == f"/student/{student_username}/"
 
-    def test_student_logout(self, student_user):
-        client = student_user[0]
-        response = client.get("/logout", follow_redirects=True)
+    def test_student_logout(self, student_login):
+        client = student_login
+        response = client.get("/logout/")
 
-        assert response.status_code == 200
-        assert b"Welcome to Your Company!" in response.data
-        assert response.request.path == "/"
+        assert response.status_code == 302
+        assert response.location == "/student_login"
 
 
 class TestAdmin:
@@ -73,7 +72,7 @@ class TestAdmin:
 
 class TestWrongLogin:
     def test_wrong_username_from_student_endpoint(self, admin_user):
-        client, admin_username, admin_password, admin_roles = admin_user
+        client, _, admin_password, admin_roles = admin_user
 
         response = client.post(
             "/student_login",
@@ -88,7 +87,7 @@ class TestWrongLogin:
         assert response.request.path == "/student_login"
 
     def test_wrong_student_password(self, student_user):
-        client, student_username, student_password = student_user
+        client, student_username, _, _ = student_user
         response = client.post(
             "/student_login",
             data=dict(username=student_username, password="Wrong password"),
@@ -100,7 +99,7 @@ class TestWrongLogin:
         assert response.request.path == "/student_login"
 
     def test_wrong_admin_password_from_admin_endpoint(self, admin_user):
-        client, admin_username, admin_password, admin_roles = admin_user
+        client, admin_username, _, admin_roles = admin_user
 
         response = client.post(
             "/login",

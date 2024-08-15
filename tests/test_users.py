@@ -1,3 +1,15 @@
+def test_handle_view_redirects_to_login(client):
+    """
+    Test that accessing admin view redirects to the login page when not logged in.
+    """
+    # Access the restricted view without being logged in
+    response = client.get("/admin/user/")
+
+    # Assert that the response is a redirect to the login route
+    assert response.status_code == 302  # 302 status code means redirection
+    assert response.location == "/login"
+
+
 def test_users_button(admin_login):
     client = admin_login
 
@@ -18,13 +30,3 @@ def test_upload_button(admin_login):
     # Assert the presence of the string "Upload a file"
     assert response.status_code == 200
     assert b"Upload a file" in response.data
-
-
-def test_download_button(admin_login):
-    client = admin_login
-
-    response = client.get("/admin/download_admin/admin/download/")
-
-    # Assert the presence of the string "Download a file"
-    assert response.status_code == 200
-    assert b"Download a file" in response.data

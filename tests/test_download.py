@@ -1,3 +1,18 @@
+def test_index_redirects_to_download(client, admin_login):
+    """
+    Test that accessing index route redirects to download route.
+    """
+    # Login as admin using the provided fixture
+    client = admin_login
+
+    # Access the index route of DownloadAdminView
+    response = client.get("/admin/download_admin/")
+
+    # Assert that the response is a redirect to the download route
+    assert response.status_code == 302
+    assert response.location == "/admin/download_admin/admin/download/"
+
+
 def select_course(client, course_name):
     """
     Helper function to simulate selecting a course.
@@ -54,3 +69,15 @@ def test_file_downloaded(admin_login, setup_course_and_exercise_data):
         expected_content = f.read()
 
     assert downloaded_content == expected_content
+
+
+def test_handle_view_redirects_to_login(client):
+    """
+    Test that accessing restricted view redirects to login page if not logged in.
+    """
+    # Access a restricted view without being logged in
+    response = client.get("/admin/download_admin/admin/download/")
+
+    # Assert that the response is a redirect to the login route
+    assert response.status_code == 302
+    assert response.location == "/login"

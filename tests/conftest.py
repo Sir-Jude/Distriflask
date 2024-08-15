@@ -114,10 +114,27 @@ def student_user(app, client):
             # Loop through each student and test login
             student_username = student.username
             student_password = "12345678"
+            student_roles = [student.roles]
 
-            yield client, student_username, student_password
+            yield client, student_username, student_password, student_roles
 
+@pytest.fixture()
+def student_login(student_user):
+    """
+    This fixture logs in an existing admin user and yields the test client.
+    """
+    client, student_username, student_password, student_roles = student_user
 
+    response = client.post(
+        "/login",
+        data=dict(
+            username=student_username,
+            password=student_password,
+        ),
+    )
+
+    yield client
+    
 @pytest.fixture()
 def admin_login(admin_user):
     """
