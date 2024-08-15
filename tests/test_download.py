@@ -1,9 +1,9 @@
-def test_index_redirects_to_download(client, admin_login):
+def test_index_redirects_to_download(admin_login):
     """
     Test that accessing index route redirects to download route.
     """
     # Login as admin using the provided fixture
-    client = admin_login
+    client, _ = admin_login
 
     # Access the index route of DownloadAdminView
     response = client.get("/admin/download_admin/")
@@ -26,7 +26,7 @@ def select_course(client, course_name):
 
 
 def test_selecting_a_course(admin_login, setup_course_and_exercise_data):
-    client = admin_login
+    client, _ = admin_login
     course_name, _ = setup_course_and_exercise_data
 
     # Simulate selecting a course using the helper function
@@ -45,7 +45,7 @@ def test_file_downloaded(admin_login, setup_course_and_exercise_data):
     """
     Test if the file is correctly downloaded and the content is accurate.
     """
-    client = admin_login
+    client, _ = admin_login
     course_name, exercise_file_path = setup_course_and_exercise_data
 
     # Simulate selecting a course using the helper function

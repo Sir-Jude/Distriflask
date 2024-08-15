@@ -1,6 +1,11 @@
 # Pytest's configuration file
 from app.models import User, Role, Course, Exercise
+from app.forms import username_validator
 from flask_security import hash_password
+from flask_wtf import FlaskForm
+from wtforms import StringField
+from unittest.mock import MagicMock
+
 
 import pytest
 from pathlib import Path
@@ -25,15 +30,20 @@ def app():
     performs teardown actions by removing the test database file.
     """
 
+    # Use the application factory to create an instance of the app
+    # Specify "TestConfig" as the configuration class
     app = create_app(config_class=TestConfig)
 
+    # Sets up an application context
+    # (necessary for certain operations in Flask, such as interacting with DB)
     with app.app_context():
+        # Create all database tables defined by the models
         db.create_all()
 
         create_roles(app=app)
 
     # Provide the application instance to the test function
-    # and allow additional actions to be performed
+    #   and allow additional actions to be performed
     yield app
 
     # Perform teardown actions after test function completes
@@ -48,8 +58,10 @@ def client(app):
     This fixture returns a test client object that allows simulating HTTP
     requests to the Flask application without running a full web server.
     The test client can be used in pytest tests to interact with Flask
-    routes and test their behavior.
+    routes and test their behaviour.
     """
+    # Use the "test_client()" built-in Flask method to provide a test client for the app.
+    # This client can be used to make HTTP requests to the app in a testing context.
     return app.test_client()
 
 
@@ -61,33 +73,11 @@ def runner(app):
     The test CLI runner can be used in pytest tests to simulate command-line
     interactions and test their behavior.
     """
+
+    # Use the "test_cli_runner()" built-in Flask method to return a CLI runner object.
+    # It allows invoking command-line commands as if they had been run in a terminal
+    #   but within the context of your Flask application.
     return app.test_cli_runner()
-
-
-@pytest.fixture()
-def admin_user(app, client):
-    """
-    This fixture creates a new admin user, logs them in, and yields the test
-    client, admin username, and admin password.
-    """
-    with app.app_context():
-        with client:
-            new_admin = User(
-                username="test_admin",
-                password=hash_password("12345678"),
-                roles=[Role.query.filter_by(name="administrator").first()],
-                active=True,
-            )
-
-            db.session.add(new_admin)
-            db.session.commit()
-
-            admin = User.query.filter_by(username="test_admin").first()
-            admin_username = admin.username
-            admin_password = "12345678"
-            admin_roles = [admin.roles]
-
-            yield client, admin_username, admin_password, admin_roles
 
 
 @pytest.fixture()
@@ -116,31 +106,60 @@ def student_user(app, client):
             student_password = "12345678"
             student_roles = [student.roles]
 
-            yield client, student_username, student_password, student_roles
+            yield student_username, student_password, student_roles
+
 
 @pytest.fixture()
-def student_login(student_user):
+def student_login(client, student_user):
     """
     This fixture logs in an existing admin user and yields the test client.
     """
-    client, student_username, student_password, student_roles = student_user
+    student_username, student_password, _ = student_user
 
     response = client.post(
-        "/login",
+        "/student_login",
         data=dict(
             username=student_username,
             password=student_password,
         ),
+        follow_redirects=True,
     )
 
-    yield client
-    
+    yield response, student_username
+
+
 @pytest.fixture()
-def admin_login(admin_user):
+def admin_user(app, client):
+    """
+    This fixture creates a new admin user, logs them in and yields the test
+    client, admin username, and admin password.
+    """
+    with app.app_context():
+        with client:
+            new_admin = User(
+                username="test_admin",
+                password=hash_password("12345678"),
+                roles=[Role.query.filter_by(name="administrator").first()],
+                active=True,
+            )
+
+            db.session.add(new_admin)
+            db.session.commit()
+
+            admin = User.query.filter_by(username="test_admin").first()
+            admin_username = admin.username
+            admin_password = "12345678"
+            admin_roles = [admin.roles]
+
+            yield admin_username, admin_password, admin_roles
+
+
+@pytest.fixture()
+def admin_login(client, admin_user):
     """
     This fixture logs in an existing admin user and yields the test client.
     """
-    client, admin_username, admin_password, admin_roles = admin_user
+    admin_username, admin_password, _ = admin_user
 
     response = client.post(
         "/login",
@@ -150,7 +169,7 @@ def admin_login(admin_user):
         ),
     )
 
-    yield client
+    yield client, response
 
 
 @pytest.fixture(scope="function")
@@ -184,3 +203,29 @@ def setup_course_and_exercise_data(app):
     # Cleanup after test
     if os.path.exists(course_path):
         shutil.rmtree(course_path)
+
+
+@pytest.fixture()
+def mock_security(app):
+    # Mock the security extension
+    _security = MagicMock()
+    _username_util = MagicMock()
+    _username_util.validate.return_value = (None, "normalized_username")
+    _security._username_util = _username_util
+    app.extensions["security"] = _security
+    yield _security
+
+
+@pytest.fixture()
+def test_form(app, mock_security):
+    """
+    Fixture to define a form with the username_validator and return it.
+    """
+    with app.app_context():
+
+        class TestForm(FlaskForm):
+            username = StringField(validators=[username_validator])
+
+        # Create an instance of the form
+        form = TestForm(username="testuser")
+        yield form

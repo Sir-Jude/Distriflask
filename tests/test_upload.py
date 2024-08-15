@@ -1,9 +1,9 @@
-def test_index_redirects_to_upload(client, admin_login):
+def test_index_redirects_to_upload(admin_login):
     """
     Test that accessing index route redirects to upload route.
     """
     # Login as admin using the provided fixture
-    client = admin_login
+    client, _ = admin_login
 
     # Access the index route of UploadAdminView
     response = client.get("/admin/upload_admin/")

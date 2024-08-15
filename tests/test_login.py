@@ -1,11 +1,6 @@
 class TestStudent:
-    def test_student_login(self, student_user):
-        client, student_username, student_password, _ = student_user
-        response = client.post(
-            "/student_login",
-            data=dict(username=student_username, password=student_password),
-            follow_redirects=True,
-        )
+    def test_student_login(self, student_login):
+        response, student_username = student_login
 
         # Check if request was successful
         assert response.status_code == 200
@@ -21,8 +16,8 @@ class TestStudent:
         # Also assert that the final location URL is correct
         assert response.request.path == f"/student/{student_username}/"
 
-    def test_student_logout(self, student_login):
-        client = student_login
+    def test_student_logout(self, client, student_login):
+        _, _ = student_login
         response = client.get("/logout/")
 
         assert response.status_code == 302
@@ -30,8 +25,8 @@ class TestStudent:
 
 
 class TestAdmin:
-    def test_correct_admin_login_from_student_endpoint(self, admin_user):
-        client, admin_username, admin_password, admin_roles = admin_user
+    def test_correct_admin_login_from_student_endpoint(self, client, admin_user):
+        admin_username, admin_password, admin_roles = admin_user
 
         response = client.post(
             "/student_login",
@@ -45,8 +40,8 @@ class TestAdmin:
         assert f"<h2>Welcome, {admin_username.title()}!</h2>".encode() in response.data
         assert response.request.path == "/admin/"
 
-    def test_correct_admin_login_correctly_from_admin_endpoint(self, admin_user):
-        client, admin_username, admin_password, admin_roles = admin_user
+    def test_correct_admin_login_correctly_from_admin_endpoint(self, client, admin_user):
+        admin_username, admin_password, admin_roles = admin_user
 
         response = client.post(
             "/login",
@@ -61,8 +56,7 @@ class TestAdmin:
         assert f"<h2>Welcome, {admin_username.title()}!</h2>".encode() in response.data
         assert response.request.path == "/admin/"
 
-    def test_admin_logout(self, admin_user):
-        client = admin_user[0]
+    def test_admin_logout(self, client, admin_user):
         response = client.get("/logout", follow_redirects=True)
 
         assert response.status_code == 200
@@ -71,8 +65,8 @@ class TestAdmin:
 
 
 class TestWrongLogin:
-    def test_wrong_username_from_student_endpoint(self, admin_user):
-        client, _, admin_password, admin_roles = admin_user
+    def test_wrong_username_from_student_endpoint(self, client, admin_user):
+        _, admin_password, admin_roles = admin_user
 
         response = client.post(
             "/student_login",
@@ -86,8 +80,8 @@ class TestWrongLogin:
         assert b"Invalid username." in response.data
         assert response.request.path == "/student_login"
 
-    def test_wrong_student_password(self, student_user):
-        client, student_username, _, _ = student_user
+    def test_wrong_student_password(self, client, student_user):
+        student_username, _, _ = student_user
         response = client.post(
             "/student_login",
             data=dict(username=student_username, password="Wrong password"),
@@ -98,8 +92,8 @@ class TestWrongLogin:
         assert b"Wrong password - Try Again..." in response.data
         assert response.request.path == "/student_login"
 
-    def test_wrong_admin_password_from_admin_endpoint(self, admin_user):
-        client, admin_username, _, admin_roles = admin_user
+    def test_wrong_admin_password_from_admin_endpoint(self, client, admin_user):
+        admin_username, _, admin_roles = admin_user
 
         response = client.post(
             "/login",

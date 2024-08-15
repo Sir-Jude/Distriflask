@@ -11,7 +11,7 @@ def test_handle_view_redirects_to_login(client):
 
 
 def test_users_button(admin_login):
-    client = admin_login
+    client, _ = admin_login
 
     response = client.get("/admin/user/")
 
@@ -23,7 +23,7 @@ def test_users_button(admin_login):
 
 
 def test_upload_button(admin_login):
-    client = admin_login
+    client, _ = admin_login
 
     response = client.get("/admin/upload_admin/admin/upload/")
 

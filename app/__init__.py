@@ -34,12 +34,12 @@ from flask_security import Security, UsernameUtil
 # The application factory pattern in Flask offers several advantages.
 # 1) Testing:
 #    It enables the creation of multiple instances of the application with
-#    different configurations, facilitating comprehensive testing across
-#    various scenarios.
+#      different configurations, facilitating comprehensive testing across
+#      various scenarios.
 # 2) Multiple instances:
 #    It allows to run different versions of the same application running in
-#    the same application process, enhancing, scalability, flexibility and
-#    resource efficiency.
+#      the same application process, enhancing, scalability, flexibility and
+#      resource efficiency.
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -69,7 +69,7 @@ def create_app(config_class=Config):
     )
 
     # Context processors inject new variables into the context of a template,
-    # so we don't need to explicitly pass them around.
+    #   so we don't need to explicitly pass them around.
     # The processor runs when the app is created.
     @security.context_processor
     def security_context_processor():
@@ -121,9 +121,9 @@ def create_app(config_class=Config):
     login_manager.login_view = "login"
 
     # Decorator to call user_loader function for each request to load the user
-    # object. It will be accessible via current_user within the application
+    #   object. It will be accessible via current_user within the application.
     @login_manager.user_loader
-    # Flask-Login will pass the user ID stored in the session to this function
+    # Flask-Login will pass the user ID stored in the session to this function.
     # The function is expected to return the corresponding user object.
     def load_user(user_id):
         return User.query.get(user_id)

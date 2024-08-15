@@ -2,7 +2,7 @@ import json
 
 
 def test_create_button(admin_login):
-    client = admin_login
+    client, _ = admin_login
 
     response = client.get(
         "/admin/user/new/?url=/admin/user/",
