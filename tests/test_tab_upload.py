@@ -1,3 +1,13 @@
+def test_upload_button(admin_login):
+    client, _ = admin_login
+
+    response = client.get("/admin/upload_admin/admin/upload/")
+
+    # Assert the presence of the string "Upload a file"
+    assert response.status_code == 200
+    assert b"Upload a file" in response.data
+
+
 def test_index_redirects_to_upload(admin_login):
     """
     Test that accessing index route redirects to upload route.

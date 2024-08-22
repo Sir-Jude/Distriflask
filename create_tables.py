@@ -1,5 +1,4 @@
 import os
-import pycountry
 import random
 import shutil
 import subprocess
@@ -7,23 +6,21 @@ import sys
 
 from app import create_app
 from app.extensions import db
-from app.models import Country, Course, Exercise, Role, User
+from app.models import Course, Exercise, Role, User
 from faker import Faker
 from flask_security import SQLAlchemyUserDatastore, hash_password
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 fake = Faker()
-N_USERS = 15
+N_TEACHERS= 10
+N_STUDENTS = 50
 ROLES = [
     "administrator",
     "student",
     "teacher",
 ]
 
-countries = list(pycountry.countries)
-COUNTRIES = [
-    {"short_name": country.alpha_3, "long_name": country.name} for country in countries
-]
+COURSES = ["C#", "C++", "PHP", "Python", "Java", "JavaScript"]
 
 
 def main():
@@ -32,10 +29,8 @@ def main():
         delete_folders()
         setup_database()
         create_roles()
-        create_countries()
-        courses = create_sample_courses()
         exercises = create_sample_exercises()
-        populate_tables(courses, exercises)
+        populate_tables(COURSES, exercises)
         create_users()
         db.session.commit()
 
@@ -76,34 +71,7 @@ def create_roles(app=None):
                 print(f'Role "{new_role.name}" has been created')
 
         db.session.commit()
-
-
-def create_countries():
-    app = create_app()
-    with app.app_context():
-        for country_name in COUNTRIES:
-            existing_country = Country.query.filter_by(
-                name=country_name["long_name"]
-            ).first()
-            if existing_country is None:
-                new_country = Country(name=country_name["long_name"])
-                db.session.add(new_country)
-
-        db.session.commit()
-
-
-def create_sample_courses():
-    random.seed(42)
-
-    courses = set()
-
-    for n in range(100):
-        courses.add(f"crs0{random.randint(10,2500):04d}")
-    for n in range(10):
-        courses.add(f"crs100{random.randint(10,70):02d}")
-
-    return list(courses)
-
+        
 
 def create_sample_exercises():
     random.seed(17)
@@ -128,13 +96,11 @@ def populate_tables(courses, exercises):
     random.seed(22)
 
     course_map = {}
-    countries = Country.query.all()
+
 
     for course_name in courses:
-        country = random.choice(countries)
         course = Course(
             name=course_name,
-            country_id=country.country_id,
         )
         db.session.add(course)
         course_map[course_name] = course
@@ -172,9 +138,10 @@ def create_users():
     random.seed(151)
     with app.app_context():
         print("Creating teachers users")
+        
         # Fetch the "teacher" role from the database
         teacher_role = Role.query.filter_by(name="teacher").first()
-        for _ in range(N_USERS):
+        for _ in range(N_TEACHERS):
             new_user = User(
                 username=fake.name(),
                 password=hash_password("12345678"),
@@ -185,28 +152,31 @@ def create_users():
             # Assign the "teacher" role to the new user
             new_user.roles.append(teacher_role)
 
-            # Teacher users do not initially have am assigned course.
-            new_user.course_id = None
-
-            # Indicate progress
+            # Teachers do not initially have an assigned course.
             print(".", end="")
             sys.stdout.flush()
         print()
 
         print("Creating students")
-        COURSES = create_sample_courses()
-        for course_name in COURSES:
+        
+        # Fetch a list of courses from the database
+        courses = Course.query.all()
+        
+        for _ in range(N_STUDENTS):
             new_user = User(
-                username=course_name,
+                username=fake.name(),
                 password=hash_password("12345678"),
                 active=True,
             )
             db.session.add(new_user)
 
-            new_role = Role.query.filter_by(name="student").first()
-            new_user.roles.append(new_role)
+            # Assign the "student" role to the new user
+            student_role = Role.query.filter_by(name="student").first()
+            new_user.roles.append(student_role)
 
-            new_user.course_name = new_user.username
+            # Randomly assign 1 to 3 courses to the new user
+            assigned_courses = random.sample(courses, k=random.randint(1, 4))
+            new_user.courses.extend(assigned_courses)
 
             # Indicate progress
             print(".", end="")

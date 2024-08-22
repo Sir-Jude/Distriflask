@@ -15,7 +15,6 @@ from flask_security import verify_password
 from flask_wtf import FlaskForm
 import re
 import os
-from urllib.parse import urlsplit
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
 
@@ -39,7 +38,7 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data.lower()).first()
+        user = User.query.filter_by(username=form.username.data).first()
         if user and user.is_active:
             if verify_password(form.password.data, user.password):
                 login_user(user)
@@ -58,24 +57,22 @@ def login():
             else:
                 flash("Wrong password - Try Again...")
         else:
-            flash("Invalid username.")
+            flash("Specified user does not exist")
     return render_template("students/login.html", form=form)
 
 
 @students.route("/student/<username>/", methods=["GET", "POST"])
 @login_required
 def profile(username):
-    # Only administrators may access profiles of other users
-    if "administrator" not in [exr.name for exr in current_user.roles]:
-        # Return 403 error if current user is not accessing their own profile
-        if current_user.username != username:
-            return render_template("errors/403.html"), 403
+    # Return 403 error if current user is not accessing their own profile
+    if current_user.username != username:
+        return render_template("errors/403.html"), 403
 
-    # Fetch from database the course associated with provided <username>
-    country = None  # Initialize country to None initially
-    course = Course.query.filter_by(name=username).first()
-    if course:  # Check if User has an associated course
-        country = course.country
+    course = current_user.courses
+
+    # set exercises to an empty list
+    exercises = []
+    if course:  # If user has an associated course, fetch exercises
         exercises = sorted(
             Exercise.query.join(Course).filter(Course.name == str(course)).all(),
             key=lambda exr: tuple(
@@ -84,8 +81,6 @@ def profile(username):
             ),
             reverse=False,
         )
-    else:
-        exercises = []  # If course is not available, set exercises to an empty list
 
     form = StudentdownloadForm(formdata=request.form)
     # Populate the choices for exercise numbers in the form
@@ -109,7 +104,6 @@ def profile(username):
         "students/profile.html",
         username=username,
         course=course,
-        country=country,
         exercises=exercises,
         form=form,
     )

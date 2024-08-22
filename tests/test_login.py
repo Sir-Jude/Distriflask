@@ -77,7 +77,7 @@ class TestWrongLogin:
         )
 
         assert response.status_code == 200
-        assert b"Invalid username." in response.data
+        assert b"Specified user does not exist" in response.data
         assert response.request.path == "/student_login"
 
     def test_wrong_student_password(self, client, student_user):

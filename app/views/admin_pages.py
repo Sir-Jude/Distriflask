@@ -1,6 +1,6 @@
 from app.extensions import db
 from app.forms import (
-    AdminDownloadForm,
+    DownloadForm,
     CourseSearchForm,
     ExtendedRegisterForm,
     UploadExerciseForm,
@@ -36,44 +36,31 @@ class UserAdminView(ModelView):
         return ", ".join([role.name.capitalize() for role in model.roles])
 
     @staticmethod
-    def _display_numbers(view, context, model, name):
-        if model.course:
-            # Extract numbers and sort them
-            numbers = sorted(
-                (exercise.number for exercise in model.course.exercises),
-                key=lambda exr: tuple(
-                    int(part) if part.isdigit() else part
-                    for part in re.findall(r"\d+|\D+", exr)
-                ),
-                reverse=False,
-            )
-            # Return a formatted string with sorted numbers
-            return ", ".join(numbers)
-        else:
-            return ""
+    def _display_courses(view, context, model, name):
+        return ", ".join([course.name.capitalize() for course in model.courses])
 
     # Attribute of the ModelView class
     # Customize the display of the columns
-    column_formatters = {"numbers": _display_numbers, "roles": _display_roles}
+    column_formatters = {"Courses": _display_courses, "roles": _display_roles}
 
     form = ExtendedRegisterForm
 
     # Customized from BaseModelView
     def on_model_change(self, form, model, is_created):
         # Check if the model being changed is a User model and the current user is an administrator
-        if isinstance(model, User) and "administrator" in current_user.roles:
+        if isinstance(model, User) and "administrator" in [role.name for role in current_user.roles]:
             # Check if password field is present in the form and has a value
             if "password" in form and form.password.data:
                 # Hash the password before saving it to the database
                 model.password = hash_password(form.password.data)
 
     # Actual columns' title as seen in the website
-    column_list = ("username", "numbers", "active", "roles")
+    column_list = ("username", "Courses", "active", "roles")
 
     # Link the columns' title and the model class attribute, so to make data sortable
     column_sortable_list = (
         "username",
-        ("numbers", "course_name"),
+        ("Courses", "courses.name"),
         "active",
         ("roles", "roles.name"),
     )
@@ -456,7 +443,7 @@ class DownloadAdminView(BaseView):
     @login_required
     @roles_required("administrator")
     def download(self):
-        download_form = AdminDownloadForm(formdata=request.form)
+        download_form = DownloadForm()
 
         # Sort courses' name in "uploads" folder and populate the drop down menu
         courses = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))

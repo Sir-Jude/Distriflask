@@ -38,11 +38,10 @@ class ExtendedRegisterForm(RegisterForm):
             DataRequired(),
         ],
     )
-    course = QuerySelectField(
+    courses = QuerySelectMultipleField(
         "Course",
         query_factory=lambda: Course.query.order_by(func.lower(Course.name)).all(),
         get_label="name",
-        allow_blank=True,
         blank_text="None",
     )
     active = BooleanField("Active")
@@ -64,7 +63,7 @@ class ExtendedLoginForm(LoginForm):
     username = StringField("Username", [DataRequired()])
 
     def validate(self, **kwargs):
-        self.user = lookup_identity(self.username.data.lower())
+        self.user = lookup_identity(self.username.data)
         # Setting 'ifield' informs the default login form validation
         # handler that the identity has already been confirmed.
         self.ifield = self.username
@@ -84,7 +83,7 @@ class StudentdownloadForm(FlaskForm):
     submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
 
 
-class AdminDownloadForm(FlaskForm):
+class DownloadForm(FlaskForm):
     course = SelectField("Course: ")
     select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
     exercise = SelectField("Exercise: ")

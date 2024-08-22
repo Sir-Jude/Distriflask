@@ -11,18 +11,26 @@ class UserRole(db.Model):
     user_id = Column("user_id", Integer(), ForeignKey("users.user_id"))
     role_id = Column("role_id", Integer(), ForeignKey("roles.role_id"))
 
+class UserCourse(db.Model):
+    __tablename__ = "users_courses"
+    id = Column(Integer(), primary_key=True)
+    user_id = Column(Integer(), ForeignKey("users.user_id"))
+    course_id = Column(Integer(), ForeignKey("courses.course_id"))
+
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True)
     password = Column(String(80))
-    course_name = Column(String, ForeignKey("courses.name"), unique=True)
     active = Column(Boolean())
     roles = relationship(
         "Role", secondary="roles_users", back_populates="users", lazy=True
     )
-    course = relationship("Course", back_populates="user", uselist=False)
+    courses = relationship(
+        "Course", secondary="users_courses", back_populates="users", lazy=True,
+    )
+    
     fs_uniquifier = Column(
         String(255),
         unique=True,
@@ -54,24 +62,13 @@ class Role(db.Model, RoleMixin):
         return f"{self.name} (role_id={self.role_id})"
 
 
-class Country(db.Model):
-    __tablename__ = "countries"
-    country_id = Column(Integer, primary_key=True)
-    name = Column(String(40), unique=True)
-    courses = relationship("Course", back_populates="country", lazy=True)
-
-    def __repr__(self):
-        return f"{self.name}"
-
-
 class Course(db.Model):
     __tablename__ = "courses"
     course_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
-    country_id = Column(Integer, ForeignKey("countries.country_id"))
-    user = relationship("User", back_populates="course", uselist=False, lazy=True)
+    users = relationship(
+        "User", secondary="users_courses", back_populates="courses", lazy=True)
     exercises = relationship("Exercise", back_populates="course", lazy=True)
-    country = relationship("Country", back_populates="courses", lazy=True)
 
     def __repr__(self):
         return f"{self.name}"

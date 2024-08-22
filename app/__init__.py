@@ -10,7 +10,7 @@ from app.views.admin_pages import (
     DownloadAdminView,
 )
 from app.forms import (
-    AdminDownloadForm,
+    DownloadForm,
     CourseSearchForm,
     StudentdownloadForm,
     ExtendedLoginForm,
@@ -75,7 +75,7 @@ def create_app(config_class=Config):
     def security_context_processor():
         search_form = CourseSearchForm()
         upload_form = UploadExerciseForm()
-        download_form = AdminDownloadForm()
+        download_form = DownloadForm()
         student_download_form = StudentdownloadForm()
         return dict(
             admin_base_template=admin.base_template,

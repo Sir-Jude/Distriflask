@@ -1,3 +1,12 @@
+def test_download_button(admin_login):
+    client, _ = admin_login
+
+    response = client.get("/admin/download_admin/admin/download/")
+
+    # Assert the presence of the string "Upload a file"
+    assert response.status_code == 200
+    assert b"Download a file" in response.data
+
 def test_index_redirects_to_download(admin_login):
     """
     Test that accessing index route redirects to download route.
