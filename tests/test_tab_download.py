@@ -36,17 +36,17 @@ def select_course(client, course_name):
 
 def test_selecting_a_course(admin_login, setup_course_and_exercise_data):
     client, _ = admin_login
-    course_name, _ = setup_course_and_exercise_data
+    course, _ = setup_course_and_exercise_data
 
     # Simulate selecting a course using the helper function
-    response = select_course(client, course_name)
+    response = select_course(client, course.name)
 
     # Access the session directly
     with client.session_transaction() as sess:
         selected_course = sess.get("selected_course")
 
     assert response.status_code == 200
-    assert selected_course == course_name
+    assert selected_course == course.name
     assert b"Course Test Course selected." in response.data
 
 
@@ -55,15 +55,15 @@ def test_file_downloaded(admin_login, setup_course_and_exercise_data):
     Test if the file is correctly downloaded and the content is accurate.
     """
     client, _ = admin_login
-    course_name, exercise_file_path = setup_course_and_exercise_data
+    course, exercise = setup_course_and_exercise_data
 
     # Simulate selecting a course using the helper function
-    select_course(client, course_name)
+    select_course(client, course.name)
 
     # Access the download page and submit the form to download the exercise
     response = client.post(
         "/admin/download_admin/admin/download/",
-        data=dict(submit="download", course=course_name, exercise="1.0.1"),
+        data=dict(submit="download", course=course.name, exercise="1.0.1"),
         follow_redirects=True,
     )
 
@@ -74,7 +74,7 @@ def test_file_downloaded(admin_login, setup_course_and_exercise_data):
 
     # Verify the content of the file
     downloaded_content = response.data.decode("utf-8")
-    with open(exercise_file_path, "r") as f:
+    with open(exercise.exercise_path, "r") as f:
         expected_content = f.read()
 
     assert downloaded_content == expected_content

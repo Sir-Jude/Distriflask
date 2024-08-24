@@ -198,11 +198,16 @@ def setup_course_and_exercise_data(app):
     db.session.add(exercise)
     db.session.commit()
 
-    yield course_name, exercise_file_path
+    yield course, exercise
 
     # Cleanup after test
     if os.path.exists(course_path):
         shutil.rmtree(course_path)
+
+    # Remove the course and associated exercises from the database
+    db.session.delete(exercise)
+    db.session.delete(course)
+    db.session.commit()
 
 
 @pytest.fixture()
