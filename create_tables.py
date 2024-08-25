@@ -12,7 +12,7 @@ from flask_security import SQLAlchemyUserDatastore, hash_password
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 fake = Faker()
-N_TEACHERS= 10
+N_TEACHERS = 10
 N_STUDENTS = 50
 ROLES = [
     "administrator",
@@ -71,7 +71,7 @@ def create_roles(app=None):
                 print(f'Role "{new_role.name}" has been created')
 
         db.session.commit()
-        
+
 
 def create_sample_exercises():
     random.seed(17)
@@ -96,7 +96,6 @@ def populate_tables(courses, exercises):
     random.seed(22)
 
     course_map = {}
-
 
     for course_name in courses:
         course = Course(
@@ -138,7 +137,7 @@ def create_users():
     random.seed(151)
     with app.app_context():
         print("Creating teachers users")
-        
+
         # Fetch the "teacher" role from the database
         teacher_role = Role.query.filter_by(name="teacher").first()
         for _ in range(N_TEACHERS):
@@ -158,10 +157,10 @@ def create_users():
         print()
 
         print("Creating students")
-        
+
         # Fetch a list of courses from the database
         courses = Course.query.all()
-        
+
         for _ in range(N_STUDENTS):
             new_user = User(
                 username=fake.name(),

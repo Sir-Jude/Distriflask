@@ -5,11 +5,12 @@ from sqlalchemy.orm import relationship
 import uuid
 
 
-class UserRole(db.Model):
-    __tablename__ = "roles_users"
+class UserRoles(db.Model):
+    __tablename__ = "users_roles"
     id = Column(Integer(), primary_key=True)
     user_id = Column("user_id", Integer(), ForeignKey("users.user_id"))
     role_id = Column("role_id", Integer(), ForeignKey("roles.role_id"))
+
 
 class UserCourse(db.Model):
     __tablename__ = "users_courses"
@@ -25,12 +26,15 @@ class User(db.Model, UserMixin):
     password = Column(String(80))
     active = Column(Boolean())
     roles = relationship(
-        "Role", secondary="roles_users", back_populates="users", lazy=True
+        "Role", secondary="users_roles", back_populates="users", lazy=True
     )
     courses = relationship(
-        "Course", secondary="users_courses", back_populates="users", lazy=True,
+        "Course",
+        secondary="users_courses",
+        back_populates="users",
+        lazy=True,
     )
-    
+
     fs_uniquifier = Column(
         String(255),
         unique=True,
@@ -55,7 +59,7 @@ class Role(db.Model, RoleMixin):
     name = Column(String(20), unique=True)
     description = Column(String(255))
     users = relationship(
-        "User", secondary="roles_users", back_populates="roles", lazy=True
+        "User", secondary="users_roles", back_populates="roles", lazy=True
     )
 
     def __repr__(self):
@@ -67,7 +71,8 @@ class Course(db.Model):
     course_id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     users = relationship(
-        "User", secondary="users_courses", back_populates="courses", lazy=True)
+        "User", secondary="users_courses", back_populates="courses", lazy=True
+    )
     exercises = relationship("Exercise", back_populates="course", lazy=True)
 
     def __repr__(self):

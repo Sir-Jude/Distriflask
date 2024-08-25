@@ -7,6 +7,7 @@ def test_download_button(admin_login):
     assert response.status_code == 200
     assert b"Download a file" in response.data
 
+
 def test_index_redirects_to_download(admin_login):
     """
     Test that accessing index route redirects to download route.

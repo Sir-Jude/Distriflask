@@ -1,23 +1,20 @@
 # Pytest's configuration file
-from app.models import User, Role, Course, Exercise
-from app.forms import username_validator
+import os
+import shutil
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
 from flask_security import hash_password
 from flask_wtf import FlaskForm
 from wtforms import StringField
-from unittest.mock import MagicMock
 
-
-import pytest
-from pathlib import Path
-import shutil
-
-from config import TestConfig, basedir
 from app import create_app
 from app.extensions import db
-
+from app.forms import username_validator
+from app.models import Course, Exercise, Role, User
+from config import TestConfig, basedir
 from create_tables import create_roles
-
-import os
 
 
 @pytest.fixture()
@@ -147,11 +144,9 @@ def admin_user(app, client):
             db.session.commit()
 
             admin = User.query.filter_by(username="test_admin").first()
-            admin_username = admin.username
-            admin_password = "12345678"
-            admin_roles = [admin.roles]
+            admin.plaintext_password = "12345678"
 
-            yield admin_username, admin_password, admin_roles
+            yield admin
 
 
 @pytest.fixture()
@@ -159,13 +154,12 @@ def admin_login(client, admin_user):
     """
     This fixture logs in an existing admin user and yields the test client.
     """
-    admin_username, admin_password, _ = admin_user
 
     response = client.post(
         "/login",
         data=dict(
-            username=admin_username,
-            password=admin_password,
+            username=admin_user.username,
+            password=admin_user.plaintext_password,
         ),
     )
 

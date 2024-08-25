@@ -8,6 +8,36 @@ def test_upload_button(admin_login):
     assert b"Upload a file" in response.data
 
 
+def test_all_fields_have_been_filled_out(admin_login):
+    client, _ = admin_login
+
+    response = client.post(
+        "/admin/upload_admin/admin/upload/",
+        data={},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Please fill out both" in response.data
+
+
+def test_valid_course_name(admin_login, setup_course_and_exercise_data):
+    client, _ = admin_login
+    course, exercise = setup_course_and_exercise_data
+
+    response = client.post(
+        "/admin/upload_admin/admin/upload/",
+        data={
+            "course": "Wrong course name",
+            "exercise": exercise.number,
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Selected course does not exist." in response.data
+
+
 def test_index_redirects_to_upload(admin_login):
     """
     Test that accessing index route redirects to upload route.

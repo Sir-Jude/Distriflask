@@ -8,7 +8,7 @@ def test_users_button(admin_login):
     assert response.status_code == 200
     assert b"Create" in response.data
     assert b"With selected" in response.data
-    
+
 
 def test_handle_view_redirects_to_login(client):
     """
@@ -20,8 +20,3 @@ def test_handle_view_redirects_to_login(client):
     # Assert that the response is a redirect to the login route
     assert response.status_code == 302  # 302 status code means redirection
     assert response.location == "/login"
-
-
-
-
-

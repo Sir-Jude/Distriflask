@@ -26,34 +26,42 @@ class TestStudent:
 
 class TestAdmin:
     def test_correct_admin_login_from_student_endpoint(self, client, admin_user):
-        admin_username, admin_password, admin_roles = admin_user
 
         response = client.post(
             "/student_login",
             data=dict(
-                username=admin_username, password=admin_password, roles=admin_roles
+                username=admin_user.username,
+                password=admin_user.plaintext_password,
+                roles=admin_user.roles,
             ),
             follow_redirects=True,
         )
 
         assert response.status_code == 200
-        assert f"<h2>Welcome, {admin_username.title()}!</h2>".encode() in response.data
+        assert (
+            f"<h2>Welcome, {admin_user.username.title()}!</h2>".encode()
+            in response.data
+        )
         assert response.request.path == "/admin/"
 
-    def test_correct_admin_login_correctly_from_admin_endpoint(self, client, admin_user):
-        admin_username, admin_password, admin_roles = admin_user
+    def test_correct_admin_login_correctly_from_admin_endpoint(
+        self, client, admin_user
+    ):
 
         response = client.post(
             "/login",
             data=dict(
-                username=admin_username,
-                password=admin_password,
+                username=admin_user.username,
+                password=admin_user.plaintext_password,
             ),
             follow_redirects=True,
         )
 
         assert response.status_code == 200
-        assert f"<h2>Welcome, {admin_username.title()}!</h2>".encode() in response.data
+        assert (
+            f"<h2>Welcome, {admin_user.username.title()}!</h2>".encode()
+            in response.data
+        )
         assert response.request.path == "/admin/"
 
     def test_admin_logout(self, client, admin_user):
@@ -66,12 +74,13 @@ class TestAdmin:
 
 class TestWrongLogin:
     def test_wrong_username_from_student_endpoint(self, client, admin_user):
-        _, admin_password, admin_roles = admin_user
 
         response = client.post(
             "/student_login",
             data=dict(
-                username="Wrong username", password=admin_password, roles=admin_roles
+                username="Wrong username",
+                password=admin_user.plaintext_password,
+                roles=admin_user.roles,
             ),
             follow_redirects=True,
         )
@@ -93,12 +102,13 @@ class TestWrongLogin:
         assert response.request.path == "/student_login"
 
     def test_wrong_admin_password_from_admin_endpoint(self, client, admin_user):
-        admin_username, _, admin_roles = admin_user
 
         response = client.post(
             "/login",
             data=dict(
-                username=admin_username, password="wrong password", roles=admin_roles
+                username=admin_user.username,
+                password="wrong password",
+                roles=admin_user.roles,
             ),
             follow_redirects=True,
         )

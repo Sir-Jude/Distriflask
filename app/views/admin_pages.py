@@ -48,7 +48,9 @@ class UserAdminView(ModelView):
     # Customized from BaseModelView
     def on_model_change(self, form, model, is_created):
         # Check if the model being changed is a User model and the current user is an administrator
-        if isinstance(model, User) and "administrator" in [role.name for role in current_user.roles]:
+        if isinstance(model, User) and "administrator" in [
+            role.name for role in current_user.roles
+        ]:
             # Check if password field is present in the form and has a value
             if "password" in form and form.password.data:
                 # Hash the password before saving it to the database
@@ -355,9 +357,7 @@ class UploadAdminView(BaseView):
                 flash("Please fill out both the course and exercise fields.")
 
             elif not upload_form.path_exists():
-                flash(
-                    "Selected file path does not exist: please, input the correct one."
-                )
+                flash("Selected course does not exist.")
 
             elif not upload_form.allowed_file():
                 flash(
@@ -387,7 +387,7 @@ class UploadAdminView(BaseView):
                     existing_exercise.exercise_path = filepath
                     db.session.commit()
                     flash(
-                        f'The file "{number.filename}" has been updated for course "{course_name}".'
+                        f'The exercise "{number.filename}" has been successfully uploaded for the course "{course_name}".'
                     )
                 else:
                     # Store the exercise number info in the database
