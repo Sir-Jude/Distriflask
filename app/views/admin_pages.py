@@ -83,19 +83,19 @@ class CourseAdminView(BaseView):
 
         if search_form.validate_on_submit():
             course_name = search_form.course_name.data
-            selected_exercise = search_form.selected_exercise.data
+            selected_student = search_form.selected_student.data
 
-            if course_name and selected_exercise:
+            if course_name and selected_student:
                 flash("Please provide only one search criteria at a time.", "error")
                 return redirect(url_for("course_admin.courses_default_table"))
 
             # Resulting table of the Exercise search
-            if selected_exercise:
-                # Redirect to the new route for selected_exercise filtering
+            if selected_student:
+                # Redirect to the new route for selected_student filtering
                 return redirect(
                     url_for(
-                        "course_admin.selected_exercise",
-                        selected_exercise=selected_exercise,
+                        "course_admin.selected_student",
+                        selected_student=selected_student,
                     )
                 )
 
@@ -159,20 +159,20 @@ class CourseAdminView(BaseView):
 
             return redirect(
                 url_for(
-                    "course_admin.selected_exercise",
-                    selected_exercise=f"{first_number}.{second_number}.{third_number}",
+                    "course_admin.selected_student",
+                    selected_student=f"{first_number}.{second_number}.{third_number}",
                 )
             )
 
-    @expose("/students-table/<selected_exercise>", methods=["GET", "POST"])
+    @expose("/students-table/<selected_student>", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
-    def selected_exercise(self, selected_exercise):
+    def selected_student(self, selected_student):
         search_form = CourseSearchForm()
 
-        parts = selected_exercise.split(".")
+        parts = selected_student.split(".")
 
-        # Filter exercises based on first two numbers of selected_exercise in the URL
+        # Filter exercises based on first two numbers of selected_student in the URL
         if len(parts) < 2:
             flash("Invalid exercise number.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
@@ -198,7 +198,7 @@ class CourseAdminView(BaseView):
 
         # Check if the provided exercise number exists in the list of all exercises
         if len(parts) == 2:
-            selected_exercise = all_exercises[0]
+            selected_student = all_exercises[0]
 
         # Redirect to the default if there is any matching exercise
         if not all_exercises:
@@ -206,11 +206,11 @@ class CourseAdminView(BaseView):
             return redirect(url_for("course_admin.courses_default_table"))
 
         # Check if the provided exercise number exists in the list of all exercises
-        elif selected_exercise not in all_exercises:
+        elif selected_student not in all_exercises:
             flash("Selected exercise number not found.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
-        check_existence = Exercise.query.filter_by(number=selected_exercise).first()
+        check_existence = Exercise.query.filter_by(number=selected_student).first()
 
         # Check if there are any filtered exercises
         if check_existence:
@@ -219,7 +219,7 @@ class CourseAdminView(BaseView):
                     str(part)
                     for part in list(
                         int(part) if part.isdigit() else part
-                        for part in re.findall(r"\d+|\D+", selected_exercise)
+                        for part in re.findall(r"\d+|\D+", selected_student)
                     )[:3]
                 ]
             )
@@ -235,7 +235,7 @@ class CourseAdminView(BaseView):
             ).all()
 
             # Find the index of the selected exercise number in the list of all exercises.
-            index = all_exercises.index(selected_exercise)
+            index = all_exercises.index(selected_student)
 
             # Define a variable to store set number of newer/older exercises
             halfwith = 10
@@ -283,7 +283,7 @@ class CourseAdminView(BaseView):
                 courses_in_rows=courses_in_rows,
                 all_exercise_numbers=all_exercise_numbers,
                 exercises=exercises,
-                selected_exercise=selected_exercise,
+                selected_student=selected_student,
                 search_form=search_form,
             )
         else:
@@ -297,14 +297,13 @@ class CourseAdminView(BaseView):
     def selected_course_name(self, course_name):
         search_form = CourseSearchForm()
         all_courses = sorted(Course.query.all(), key=lambda d: d.name, reverse=False)
-        all_exercises = {
+        all_students = {
             course: sorted(
-                [e.number for e in course.exercises],
+                [user.username for user in course.users],
                 key=lambda x: tuple(
                     int(part) if part.isdigit() else part
                     for part in re.findall(r"\d+|\D+", x)
                 ),
-                reverse=False,
             )
             for course in all_courses
         }
@@ -313,7 +312,7 @@ class CourseAdminView(BaseView):
             return self.render(
                 "admin/matrix_course.html",
                 courses=[filtered_course],
-                all_exercises=all_exercises,
+                all_students=all_students,
                 search_form=search_form,
             )
         else:
@@ -329,12 +328,12 @@ class CourseAdminView(BaseView):
 
     def _handle_view(self, name, **kwargs):
         # Adjust _handle_view to accept additional arguments
-        if name == "selected_exercise":
-            # Extract 'selected_exercise' from kwargs
-            selected_exercise = kwargs.pop("selected_exercise", None)
-            if selected_exercise:
+        if name == "selected_student":
+            # Extract 'selected_student' from kwargs
+            selected_student = kwargs.pop("selected_student", None)
+            if selected_student:
                 # Call the relevant view method with the extracted argument
-                return getattr(self, name)(selected_exercise)
+                return getattr(self, name)(selected_student)
         return super()._handle_view(name, **kwargs)
 
 

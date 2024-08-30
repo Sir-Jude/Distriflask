@@ -8,14 +8,14 @@
       <th></th>
       <!-- This loop renders the headers of the table -->
       {% for exercise in exercises %}
-        {% if exercise == selected_exercise %}
+        {% if exercise == selected_student %}
           <th class="rotated-header highlight-column" style="font-weight:bold">
-            <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=exercise) }}">{{ exercise }}</a></span></div>
+            <div><span><a href="{{ url_for('course_admin.selected_student', selected_student=exercise) }}">{{ exercise }}</a></span></div>
           </th>
           {% else %}
           {% if exercise != "..." %}
             <th class="rotated-header">
-              <div><span><a href="{{ url_for('course_admin.selected_exercise', selected_exercise=exercise) }}">{{ exercise }}</a></span></div>
+              <div><span><a href="{{ url_for('course_admin.selected_student', selected_student=exercise) }}">{{ exercise }}</a></span></div>
             </th>
           {% else %}
             <th class="rotated-header">
@@ -31,7 +31,7 @@
       <tr>
         <td><a href="{{ url_for('course_admin.selected_course_name', course_name=course.name) }}">{{ course.name }}</a></td>
         {% for exercise in exercises %}
-          {% if exercise == selected_exercise %}
+          {% if exercise == selected_student %}
             <td class="highlight-column" style="font-weight:bold">
               {% if exercise in all_exercise_numbers[course]%}
                 *

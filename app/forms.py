@@ -74,7 +74,7 @@ class ExtendedLoginForm(LoginForm):
 
 class CourseSearchForm(FlaskForm):
     course_name = StringField("Course: ")
-    selected_exercise = StringField("Exercise: ")
+    selected_student = StringField("Exercise: ")
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
 
