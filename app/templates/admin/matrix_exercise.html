@@ -7,15 +7,15 @@
     <tr>
       <th></th>
       <!-- This loop renders the headers of the table -->
-      {% for exercise in exercises %}
-        {% if exercise == selected_student %}
+      {% for user in users %}
+        {% if user == selected_user %}
           <th class="rotated-header highlight-column" style="font-weight:bold">
-            <div><span><a href="{{ url_for('course_admin.selected_student', selected_student=exercise) }}">{{ exercise }}</a></span></div>
+            <div><span><a href="{{ url_for('course_admin.selected_user', selected_user=user) }}">{{ user }}</a></span></div>
           </th>
           {% else %}
-          {% if exercise != "..." %}
+          {% if user != "..." %}
             <th class="rotated-header">
-              <div><span><a href="{{ url_for('course_admin.selected_student', selected_student=exercise) }}">{{ exercise }}</a></span></div>
+              <div><span><a href="{{ url_for('course_admin.selected_user', selected_user=user) }}">{{ user }}</a></span></div>
             </th>
           {% else %}
             <th class="rotated-header">
@@ -30,15 +30,15 @@
     {% for course in courses_in_rows %}
       <tr>
         <td><a href="{{ url_for('course_admin.selected_course_name', course_name=course.name) }}">{{ course.name }}</a></td>
-        {% for exercise in exercises %}
-          {% if exercise == selected_student %}
+        {% for user in users %}
+          {% if user == selected_user %}
             <td class="highlight-column" style="font-weight:bold">
-              {% if exercise in all_exercise_numbers[course]%}
+              {% if user in all_user_usernames[course]%}
                 *
               {% endif %}</td>
           {% else %}
             <td>
-              {% if exercise in all_exercise_numbers[course]%}
+              {% if user in all_user_usernames[course]%}
                 *
               {% endif %}
             </td>

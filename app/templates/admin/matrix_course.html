@@ -4,7 +4,7 @@
 <table class="course-table" border="3" bordercolor="#ffffff">
   <thead>
     <tr>
-      <th>Course name</th>
+      <th>Course's name </th>
       <th>Enrolled students</th>
     </tr>
   </thead>
@@ -13,12 +13,12 @@
       {# Display the course name #}
       <td> {{ courses[0].name }} </td>
       <td>
-        {# Get all students for the course #}
-        {% set students = all_students[courses[0]] %}
+        {# Get all enrolled students for the course #}
+        {% set users = all_users[courses[0]] %}
         {# Iterate over each student #}
-        {% for student in students %}
-          {# Create a link for each student pointing to selected_student view #}
-          <a href="{{ url_for('course_admin.selected_student', selected_student=student) }}">{{ student }}</a>
+        {% for user in users %}
+          {# Create a link for each student pointing to selected_user view #}
+          <a href="{{ url_for('course_admin.selected_user', selected_user=user) }}">{{ user }}</a>
           {# Add a comma after each student except the last one #}
           {% if not loop.last %}, {% endif %}
         {% endfor %}

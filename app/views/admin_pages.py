@@ -1,20 +1,18 @@
-from app.extensions import db
-from app.forms import (
-    DownloadForm,
-    CourseSearchForm,
-    ExtendedRegisterForm,
-    UploadExerciseForm,
-)
-from app.models import User, Course, Exercise
-from config import basedir, Config
-from flask import flash, redirect, request, send_file, session, url_for
-from flask_login import login_required
-from flask_security import current_user, hash_password, roles_required
-from flask_admin.base import BaseView, expose
-from flask_admin.contrib.sqla import ModelView
-from werkzeug.utils import secure_filename
 import os
 import re
+
+from flask import flash, redirect, request, send_file, session, url_for
+from flask_admin.base import BaseView, expose
+from flask_admin.contrib.sqla import ModelView
+from flask_login import login_required
+from flask_security import current_user, hash_password, roles_required
+from werkzeug.utils import secure_filename
+
+from app.extensions import db
+from app.forms import (CourseSearchForm, DownloadForm, ExtendedRegisterForm,
+                       UploadExerciseForm)
+from app.models import Course, Exercise, User, Role
+from config import Config, basedir
 
 
 class UserAdminView(ModelView):
@@ -83,19 +81,19 @@ class CourseAdminView(BaseView):
 
         if search_form.validate_on_submit():
             course_name = search_form.course_name.data
-            selected_student = search_form.selected_student.data
+            selected_user = search_form.selected_user.data
 
-            if course_name and selected_student:
+            if course_name and selected_user:
                 flash("Please provide only one search criteria at a time.", "error")
                 return redirect(url_for("course_admin.courses_default_table"))
 
             # Resulting table of the Exercise search
-            if selected_student:
-                # Redirect to the new route for selected_student filtering
+            if selected_user:
+                # Redirect to the new route for selected_user filtering
                 return redirect(
                     url_for(
-                        "course_admin.selected_student",
-                        selected_student=selected_student,
+                        "course_admin.selected_user",
+                        selected_user=selected_user,
                     )
                 )
 
@@ -114,182 +112,102 @@ class CourseAdminView(BaseView):
 
         # Default table
         else:
-            all_exercises = sorted(
-                Exercise.query.all(),
-                key=lambda x: tuple(
-                    int(part) if part.isdigit() else part
-                    for part in re.findall(r"\d+|\D+", x.number)
-                ),
-            )
+            all_users = sorted(
+                User.query.all(),
+                key=lambda x: x.username)
             # The three following variables will always return the most updated number
             # (no matter which numbers are used)
-            first_number = str(
-                max(int(exercise.number.split(".")[0]) for exercise in all_exercises)
+            first_user = str(
+                User.query
+                .join(User.roles)
+                .filter(User.roles.any(Role.name == "student"))  # Filter by the "student" role
+                .filter(User.username == all_users[0].username)  # Get the first user from all_users
+                .first()  # Return the first matching result
             )
-
-            second_number = str(
-                max(
-                    int(exercise.number.split(".")[1])
-                    for exercise in all_exercises
-                    if exercise.number.startswith(first_number + ".")
-                )
-            )
-
-            # Now, we'll use a custom sorting key for the third part
-            # (since it might contain not just numbers, but also letters)
-            third_number = [
-                (
-                    int(part) if part.isdigit() else part
-                    for part in exercise.number.split(".")[2]
-                )
-                for exercise in all_exercises
-                if exercise.number.startswith(first_number + "." + second_number + ".")
-            ]
-
-            # Flatten the list of generator (iterables) and then find the maximum
-            # (flatten = convert a list of list into a single list)
-            # (generator = special type of iterator that generates values on-the-fly)
-            # (contrary to list, which store their elements in memory at once)
-            third_number = str(
-                max(
-                    [part for generator in third_number for part in generator],
-                    key=lambda x: (int(x) if isinstance(x, int) else x),
-                )
-            )
-
+            
             return redirect(
                 url_for(
-                    "course_admin.selected_student",
-                    selected_student=f"{first_number}.{second_number}.{third_number}",
+                    "course_admin.selected_user",
+                    selected_user=f"{first_user}",
                 )
             )
 
-    @expose("/students-table/<selected_student>", methods=["GET", "POST"])
+    @expose("/users-table/<selected_user>", methods=["GET", "POST"])
     @login_required
     @roles_required("administrator")
-    def selected_student(self, selected_student):
+    def selected_user(self, selected_user):
         search_form = CourseSearchForm()
 
-        parts = selected_student.split(".")
+        # Retrieve all users (sorted alphabetically)
+        all_users = sorted([user.username for user in User.query.all()])
 
-        # Filter exercises based on first two numbers of selected_student in the URL
-        if len(parts) < 2:
-            flash("Invalid exercise number.", "error")
+        # Check if the provided selected_user exists in the list of all users
+        if selected_user not in all_users:
+            flash("Selected user not found.", "error")
             return redirect(url_for("course_admin.courses_default_table"))
 
-        filtered_exercises = Exercise.query.filter(
-            Exercise.number.like(f"{parts[0]}.{parts[1]}%")
+        # Find the index of the selected user in the list
+        index = all_users.index(selected_user)
+
+        # Define a variable to store set number of newer/older users
+        halfwidth = 10
+
+        # Initialize lists to store newer and older users.
+        newer = []
+        older = all_users[index + 1 : index + halfwidth + 1]
+
+        # Check if there are fewer than 10 users before the selected one.
+        if index - halfwidth < 0:
+            # If yes, include users from the beginning up to the selected one.
+            newer = all_users[:index]
+        else:
+            # Otherwise, include the 10 users before the selected one.
+            newer = all_users[index - halfwidth : index]
+
+        # Reorder the users to have newer : selected : older
+        users = newer + [all_users[index]] + older
+
+        # Check if there are more users after the selected one.
+        if (index + halfwidth + 1) < len(all_users):
+            # If yes, add ellipsis to indicate more users.
+            users = users + ["..."]
+
+        # Check if there are more users before the selected one.
+        if (index - halfwidth) > 0:
+            users = ["..."] + users
+
+        # Retrieve courses associated with the filtered users
+        filtered_users = User.query.filter(User.username.in_(users)).all()
+        courses_with_matching_users = [
+            course for user in filtered_users for course in user.courses
+        ]
+
+        # Query courses that have users matching the provided usernames
+        courses_in_rows = Course.query.filter(
+            Course.users.any(User.username.in_(users))
         ).all()
 
-        # Redirect to the default if there is any matching exercise
-        if not filtered_exercises:
-            flash("No exercises found for the provided number.", "error")
-            return redirect(url_for("course_admin.courses_default_table"))
-
-        # Get all unique exercises matching the provided number
-        all_exercises = sorted(
-            set([exercise.number for exercise in filtered_exercises]),
-            key=lambda x: tuple(
-                int(part) if part.isdigit() else part
-                for part in re.findall(r"\d+|\D+", x)
-            ),
-            reverse=False,
-        )
-
-        # Check if the provided exercise number exists in the list of all exercises
-        if len(parts) == 2:
-            selected_student = all_exercises[0]
-
-        # Redirect to the default if there is any matching exercise
-        if not all_exercises:
-            flash("No exercises found for the provided number.", "error")
-            return redirect(url_for("course_admin.courses_default_table"))
-
-        # Check if the provided exercise number exists in the list of all exercises
-        elif selected_student not in all_exercises:
-            flash("Selected exercise number not found.", "error")
-            return redirect(url_for("course_admin.courses_default_table"))
-
-        check_existence = Exercise.query.filter_by(number=selected_student).first()
-
-        # Check if there are any filtered exercises
-        if check_existence:
-            exercise_number = "".join(
-                [
-                    str(part)
-                    for part in list(
-                        int(part) if part.isdigit() else part
-                        for part in re.findall(r"\d+|\D+", selected_student)
-                    )[:3]
-                ]
-            )
-
-            # Extract courses associated with the filtered student
-            courses_with_matching_students = [
-                exercise.course for exercise in filtered_exercises
+        # Create a mapping of courses and the users enrolled in them
+        all_user_usernames = {
+            course: [
+                user.username
+                for user in course.users
+                if user.username in all_users
             ]
+            for course in courses_with_matching_users
+        }
 
-            # Query courses that have exercises matching the provided number
-            courses_in_rows = Course.query.filter(
-                Course.exercises.any(Exercise.number.like(f"{exercise_number}%"))
-            ).all()
+        # Sort courses by name
+        courses_in_rows = sorted(courses_in_rows, key=lambda x: x.name, reverse=False)
 
-            # Find the index of the selected exercise number in the list of all exercises.
-            index = all_exercises.index(selected_student)
-
-            # Define a variable to store set number of newer/older exercises
-            halfwith = 10
-
-            # Initialize lists to store newer and older exercises.
-            newer = []
-            older = all_exercises[index + 1 : index + halfwith + 1]
-
-            # Check if there are fewer than 10 exercises before the selected one.
-            if index - halfwith < 0:
-                # If yes, include exercises from beginning up to selected one.
-                newer = all_exercises[:index]
-            else:
-                # Otherwise, include the 10 exercises before the selected one.
-                newer = all_exercises[index - halfwith : index]
-
-            # Reorder all exercises to have newer : selected :older
-            exercises = newer + [all_exercises[index]] + older
-
-            # Check if there are more exercises after the selected one.
-            if (index + halfwith + 1) < len(all_exercises):
-                # If yes, add ellipsis to indicate more exercises.
-                exercises = exercises + ["..."]
-
-            # Check if there are more exercises before the selected one.
-            if (index - halfwith) > 0:
-                exercises = ["..."] + exercises
-
-            all_exercise_numbers = {
-                course: [
-                    exercise.number
-                    for exercise in course.exercises
-                    if exercise.number in all_exercises
-                ]
-                for course in courses_with_matching_students
-            }
-
-            # Sort courses by name
-            courses_in_rows = sorted(
-                courses_in_rows, key=lambda x: x.name, reverse=False
-            )
-
-            return self.render(
-                "admin/matrix_exercise.html",
-                courses_in_rows=courses_in_rows,
-                all_exercise_numbers=all_exercise_numbers,
-                exercises=exercises,
-                selected_student=selected_student,
-                search_form=search_form,
-            )
-        else:
-            flash("No exercise found.", "error")
-            # Redirect to the default courses table
-            return redirect(url_for("course_admin.courses_default_table"))
+        return self.render(
+            "admin/matrix_exercise.html",
+            courses_in_rows=courses_in_rows,
+            all_user_usernames=all_user_usernames,
+            users=users,
+            selected_user=selected_user,
+            search_form=search_form,
+        )
 
     @expose("/course/<course_name>", methods=["GET", "POST"])
     @login_required
@@ -297,7 +215,7 @@ class CourseAdminView(BaseView):
     def selected_course_name(self, course_name):
         search_form = CourseSearchForm()
         all_courses = sorted(Course.query.all(), key=lambda d: d.name, reverse=False)
-        all_students = {
+        all_users = {
             course: sorted(
                 [user.username for user in course.users],
                 key=lambda x: tuple(
@@ -312,7 +230,7 @@ class CourseAdminView(BaseView):
             return self.render(
                 "admin/matrix_course.html",
                 courses=[filtered_course],
-                all_students=all_students,
+                all_users=all_users,
                 search_form=search_form,
             )
         else:
@@ -328,12 +246,12 @@ class CourseAdminView(BaseView):
 
     def _handle_view(self, name, **kwargs):
         # Adjust _handle_view to accept additional arguments
-        if name == "selected_student":
-            # Extract 'selected_student' from kwargs
-            selected_student = kwargs.pop("selected_student", None)
-            if selected_student:
+        if name == "selected_user":
+            # Extract 'selected_user' from kwargs
+            selected_user = kwargs.pop("selected_user", None)
+            if selected_user:
                 # Call the relevant view method with the extracted argument
-                return getattr(self, name)(selected_student)
+                return getattr(self, name)(selected_user)
         return super()._handle_view(name, **kwargs)
 
 
