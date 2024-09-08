@@ -1,7 +1,7 @@
 {% extends 'students/index.html' %}
 {% block title %}
   <title>{{ current_user.username.title() }}</title>
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='student_styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='courses_styles.css') }}">
 {% endblock %}
 {% block content %}
 {% for message in get_flashed_messages() %}
@@ -14,25 +14,42 @@
     <h3>{{ current_user.username.title() }}'s profile.</h3>
   </p>
   <div class="student-profile">
-    {% if course %}
-        <p><h5>Course: </h5>{{ course }}</p>
-      <h5>
-        Select exercise:
-        <h6>
-          {# Change username=current_user.username to username=username #}
-          {# This allows admin to behave as students and download any available exercise #}
-          <form action="{{ url_for('students.profile', username=username) }}" method="POST">
-            {{ form.csrf_token }}
-            {{ form.hidden_tag() }}
-            <select name="exercise_number">
-            {% for exercise in exercises %}
-              <option value="{{ exercise.number }}">{{ exercise.number }}</option>
-            {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Download</button>
-          </form>
-        </h6>
-      </h5>
+    {% if courses %}
+      <div class="search-box">
+        <h3>{{ _fsdomain('Download a file') }}</h3>
+        <form method="POST" enctype="multipart/form-data">
+          {{ download_form.csrf_token }} {{ download_form.hidden_tag() }}
+          <div class="form-group">
+            <div class="label-field">
+              <label style="float: left">Course:</label>
+              <span>
+                <select name="course">
+                  {% for choice_value in download_form.course.choices %}
+                    <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
+                  {% endfor %}
+                </select>
+              </span>
+            </div>
+          </div>
+          {{ download_form.select }}
+          <div style="margin-bottom: 30px;"></div>
+          <div class="form-group">
+            <div class="label-field">
+              <label style="float: left">Exercise:</label>
+              <span>
+                <select name="exercise">
+                  {% for choice_value in download_form.exercise.choices %}
+                    <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
+                  {% endfor %}
+                </select>
+              </span>
+            </div>
+          </div>
+          {{ download_form.submit }}
+        </form>
+      </div>
+      
+      <div style="clear: both"></div>
     {% else %}
       <p>No course associated with this user.</p>
     {% endif %}

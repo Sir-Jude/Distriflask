@@ -1,4 +1,4 @@
-from app.forms import StudentdownloadForm
+from app.forms import DownloadForm
 from app.models import User, Course, Exercise
 from config import basedir, Config
 from flask import (
@@ -8,6 +8,7 @@ from flask import (
     render_template,
     request,
     send_file,
+    session,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -68,55 +69,60 @@ def profile(username):
     if current_user.username != username:
         return render_template("errors/403.html"), 403
 
-    course = current_user.courses
+    download_form = DownloadForm()
 
-    # set exercises to an empty list
+    # Sort courses' name in "uploads" folder and populate the drop down menu
+    courses = current_user.courses
+    download_form.course.choices = [(course, course) for course in courses]
+
     exercises = []
-    if course:  # If user has an associated course, fetch exercises
+    selected_course = None
+
+    # If the user selects a course...
+    if download_form.select.data:
+        selected_course = download_form.course.data
+        # ...store the selected course in the session
+        session["selected_course"] = selected_course
+        flash(f"Course {selected_course} selected.")
+
+    # If a selected course is stored in the session...
+    if "selected_course" in session:
+        # 1) Retrieve the selected course from the session
+        selected_course = session["selected_course"]
+        # 2) Retrieve all exercises associated with the selected course and sort them by number
         exercises = sorted(
-            Exercise.query.join(Course).filter(Course.name == str(course)).all(),
+            Exercise.query.join(Course)
+            .filter(Course.name == selected_course)
+            .all(),
             key=lambda exr: tuple(
                 int(part) if part.isdigit() else part
                 for part in re.findall(r"\d+|\D+", exr.number)
             ),
             reverse=False,
         )
-
-    form = StudentdownloadForm(formdata=request.form)
-    # Populate the choices for exercise numbers in the form
-    form.exercise_number.choices = [
-        # (value submitted to the form, text displayed to the user)
-        (exercise.number, exercise.number)
-        for exercise in exercises
+    # Populate the number choices in the form with the sorted numbers
+    # (empty list [] as default)
+    download_form.exercise.choices = [
+        (exercise.number, exercise.number) for exercise in exercises
     ]
 
-    if form.validate_on_submit():
-        exercise_number = form.exercise_number.data
-        exercise = Exercise.query.filter_by(number=exercise_number).first()
-
-        if exercise:
-            number = exercise.exercise_path
-            return redirect(url_for("students.download_number", number=number))
-        else:
-            flash("Exercise not found.", "error")
-
+    # If the form is submitted to initiate a download and the form data is valid...
+    if download_form.submit.data and download_form.validate_on_submit():
+        selected_exercise = download_form.exercise.data
+        # Retrieve the exercise corresponding to the selected number
+        exercise = Exercise.query.filter_by(number=selected_exercise).first()
+        number_path = exercise.exercise_path
+        path = os.path.join(basedir, Config.UPLOAD_FOLDER, number_path)
+        # Send the exercise file to the user as an attachment for download
+        return send_file(path_or_file=path, as_attachment=True)
+    
     return render_template(
         "students/profile.html",
         username=username,
-        course=course,
+        courses=courses,
         exercises=exercises,
-        form=form,
+        download_form=download_form,
     )
-
-
-@students.route("/course/<path:number>", methods=["GET", "POST"])
-@login_required
-def download_number(number):
-    exercise = Exercise.query.filter_by(exercise_path=number).first()
-
-    number = exercise.exercise_path
-    path = os.path.join(basedir, Config.UPLOAD_FOLDER, number)
-    return send_file(path_or_file=path, as_attachment=True)
 
 
 @students.route("/logout/", methods=["GET", "POST"])

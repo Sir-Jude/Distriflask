@@ -78,11 +78,6 @@ class CourseSearchForm(FlaskForm):
     submit = SubmitField("Search", render_kw={"class": "btn btn-primary"})
 
 
-class StudentdownloadForm(FlaskForm):
-    exercise_number = SelectField("Exercise: ")
-    submit = SubmitField("Download", render_kw={"class": "btn btn-primary"})
-
-
 class DownloadForm(FlaskForm):
     course = SelectField("Course: ")
     select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
