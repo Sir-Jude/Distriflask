@@ -1,11 +1,12 @@
 import os
 import re
 
-from flask import flash, redirect, request, send_file, session, url_for
+from flask import flash, redirect, url_for
 from flask_admin.base import BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_login import login_required
 from flask_security import current_user, hash_password, roles_required
+from app.helpers import process_download_form, handle_download
 from werkzeug.utils import secure_filename
 
 from app.extensions import db
@@ -362,50 +363,17 @@ class DownloadAdminView(BaseView):
     def download(self):
         download_form = DownloadForm()
 
-        # Sort courses' name in "uploads" folder and populate the drop down menu
+        # Get list of courses from file system and sort them
         courses = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
-        download_form.course.choices = [(course, course) for course in courses]
-
-        exercises = []
-        selected_course = None
-
-        # If the user selects a course...
-        if download_form.select.data:
-            selected_course = download_form.course.data
-            # ...store the selected course in the session
-            session["selected_course"] = selected_course
-            flash(f"Course {selected_course} selected.")
-
-        # If a selected course is stored in the session...
-        if "selected_course" in session:
-            # 1) Retrieve the selected course from the session
-            selected_course = session["selected_course"]
-            # 2) Retrieve all exercises associated with the selected course and sort them by number
-            exercises = sorted(
-                Exercise.query.join(Course)
-                .filter(Course.name == selected_course)
-                .all(),
-                key=lambda exr: tuple(
-                    int(part) if part.isdigit() else part
-                    for part in re.findall(r"\d+|\D+", exr.number)
-                ),
-                reverse=False,
-            )
-        # Populate the number choices in the form with the sorted numbers
-        # (empty list [] as default)
-        download_form.exercise.choices = [
-            (exercise.number, exercise.number) for exercise in exercises
-        ]
-
-        # If the form is submitted to initiate a download and the form data is valid...
-        if download_form.submit.data and download_form.validate_on_submit():
-            selected_exercise = download_form.exercise.data
-            # Retrieve the exercise corresponding to the selected number
-            exercise = Exercise.query.filter_by(number=selected_exercise).first()
-            number_path = exercise.exercise_path
-            path = os.path.join(basedir, Config.UPLOAD_FOLDER, number_path)
-            # Send the exercise file to the user as an attachment for download
-            return send_file(path_or_file=path, as_attachment=True)
+        
+        # Handle file download if the form is submitted and valid
+        process_download_form(download_form, courses)
+        
+        # Handle file download if the form is submitted and valid
+        file_response = handle_download(download_form)
+        
+        if file_response:
+            return file_response
 
         # Render the download page template with the download form
         return self.render("admin/download.html", download_form=download_form)
