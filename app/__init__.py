@@ -15,6 +15,7 @@ from app.forms import (
     ExtendedLoginForm,
     ExtendedRegisterForm,
     UploadExerciseForm,
+    TeacherUploadExerciseForm,
 )
 
 # Import app's configurations
@@ -75,6 +76,7 @@ def create_app(config_class=Config):
         search_form = CourseSearchForm()
         upload_form = UploadExerciseForm()
         download_form = DownloadForm()
+        teacher_upload_form = TeacherUploadExerciseForm()
         return dict(
             admin_base_template=admin.base_template,
             admin_view=admin.index_view,
@@ -84,6 +86,7 @@ def create_app(config_class=Config):
             search_form=search_form,
             upload_form=upload_form,
             download_form=download_form,
+            teacher_upload_form = teacher_upload_form,
         )
 
     @security.register_context_processor

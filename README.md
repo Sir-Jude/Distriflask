@@ -314,7 +314,7 @@ For each failed test, a debugger of the error is provided.
 
 Alternatively, if you would like to check how much of the app is covered by the tests, run the code:
 ```
-pytest --cov=app tests/
+pytest --cov-report term-missing --cov=app tests/
 ```
 
 In both cases, the flag **-v** for "verbose" explicity prints out the name of each test followed by the label <span style="color:green">**PASSED**</span> or <span style="color:red">**FAILED**</span> according to the result.
