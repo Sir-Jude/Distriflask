@@ -1,8 +1,7 @@
 import os
 import re
 
-from flask import (Blueprint, flash, redirect, render_template, request,
-                   session, url_for)
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_security import verify_password
 from flask_wtf import FlaskForm
@@ -11,7 +10,7 @@ from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired, Length
 
 from app.extensions import db
-from app.forms import DownloadForm, TeacherUploadExerciseForm
+from app.forms import DownloadForm, UploadExerciseForm
 from app.helpers import handle_download, process_download_form
 from app.models import Course, Exercise, User
 from config import Config, basedir
@@ -71,13 +70,13 @@ def profile(username):
 
         # Get list of courses for the current user
         courses = current_user.courses
-        
+
         # Handle file download if the form is submitted and valid
         exercises = process_download_form(download_form, courses)
-        
+
         # Handle file download if the form is submitted and valid
         file_response = handle_download(download_form)
-        
+
         if file_response:
             return file_response
 
@@ -88,16 +87,16 @@ def profile(username):
             exercises=exercises,
             download_form=download_form,
         )
-    
+
     elif "teacher" in current_user.roles:
-        upload_form = TeacherUploadExerciseForm()
-        
+        upload_form = UploadExerciseForm()
+
         # Get list of courses for the current user
         courses = current_user.courses
-        
+
         upload_form.courses.choices = [(course, course) for course in courses]
         selected_course = None
-        
+
         # If the user selects a course...
         if upload_form.select.data and upload_form.validate_on_submit():
             selected_course = upload_form.courses.data
@@ -105,12 +104,12 @@ def profile(username):
             session["selected_course"] = selected_course
             flash(f"Course {selected_course} selected.")
             return redirect(url_for("students.profile", username=current_user.username))
-        
+
         # If a selected course is stored in the session...
         if "selected_course" in session:
             # 1) Retrieve the selected course from the session
             selected_course = session["selected_course"]
-        
+
         if upload_form.submit.data and upload_form.validate_on_submit():
             upload_form.courses.data = str(selected_course)
             course_name = upload_form.courses.data
@@ -135,7 +134,9 @@ def profile(username):
                 course = Course.query.filter_by(name=course_name).first()
                 if not course:
                     flash(f"Course {course_name} does not exist.")
-                    return redirect(url_for("students.profile", username=current_user.username))
+                    return redirect(
+                        url_for("students.profile", username=current_user.username)
+                    )
 
                 course_folder = os.path.join(basedir, Config.UPLOAD_FOLDER, course_name)
                 filepath = os.path.join(course_folder, secure_filename(number.filename))
@@ -169,7 +170,7 @@ def profile(username):
                 # Clear upload_form data after successful submission
                 upload_form.courses.data = None
                 upload_form.exercise.data = None
-        
+
             return render_template(
                 "students/profile.html",
                 username=username,
@@ -183,6 +184,7 @@ def profile(username):
                 courses=courses,
                 upload_form=upload_form,
             )
+
 
 @students.route("/logout/", methods=["GET", "POST"])
 @login_required

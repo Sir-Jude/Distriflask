@@ -4,6 +4,7 @@ from config import basedir, Config
 import os
 import re
 
+
 def process_download_form(download_form, courses):
     download_form.course.choices = [(course, course) for course in courses]
 
@@ -23,9 +24,7 @@ def process_download_form(download_form, courses):
         selected_course = session["selected_course"]
         # 2) Retrieve all exercises associated with the selected course and sort them by number
         exercises = sorted(
-            Exercise.query.join(Course)
-            .filter(Course.name == selected_course)
-            .all(),
+            Exercise.query.join(Course).filter(Course.name == selected_course).all(),
             key=lambda exr: tuple(
                 int(part) if part.isdigit() else part
                 for part in re.findall(r"\d+|\D+", exr.number)
@@ -37,10 +36,10 @@ def process_download_form(download_form, courses):
     download_form.exercise.choices = [
         (exercise.number, exercise.number) for exercise in exercises
     ]
-    
+
     return exercises
-    
-    
+
+
 def handle_download(download_form):
 
     # If the form is submitted to initiate a download and the form data is valid...

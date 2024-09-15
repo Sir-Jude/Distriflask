@@ -1,7 +1,7 @@
 import os
 import re
 
-from flask import flash, redirect, url_for
+from flask import flash, redirect, session, url_for
 from flask_admin.base import BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_login import login_required
@@ -10,8 +10,12 @@ from app.helpers import process_download_form, handle_download
 from werkzeug.utils import secure_filename
 
 from app.extensions import db
-from app.forms import (CourseSearchForm, DownloadForm, ExtendedRegisterForm,
-                       UploadExerciseForm)
+from app.forms import (
+    CourseSearchForm,
+    DownloadForm,
+    ExtendedRegisterForm,
+    UploadExerciseForm,
+)
 from app.models import Course, Exercise, User, Role
 from config import Config, basedir
 
@@ -113,19 +117,20 @@ class CourseAdminView(BaseView):
 
         # Default table
         else:
-            all_users = sorted(
-                User.query.all(),
-                key=lambda x: x.username)
+            all_users = sorted(User.query.all(), key=lambda x: x.username)
             # The three following variables will always return the most updated number
             # (no matter which numbers are used)
             first_user = str(
-                User.query
-                .join(User.roles)
-                .filter(User.roles.any(Role.name == "student"))  # Filter by the "student" role
-                .filter(User.username == all_users[0].username)  # Get the first user from all_users
+                User.query.join(User.roles)
+                .filter(
+                    User.roles.any(Role.name == "student")
+                )  # Filter by the "student" role
+                .filter(
+                    User.username == all_users[0].username
+                )  # Get the first user from all_users
                 .first()  # Return the first matching result
             )
-            
+
             return redirect(
                 url_for(
                     "course_admin.selected_user",
@@ -191,9 +196,7 @@ class CourseAdminView(BaseView):
         # Create a mapping of courses and the users enrolled in them
         all_user_usernames = {
             course: [
-                user.username
-                for user in course.users
-                if user.username in all_users
+                user.username for user in course.users if user.username in all_users
             ]
             for course in courses_with_matching_users
         }
@@ -267,8 +270,28 @@ class UploadAdminView(BaseView):
     def upload(self):
         upload_form = UploadExerciseForm()
 
-        if upload_form.validate_on_submit():
-            course_name = upload_form.course.data
+        # Get list of courses from file system and sort them
+        courses = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
+
+        upload_form.courses.choices = [(course, course) for course in courses]
+        selected_course = None
+
+        # If the user selects a course...
+        if upload_form.select.data and upload_form.validate_on_submit():
+            selected_course = upload_form.courses.data
+            # ...store the selected course in the session
+            session["selected_course"] = selected_course
+            flash(f"Course {selected_course} selected.")
+            return redirect(url_for("upload_admin.upload"))
+
+        # If a selected course is stored in the session...
+        if "selected_course" in session:
+            # 1) Retrieve the selected course from the session
+            selected_course = session["selected_course"]
+
+        if upload_form.submit.data and upload_form.validate_on_submit():
+            upload_form.courses.data = str(selected_course)
+            course_name = upload_form.courses.data
             number = upload_form.exercise.data
 
             if not (course_name and number):
@@ -322,7 +345,7 @@ class UploadAdminView(BaseView):
                     )
 
                 # Clear upload_form data after successful submission
-                upload_form.course.data = None
+                upload_form.courses.data = None
                 upload_form.exercise.data = None
 
                 return redirect(url_for("upload_admin.upload"))
@@ -365,13 +388,13 @@ class DownloadAdminView(BaseView):
 
         # Get list of courses from file system and sort them
         courses = sorted(os.listdir(os.path.join(basedir, Config.UPLOAD_FOLDER)))
-        
+
         # Handle file download if the form is submitted and valid
         process_download_form(download_form, courses)
-        
+
         # Handle file download if the form is submitted and valid
         file_response = handle_download(download_form)
-        
+
         if file_response:
             return file_response
 

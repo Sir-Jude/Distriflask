@@ -6,8 +6,14 @@ from flask_security.forms import LoginForm, RegisterForm
 from flask_wtf import FlaskForm
 from sqlalchemy import func
 from werkzeug.local import LocalProxy
-from wtforms import (BooleanField, FileField, PasswordField, SelectField,
-                     StringField, SubmitField)
+from wtforms import (
+    BooleanField,
+    FileField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+)
 from wtforms.validators import DataRequired, EqualTo, Length, ValidationError
 from wtforms_alchemy import QuerySelectField, QuerySelectMultipleField
 
@@ -82,23 +88,6 @@ class DownloadForm(FlaskForm):
 
 
 class UploadExerciseForm(FlaskForm):
-    course = StringField("Course: ")
-    exercise = FileField("Exercise: ")
-    submit = SubmitField("Upload", render_kw={"class": "btn btn-primary"})
-
-    def allowed_file(self):
-        exercise = self.exercise.data
-        return (
-            "." in exercise.filename
-            and exercise.filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
-        )
-
-    def path_exists(self):
-        upload_path = os.path.join(basedir, Config.UPLOAD_FOLDER, self.course.data)
-        print(upload_path)
-        return os.path.exists(upload_path)
-
-class TeacherUploadExerciseForm(FlaskForm):
     courses = SelectField("Course: ")
     select = SubmitField("Select", render_kw={"class": "btn btn-primary"})
     exercise = FileField("Exercise: ")
