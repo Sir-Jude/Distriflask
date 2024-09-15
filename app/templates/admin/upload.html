@@ -5,33 +5,5 @@
 {% endblock head %}
 
 {% block body %}
-  <div class="search-box">
-    <h3>{{ _fsdomain('Upload a file') }}</h3>
-    <form method='POST' enctype='multipart/form-data'>
-      {{ upload_form.csrf_token }} {{ upload_form.hidden_tag() }}
-      <div class="form-group">
-        <div class="label-field">
-          <label style="float: left">Course:</label>
-          <span>
-            <select name="courses">
-              {% for choice_value in upload_form.courses.choices %}
-                <option value="{{ choice_value[0] }}">{{ choice_value[1] }}</option>
-              {% endfor %}
-            </select>
-          </span>
-        </div>
-      </div>
-      {{ upload_form.select }}
-      <div style="margin-bottom: 30px;"></div>
-      <div class="form-group">
-        <div class="label-field">
-          <label style="float:left;">Exercise:</label>
-          <span style="float:right;">{{ upload_form.exercise }}</span>
-        </div>
-      </div>
-      {{ upload_form.submit }}
-    </form>
-  </div>
-<div style="clear:both;"></div> <!-- Add this to clear the float -->
-<br>
+  {% include 'shared/upload_form.html' %}
 {% endblock body %}

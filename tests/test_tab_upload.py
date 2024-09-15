@@ -33,7 +33,8 @@ def test_handle_view_redirects_to_login(client):
     # Assert that the response is a redirect to the login route
     assert response.status_code == 302
     assert response.location == "/login"
-    
+
+
 def test_course_selection(admin_login, setup_course_and_exercise_data):
     """
     Test course selection and session storage.
@@ -47,7 +48,7 @@ def test_course_selection(admin_login, setup_course_and_exercise_data):
             "courses": "Test Course",
             "select": "Submit",
         },
-        follow_redirects=True
+        follow_redirects=True,
     )
 
     # Check if the session contains the selected course
