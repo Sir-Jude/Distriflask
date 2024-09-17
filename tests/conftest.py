@@ -12,6 +12,7 @@ from wtforms import StringField
 from app import create_app
 from app.extensions import db
 from app.forms import username_validator
+from app.helpers import validate_upload_form
 from app.models import Course, Exercise, Role, User
 from config import TestConfig, basedir
 from create_tables import create_roles
@@ -43,10 +44,10 @@ def app():
     #   and allow additional actions to be performed
     yield app
 
-    # Perform teardown actions after test function completes
-    # (Remove SQLite database file used for testing)
-    full_path = Path.cwd() / "instance" / "test_db.sqlite3"
-    os.remove(full_path)
+    # Cleanup: Remove SQLite database file used for testing
+    test_db_path = Path.cwd() / "instance" / "test_db.sqlite3"
+    if test_db_path.exists():
+        os.remove(test_db_path)
 
 
 @pytest.fixture()
@@ -57,6 +58,7 @@ def client(app):
     The test client can be used in pytest tests to interact with Flask
     routes and test their behaviour.
     """
+
     # Use the "test_client()" built-in Flask method to provide a test client for the app.
     # This client can be used to make HTTP requests to the app in a testing context.
     return app.test_client()
@@ -78,38 +80,29 @@ def runner(app):
 
 
 @pytest.fixture()
-def student_user(app, client):
+def student_user(app):
     """
     This fixture creates a new student user, logs them in, and yields the
     test client, student username, and student password.
     """
     with app.app_context():
-        with client:
-            new_student = User(
-                username="test_student",
-                password=hash_password("12345678"),
-                roles=[Role.query.filter_by(name="student").first()],
-                active=True,
-            )
+        role = Role.query.filter_by(name="student").first()
+        new_student = User(
+            username="test_student",
+            password=hash_password("12345678"),
+            roles=[role],
+            active=True,
+        )
+        db.session.add(new_student)
+        db.session.commit()
 
-            db.session.add(new_student)
-            db.session.commit()
-
-            # Query users with roles containing "student"
-            student = User.query.join(User.roles).filter(Role.name == "student").first()
-
-            # Loop through each student and test login
-            student_username = student.username
-            student_password = "12345678"
-            student_roles = [student.roles]
-
-            yield student_username, student_password, student_roles
+        yield new_student.username, "12345678", [role]
 
 
 @pytest.fixture()
 def student_login(client, student_user):
     """
-    This fixture logs in an existing admin user and yields the test client.
+    Logs in a student user and yields the response and username.
     """
     student_username, student_password, _ = student_user
 
@@ -126,35 +119,30 @@ def student_login(client, student_user):
 
 
 @pytest.fixture()
-def admin_user(app, client):
+def admin_user(app):
     """
-    This fixture creates a new admin user, logs them in and yields the test
-    client, admin username, and admin password.
+    Creates a new admin user and yields the admin user object.
     """
     with app.app_context():
-        with client:
-            new_admin = User(
-                username="test_admin",
-                password=hash_password("12345678"),
-                roles=[Role.query.filter_by(name="administrator").first()],
-                active=True,
-            )
+        role = Role.query.filter_by(name="administrator").first()
+        new_admin = User(
+            username="test_admin",
+            password=hash_password("12345678"),
+            roles=[role],
+            active=True,
+        )
+        db.session.add(new_admin)
+        db.session.commit()
+        new_admin.plaintext_password = "12345678"
 
-            db.session.add(new_admin)
-            db.session.commit()
-
-            admin = User.query.filter_by(username="test_admin").first()
-            admin.plaintext_password = "12345678"
-
-            yield admin
+        yield new_admin
 
 
 @pytest.fixture()
 def admin_login(client, admin_user):
     """
-    This fixture logs in an existing admin user and yields the test client.
+    Logs in an admin user and yields the client and response.
     """
-
     response = client.post(
         "/login",
         data=dict(
@@ -171,6 +159,7 @@ def setup_course_and_exercise_data(app):
     """
     Fixture to set up course and exercise data before each test.
     """
+
     # Create a test course directory
     course_name = "Test Course"
     course_path = os.path.join(basedir, TestConfig.UPLOAD_FOLDER, course_name)
@@ -195,9 +184,7 @@ def setup_course_and_exercise_data(app):
     yield course, exercise
 
     # Cleanup after test
-    if os.path.exists(course_path):
-        shutil.rmtree(course_path)
-
+    shutil.rmtree(course_path)
     # Remove the course and associated exercises from the database
     db.session.delete(exercise)
     db.session.delete(course)
@@ -206,7 +193,9 @@ def setup_course_and_exercise_data(app):
 
 @pytest.fixture()
 def mock_security(app):
-    # Mock the security extension
+    """
+    Mock the security extension for testing purposes.
+    """
     _security = MagicMock()
     _username_util = MagicMock()
     _username_util.validate.return_value = (None, "normalized_username")
@@ -228,3 +217,16 @@ def test_form(app, mock_security):
         # Create an instance of the form
         form = TestForm(username="testuser")
         yield form
+
+
+@pytest.fixture()
+def mock_form():
+    """
+    Fixture to set up the mock upload form and return it with the validation function.
+    """
+    form = MagicMock()
+    form.courses.data = "Some course"  # Default course name
+    form.exercise.data = "Some exercise"  # Default exercise number
+    form.path_exists.return_value = True  # Default path exists
+    form.allowed_file.return_value = True  # Default file format allowed
+    return form, validate_upload_form
