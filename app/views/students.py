@@ -112,7 +112,7 @@ def profile(username):
 
         if upload_form.submit.data and upload_form.validate_on_submit():
             if validate_upload_form(upload_form):
-                if save_exercise_file(selected_course, upload_form.exercise.data):
+                if save_exercise_file(upload_form, selected_course, upload_form.exercise.data):
                     return redirect(url_for("students.profile", username=current_user.username))
 
             return render_template(

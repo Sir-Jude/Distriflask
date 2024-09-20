@@ -11,7 +11,7 @@ from wtforms import StringField
 
 from app import create_app
 from app.extensions import db
-from app.forms import username_validator
+from app.forms import username_validator, ValidationError
 from app.helpers import validate_upload_form
 from app.models import Course, Exercise, Role, User
 from config import TestConfig, basedir
@@ -95,8 +95,9 @@ def student_user(app):
         )
         db.session.add(new_student)
         db.session.commit()
+        new_student.plaintext_password = "12345678"
 
-        yield new_student.username, "12345678", [role]
+        yield new_student
 
 
 @pytest.fixture()
@@ -104,18 +105,17 @@ def student_login(client, student_user):
     """
     Logs in a student user and yields the response and username.
     """
-    student_username, student_password, _ = student_user
 
     response = client.post(
         "/student_login",
         data=dict(
-            username=student_username,
-            password=student_password,
+            username=student_user.username,
+            password=student_user.plaintext_password,
         ),
         follow_redirects=True,
     )
 
-    yield response, student_username
+    yield client, response
 
 
 @pytest.fixture()
@@ -159,36 +159,37 @@ def setup_course_and_exercise_data(app):
     """
     Fixture to set up course and exercise data before each test.
     """
+    # Use the app context to ensure database operations are valid
+    with app.app_context():
+        # Create a test course directory
+        course_name = "Test Course"
+        course_path = os.path.join(basedir, TestConfig.UPLOAD_FOLDER, course_name)
+        os.makedirs(course_path, exist_ok=True)
 
-    # Create a test course directory
-    course_name = "Test Course"
-    course_path = os.path.join(basedir, TestConfig.UPLOAD_FOLDER, course_name)
-    os.makedirs(course_path, exist_ok=True)
+        exercise_file_path = os.path.join(course_path, "test_file.txt")
+        with open(exercise_file_path, "w") as f:
+            f.write("Test content")
 
-    exercise_file_path = os.path.join(course_path, "test_file.txt")
-    with open(exercise_file_path, "w") as f:
-        f.write("Test content")
+        # Create course and exercise records
+        course = Course(name=course_name)
+        exercise = Exercise(
+            number="1.0.1",
+            exercise_path=exercise_file_path,
+            course=course,
+        )
 
-    # Create course and exercise records
-    course = Course(name=course_name)
-    exercise = Exercise(
-        number="1.0.1",
-        exercise_path=exercise_file_path,
-        course=course,
-    )
+        db.session.add(course)
+        db.session.add(exercise)
+        db.session.commit()
 
-    db.session.add(course)
-    db.session.add(exercise)
-    db.session.commit()
+        yield course, exercise
 
-    yield course, exercise
-
-    # Cleanup after test
-    shutil.rmtree(course_path)
-    # Remove the course and associated exercises from the database
-    db.session.delete(exercise)
-    db.session.delete(course)
-    db.session.commit()
+        # Cleanup after test
+        shutil.rmtree(course_path)
+        # Remove the course and associated exercises from the database
+        db.session.delete(exercise)
+        db.session.delete(course)
+        db.session.commit()
 
 
 @pytest.fixture()
@@ -230,3 +231,11 @@ def mock_form():
     form.path_exists.return_value = True  # Default path exists
     form.allowed_file.return_value = True  # Default file format allowed
     return form, validate_upload_form
+
+@pytest.fixture()
+def username_validation_fixtures():
+    def _assert(func, *args, **kwargs):
+        with pytest.raises(ValidationError):
+            func(*args, **kwargs)
+    
+    return username_validator, _assert

@@ -1,0 +1,2365 @@
+[33mcommit 7c1dfd424efebce8911d2265f04f741601079353[m[33m ([m[1;36mHEAD[m[33m)[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Sep 20 16:46:19 2024 +0200
+
+    Improve conftest.py and add 2 more tests.
+    (forms.py test overall coverage 91% --> 96%))
+    
+    conftest.py
+    - wrap setup_course_and_exercise_data code in app_context()
+    - create fixture username_validation_fixtures()
+    - align student_user() to admin_user()
+    - align student_login() to admin_login()
+    
+    test_forms.py
+    - improve test_username_validator_success()
+    - create test test_username_validator_failure()
+    - create test_path_exists()
+    
+    test_login.py
+    - rewrite student's test to align new fixtures' codes
+
+[33mcommit 1ac7c1d2309d33ca705fd6abaa5842881ac29b0b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Sep 17 15:56:33 2024 +0200
+
+    Improve conftest.py and create new file test with 4 more functions.
+    (overall test coverage 76%)
+    
+    conftest.py:
+    - app(), add check if DB exists, before tearing it down
+    - student_user(), remove 'client' and final loop
+    - admin_user(), remove 'client'
+    - setup_course_and_exercise_data(), shorten cleanup
+    - add fixture mock_form()
+    
+    test_helpers.py:
+    - test if form is missing course name or exercise number
+    - test if selected path course does not exist
+    - test if file format is invalid
+    - test if all fields are valid and form pass validation
+
+[33mcommit 71785f5539003618fb4e66090698236ea4da5e84[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Sep 15 23:08:38 2024 +0200
+
+    Clean up the upload function code avoiding repetition.
+    (test overall coverage 73%)
+    
+    Create 3 new functions in helpers.py:
+    - handle_courrse_selection
+    - validate_upload_form
+    - save:exercise_file
+    
+    Delete the shared code from:
+    - profile.py
+    - admin_pages.py
+    
+    HTML:
+    - create the file shared/upload_form.html
+    - delete the shared code in:
+      - students/profile.html
+      - admin/upload.html
+
+[33mcommit d72a1b95f0a92a50800cdd43996bf9ade5c1b6fd[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Sep 15 14:11:20 2024 +0200
+
+    Add test_course_selection
+    (overall coverage -> 70%)
+
+[33mcommit 3f22e0a95e066eff3bf2943067a6931d1e47b11b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Sep 15 13:44:11 2024 +0200
+
+    Improve the code:
+    - Make admin upload form equal to teachers' upload form
+    - Make teachers adopt new admin upload form
+    - Rid of now redundant teacher upload form
+    - Temporarely delete tests which now do not work anymore
+
+[33mcommit bcf3519f8b7bc3f02e784b024ab08a3d932ff03e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Sep 9 12:42:14 2024 +0200
+
+    - Teacher can now upload files from students side
+    - Update requirements.txt
+
+[33mcommit 6628c185340ef4e3c88e954f90e86fc5f8543050[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Sep 8 18:08:47 2024 +0200
+
+    Clean code after last commit
+    
+    - Move the logic for the download function in helpers.py
+    - Modify DownloadAdminView in admin_pages.py
+    - Modify students.py
+
+[33mcommit b34b42eef3c5b47cc0206a739eabfd268ec1a1a5[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Sep 8 16:53:03 2024 +0200
+
+    Fix bug in student's download form originated after having changed models.
+    
+    - Delete StudentdownloadForm and use everywhere Dowloadform
+    - Adapt __init__.py to register the change of form
+    - Modifiy code in students.py and template profile.html
+
+[33mcommit 31464d430af79d4a36092b0e9bc167a1f1b810c7[m
+Merge: 8c8b44d 6befbca
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Sep 7 12:59:26 2024 +0200
+
+    Fix bug in Courses tab and complete forking of Admin pages.
+    
+    - columns headings show alphabetically student usernames
+    - student username links in course search show the correct table
+
+[33mcommit 6befbca0ab189ea6741ebd1751209d25346d1327[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Sep 7 10:39:47 2024 +0200
+
+    Fix bug in Courses tab and complete forking of Admin pages.
+    
+    - columns headings show alphabetically student usernames
+    - student username links in course search show the correct table
+
+[33mcommit 8c8b44d87d07faa9f2fd1eaf257c76ebdd014233[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Aug 31 00:42:32 2024 +0200
+
+    Start to change 'Course' tab
+    
+    - Now searching for a course -> list of students enrolled
+    - change everywhere selected_exercise -> selected_student
+
+[33mcommit 1cdcdaef03324f1add2059c16926e9853721c75b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Aug 25 11:53:23 2024 +0200
+
+    Add 3 more tests:
+    - test_changing_user_data
+    - test_all_fields_have_been_filled_out
+    - test_valid_course_name
+    (overall coverage -> 73%)
+    
+    Improve 'admin_user' fixture in conftest.py:
+    -> Now it returns directly the 'admin' object
+    
+    black *
+
+[33mcommit 8bd61e64fa266910a21a94d91bfefbeaf887e5c8[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Aug 24 18:26:11 2024 +0200
+
+    Improve fixture 'setup_course_and_exercise_data':
+    - now yield objects 'course' and 'exercise'
+    - also, clen up the database aftewards
+    
+    Modify tests linked to above fixture:
+    - 'test_selecting_a_course'
+    - 'test_file_downloaded'
+
+[33mcommit faf823377242a7e36a61872401e92c752b0cb2a2[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Aug 22 10:42:29 2024 +0200
+
+    1) Integrate debug mode in .env file
+       -> Now application can be run with 'flask --app app run'
+    
+    2) Fix username bug:
+       - Students' username has not to match name of a course
+    
+    3) Minor cleaning up of file students.py
+    
+    4) In admin tab 'Users', display course instead of exercises' numbers
+    
+    5) Change models:
+       - Removed Country
+       - Change relationship between "Users" and "Courses" to 'many-to-many'
+         -> students can join more than one course
+         -> each course can be joined by more than one student
+       - Modify accordingly the other files to fix the related bugs
+    
+    6) Rename AdminDownloadForm as DownloadForm
+
+[33mcommit 982cd390cfbb133fa4069e4418b4c9647c800ca0[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Aug 15 16:41:32 2024 +0200
+
+    Improve test overall coverage -> 70%
+    
+    1)conftest.py:
+    - add the fixture 'mock_security' and 'test_form'
+    - improve #comments
+    - 'student_login' now yields 'response' and 'user_username'
+    - 'admin_login' now yields 'response' and 'admin_username'
+    - remove 'client' from yield when redudndant
+    
+    2) test_login.py:
+    - remove redundant code
+    - adjust code to modifications in contest.py
+    
+    3) Add new test_username_validator.py
+
+[33mcommit 0ccba3c87d761997aa84547355e0ee8b0eaaf0d1[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Aug 15 11:07:08 2024 +0200
+
+    Add 5 more tests.
+    Overall coverage -> 69%
+    
+    test_users.py (previously called test_admin_navbar.py):
+    - remove redundant 'test_download_button'
+    - add test redirection to login
+    
+    test_download.py:
+    - add test redirection to download route
+    - add test redirection to login
+    
+    test_upload.py:
+    - add test redirection to upload route
+    - add test redirection to login
+
+[33mcommit 736082b5e47851245361659451f3e532cefa8d58[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Aug 13 21:01:45 2024 +0200
+
+    Complete fork's variable naming by changing:
+    - 'device' as 'course'
+    - 'release(s)' as 'exercise(s)'
+    - 'version(s)' as 'number'
+    - 'rel_path' as 'exr_path'
+    
+    Admin Download page testing:
+    - add test for checking correct functionality of 'Select' button
+    - add test for checking the correct file download and its content
+    (test overall coverage -> 68%)
+
+[33mcommit 44e38d2f866530be657f538d7d4674e0c6d5f1be[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Aug 13 17:49:11 2024 +0200
+
+    Change
+    
+    matrix_course.html:
+    - 'all_releases' as 'all_exercises'
+    - 'all_device_versions' as 'all_exercise'
+    
+    matrix_exercise.html:
+    - 'device' as 'course'
+    - 'device_versions' as 'all_exercise_numbers'
+    
+    admin_pages:
+    - 'all_releases' as 'all_exercises'
+    - 'filtered_releases' as 'filtered_exercises'
+    - 'device_versions' as 'all_exercise_numbers'
+    - 'all_device_versions' as 'all_exercises'
+    - 'filtered_device' as 'filtered_course'
+
+[33mcommit 99a7c19a0fd8432ea0a3e4634ce397543d372b4d[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Aug 13 12:52:27 2024 +0200
+
+    MAJOR UPDATE
+    
+    1) create_tables.py:
+    - change 'dev_name' to 'course_name'
+    - change 'release' to 'exercise_number'
+    
+    2) students.py:
+    - change 'device' to 'course'
+    - change 'releases' to 'exercises'
+    
+    3) admin_pages.py:
+    - change 'device' to 'course' in Upload pages (without changing the model!!!)
+    - change 'reverse=True' to False
+    
+    4) admin's matrix_course.html:
+    - Change 'student profile' to 'Student name'
+    - Remove link to student profile page
+    
+    5) students' profile.html:
+    - change 'device' to 'course'
+    - change 'releases' to 'exercises'
+    - remove any reference/link to admin role
+
+[33mcommit 7d84896204dd66c7198a2a0744b424b7dc996896[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Aug 7 18:01:21 2024 +0200
+
+    Update admin Upload/Dowload pages and student dowload
+    
+    Change:
+    device(s) -> course(s)
+    version(s) -> exercise(s)
+    release(s) -> exercise(s)
+
+[33mcommit 0c1bb1987dd3f4d5ca3758736db692fc1570bd86[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Aug 6 21:49:43 2024 +0200
+
+    Refactor login tests to follow redirects and verify final content
+    
+    - Updated 'TestStudent' and 'TestAdmin' classes to follow redirects and verify
+      the content of the final page after login.
+    - Changed status code assertions from 302 to 200 to ensure final page correctness.
+    - Add class TestWrongLogin containing three more tests.
+    - Improved total test coverage from 61% to 66% as a result of these changes.
+
+[33mcommit b61e9dbdac1843cb5ed06a50910f7d719e7454e4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Aug 6 16:39:09 2024 +0200
+
+    Tests folder
+    - Remove redundant lines in conftest.py
+    - test_login: group multiple tests in separate classes
+    
+    Upgrade requirements.txt
+
+[33mcommit 08e7c564e3496cc9391b7e024642af23b016b30b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Aug 5 13:33:23 2024 +0200
+
+    Improve README introduction text
+    
+    Change everywhere customer --> student
+
+[33mcommit c85e1c41b89ce0b74127b77938e1a4576c3c152e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Aug 3 20:55:30 2024 +0200
+
+    Rename everywhere devices --> courses
+
+[33mcommit cd4a717fc5b9a5ad9dcc242c6daa998019a741f9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Aug 3 10:11:49 2024 +0200
+
+    Change
+    
+    - Courses tab: exercise(s)       --> student(s)
+    - Download tab: device           --> course
+    - HTML/css: releases-table       --> students-table
+    - devices_default_table          --> courses_default_table
+    - devices_in_rows                --> courses_in_rows
+    - devices_with_matching_releases --> courses_with_matching_students
+    - release_path                   --> exercise_path
+    - device-table                   --> course-table (and delete device_styles.css)
+    - selected_release_version       --> selected_exercise
+
+[33mcommit c8ee71fb93914cd0370f0c1fd4cf74ff77b2b4ff[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Aug 2 16:30:11 2024 +0200
+
+    Rename:
+    
+    device_id     --> course_id
+    device_name   --> course_name
+    device_admin  --> course_admin
+    device_folder --> course_folder
+    device_value  --> course_value
+
+[33mcommit 5d3a538633e14cf3e8ef7cddd217e24b216f9d67[m[33m ([m[1;31morigin/Fork[m[33m)[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Jul 1 20:40:46 2024 +0200
+
+    Change model class' names:
+    - Device -> Course
+    - Release -> Exercise
+    
+    Apply modification to the other files in the app
+    
+    IMPORTANT: modification was case sensitive, so the transition is not finished yet...
+
+[33mcommit 507711a86d232d138fbdc8298e9eb38d1a6bed8b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Jul 1 19:50:51 2024 +0200
+
+    Eliminate redundant roles and reduce number of dummy courses
+
+[33mcommit c60f547095f4d66d7acdec10bfd0b43edd4c858b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Jul 1 19:10:32 2024 +0200
+
+    Rename:
+    - templates' names
+    - text inside the website (devices -> courses, releases -> exercises)
+    - heading tab on the admin page
+    
+    Eliminate and rename roles in the create_tables.py
+
+[33mcommit 4bc23ef63c73b3cf8a398c2db730ed6b69fdbf6e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Jun 25 16:27:31 2024 +0200
+
+    Start forking the project
+    
+    Rename:
+    - Customer(s) -> Student(s)
+    - software -> exercise
+
+[33mcommit ac1c453239b54ded44bd001fa2d2f18772389950[m[33m ([m[1;31morigin/old[m[33m)[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Apr 29 10:28:53 2024 +0200
+
+    Add test to check 'Create' button on Admin pages
+    (overall coverage is now at 61%)
+    
+    Update requirements.txt file
+
+[33mcommit 81adc0848429ee2a8bb6343be815a2fd4dedde47[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Apr 26 15:40:19 2024 +0200
+
+    Correct the README file and create the first verstion test for creation of new user
+
+[33mcommit e35118cda2fc2cea0a5c7160884bd49db7a32727[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Apr 26 12:04:40 2024 +0200
+
+    Revert 64759b6cbf37227a67f4cb8afec07800acbf3c27 -> Correcting the bug prevent to see the customer profile from the admin point of viewC
+
+[33mcommit db27d4e0c2bef8521d949d0736ad53b38f3170cb[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Apr 26 10:00:11 2024 +0200
+
+    Create 'admin_login' fixture and admin navbar tests for Download and Upload buttons
+
+[33mcommit 64759b6cbf37227a67f4cb8afec07800acbf3c27[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Apr 25 14:30:33 2024 +0200
+
+    Improve admin's navbar test and fix a customers' login bug
+    
+    Bug: before, if customer were not registered with username == device, db could not find their device and releases
+    Solution: query the db using directly customer's associated device instead of username
+
+[33mcommit 7b6421451759e1c07e6875b0d38413fb087fe859[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 24 13:42:12 2024 +0200
+
+    Improve conftest and add test for the admin navbar
+
+[33mcommit dcc02f16daa808c98b6522e7e146401248a55315[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 24 10:36:12 2024 +0200
+
+    Improve conftest and add logout tests for admin and customer
+
+[33mcommit db0959de9e4d625684d703670293f148331ce700[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Apr 23 20:46:11 2024 +0200
+
+    Improve testing and fix its bugs
+
+[33mcommit 9b25af134368d87bf964bca8640a49b6cfe895cf[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Apr 23 15:47:22 2024 +0200
+
+    Clean and improve the code
+    
+    - Remove unused template admin/base.html
+    - Fix two bugs in Upload view:
+      1) Remove file extension from Release.version
+      2) Prevent duplication of same Release.version in one Device
+
+[33mcommit 89442ed0ee53454c8e440fb9ce8322605b04d1bf[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Apr 23 14:51:04 2024 +0200
+
+    Remove unused templates
+
+[33mcommit ec6d726be46891a08740a0fdf2e57ace82a8dfc3[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Apr 22 10:38:39 2024 +0200
+
+    Improve admin_pages.py
+
+[33mcommit 5c61dccdd0962a21cb1fe7063f4abe9c8d10aa6a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Apr 22 10:25:06 2024 +0200
+
+    Improve:
+    - customer's login security
+    - comments in main file __init__.py
+    
+    Delete file security_utils.py
+
+[33mcommit 7f25d30d8518207d6f47e5249c590c569c1c0474[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Apr 18 13:19:03 2024 +0200
+
+    Update README file and requirements.txt
+
+[33mcommit 48f1eda4b56beaa8935cd3d2a870ee1eedbf3237[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Apr 18 11:03:27 2024 +0200
+
+    Create tests for login, update gitignore and black everthing
+
+[33mcommit d2103bd923d1f2b07e9b5fcbef907423f1d739b4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 17 13:35:50 2024 +0200
+
+    Clean conftest, remove wrong test form test_html and remove redundant app configuration from config
+
+[33mcommit 1b7acd5e1b9ece3631b3f8de0d8d3280c5b24eb9[m
+Merge: a85b063 21b1a9b
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 17 11:55:32 2024 +0200
+
+    Merge branch 'test' of github.com:Sir-Jude/Distriflask into test
+
+[33mcommit a85b063e88b0d762e0a38fd4a93a5ecb373727d1[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 17 11:15:27 2024 +0200
+
+    Fix the bug preventing the load of 'Download' page
+
+[33mcommit fc0acb70a78596a2b6f60f7dfcf88d0e283a42a4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Apr 14 17:59:43 2024 +0200
+
+    Update the requirements, add .coverage to gitignore, create the an HTML report through command 'coveragehtml'
+
+[33mcommit 21b1a9b555338d7607dd8ba7ca86c6e57eecb5a9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Apr 13 22:34:34 2024 +0200
+
+    Begin to create some tests
+
+[33mcommit c5c7dd21fcc95884075ac3e8af99e4742b842b36[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 10 11:23:30 2024 +0200
+
+    Create feature 'Download' and fix a major bug
+    
+    Download:
+    - Create form AdminDownloadForm
+    - Create class-based view DownloadAdmin
+    - Create template download.html
+    - Link new view to app through __init__.py main file
+    
+    Bug in Upload view:
+    - Path of new uploaded file were not registered in DB
+    - Therefore, new uploaded files were not visible and could not be downloded
+    - Write code to update DB and fix the bug
+
+[33mcommit 7d578ca4e5ec9ae7c85cf2fbf56ef4bdd78fab04[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Apr 3 15:10:39 2024 +0200
+
+    Fix a login bug and improve the README file
+    
+    - Usernames are now case insensitive for login purposes
+    - Complete README's Upload chapter
+
+[33mcommit a21f92efbba7f21abad0774efc1046c7dc9f7669[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 28 14:49:53 2024 +0100
+
+    Start to create some tests and correct customer home address
+
+[33mcommit 300de00bb517c5973b778e4c5f669b7f63641d86[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 28 11:32:47 2024 +0100
+
+    Uniform style of both pages 'Upload' and 'Devices' to the rest of the code
+
+[33mcommit a797aadd9f9aae10abb1da756e07eac4dcda2ca9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 27 16:22:58 2024 +0100
+
+    Restructure all remaining route-based views as class-based views and move them into admin_pages.py
+
+[33mcommit 98c1375c5bef97979e5baef1b1e3eb7a612eb762[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 27 10:07:35 2024 +0100
+
+    Fix bug preventing matching of 'username' field between the UserAdminView and ExtendedRegisterForm
+
+[33mcommit fc64c6d208f90cd7a8a835a0c4a79cd72ad4d98f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 27 09:29:10 2024 +0100
+
+    Fix bug preventing login with username
+
+[33mcommit 9017e76462bca4bceb12c1ccc85416f39905e879[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 26 19:08:23 2024 +0100
+
+    Update the README file with the step about the installation of 'libldap2-dev' and 'libsasl2-dev'
+
+[33mcommit 1481edfe6d9059c45299fbab8abe25fb9b3546c5[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Mar 26 18:28:41 2024 +0100
+
+    Create python-app.yml (#2)
+    
+    Create a GitHub actions file to test the application (python-app.yml)
+
+[33mcommit c5683fe166812c44e8dc6e0451346c8e972e9e8f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 26 14:13:03 2024 +0100
+
+    Rename forms according to different views
+    
+    - Devices: search_form
+    - Upload: upload_form
+
+[33mcommit e95afd0efedf171c90b9c4b5a76a2587d92b1660[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 26 13:27:33 2024 +0100
+
+    Improve and clean the code
+    
+    1) Move the whole UserAdminView back into views/admin_pages.py as a class
+    2) Add function to encrypt password before saving it into DB
+    3) Delete redundant imports from main file __init__.py
+
+[33mcommit dcff8440e7b4c85dc93730d9f516f14d46f39747[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 26 11:10:50 2024 +0100
+
+    Fix two bugs in Device pages and catch the errors with a flash message
+    
+        1) User inputs string instead of major version (X.X) or full release number (X.X.X)
+        2) User inputs release starting with not existing major version (X.X)
+
+[33mcommit 7b4f0a5dc53d83b2f5a4b455c2f477d63aff0596[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Mar 25 15:33:52 2024 +0100
+
+    Improve Devices pages and remove limit of customers in script
+    
+        - Allow form to accept just two number (X.X) instead of full release (X.X.X) name
+        - Show a '...' if there are more than 10 relaeases before or after selected one
+        - Improve variable names and adapt template accordingly
+
+[33mcommit daa6d8d88f095098894203dca119ff0063b98657[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 24 21:15:53 2024 +0100
+
+    Fix all customized register form bugs
+    
+    - Remove print debug from script
+    - Remove SECURITY_USERNAME_ENABLE from config.py
+    - Create security_utils.py as advised by Flask 4.1.0 documentation
+    - Remove 'index=True' from model 'User'
+    - Remove default 'email' field and 'submit' button with ExtendedRegisterForm
+    - Sort devices in 'QuerySelectField' in forms.py
+    - Plug everything into the main file and remove redudndant code
+    - Black everything
+
+[33mcommit dcf4048d30c45913d15c3a4ef4a50ef74928bd50[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 24 19:01:02 2024 +0100
+
+    Update pip packages and remove email from the code
+    
+    - pip install pur
+    - pur -r requirements.txt
+    - pip install -r requirements.txt
+    - substitute everywhere the word 'email' with 'username'
+    - add 'SECURITY_USERNAME_ENABLE = True' to config.py
+
+[33mcommit a754cde72470241f743f09d3485776be67e09205[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 24 18:20:41 2024 +0100
+
+    Make possible select 'None' for the field 'Device' during creation of a new user
+
+[33mcommit 8dec7a07a0a387b65277e53dc3f2f55d4adbef13[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 24 14:54:43 2024 +0100
+
+    Improve custom register form in preparation for  plugging it into rest of code
+
+[33mcommit 5038a29d4797a9b8daa1dbfd774fea80b6a5fd02[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 24 14:27:15 2024 +0100
+
+    Force User to choose a role when create a new user
+
+[33mcommit 606a43963843a446904bbdce3f5fa561d7b3354c[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Mar 23 13:10:48 2024 +0100
+
+    Make Username a required field of at least 4 characters
+
+[33mcommit b7c85ff3ae5c669d8f8bbed7939a9986ef2e58f9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 22 22:49:34 2024 +0100
+
+    Make password required and min=8 characters long
+
+[33mcommit e59e9f70effdc0cbdbbb7f4a4b25fa616e8cfc35[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 22 17:14:57 2024 +0100
+
+    Fixed several bugs
+    
+    - Bug fixed: deleting function to generate unique fs_uniquifier causes script not working
+    - Bug fixed: users logged in admin pages cannot see username on top right corner
+    - Bug fixed: now all user with 'administrator' role are redirect to admin pages on login
+    - Bug fixed: only user 'admin' can see customers' page profile - now every 'administrator' role
+
+[33mcommit 83f18f8c9f7206bdf2f04fdd9c744313f38610d7[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 22 16:03:28 2024 +0100
+
+    Fix long lasting bug
+    
+    - Fix bug preventing visualization of navbar during registration of new_users
+    - Delete the redundant view 'register' in admin_pages
+
+[33mcommit 18d9942f39cd32c9957af23a0f9a277e42054187[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 21 21:28:14 2024 +0100
+
+    Improve view 'register' in admin_pages
+
+[33mcommit b9d917edd53c57859f8303afde99798ddd566753[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 21 20:29:15 2024 +0100
+
+    Correct typo in the register form -> role to roles
+
+[33mcommit f71462f7574fed0406195a22ffd1fdabe1908ab9[m
+Merge: 4187059 66247c6
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 21 20:00:19 2024 +0100
+
+    Merge branch 'main' of github.com:Sir-Jude/flask_project
+
+[33mcommit 66247c6a8bf6f2f9e6acb001a56f6b5741b73703[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 21 13:02:55 2024 +0100
+
+    Improve script and models
+    
+        - script:
+        create code to populate Country DB table
+    
+        - models:
+        minor improvements, remove Region and adapt the code to modified script
+    
+    - customers.py:
+    Correct a typo
+
+[33mcommit 418705903e4348ccb91805ab3b2a4d7bca981d2e[m
+Merge: 7accd07 c187dc3
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 20 21:56:44 2024 +0100
+
+    Merge branch 'main' of github.com:Sir-Jude/flask_project
+
+[33mcommit 7accd07f784851ee1aa37d0f3041d5239b537afd[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 20 21:55:23 2024 +0100
+
+    Improve the README file
+
+[33mcommit c187dc3637c487dffe32387d3be65ead02b5c9f4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 20 17:38:31 2024 +0100
+
+    Extensive code improvement and update:
+    
+    - Update models changing 'backref' (legacy) to 'back_populates' (preferred)
+    - Correct models' attributes to have correct relationships
+    - Add model Region
+    - Adapt the rest of the code to fix eventual bugs
+    - Fix bug locking the device name in the session during the file upload feature
+
+[33mcommit 56184d24ddbd6fbfbc25b3beec76cd2d0ce3bfc4[m
+Merge: 14883d7 bfa0bad
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 20 16:57:58 2024 +0100
+
+    Merge branch 'main' of github.com:Sir-Jude/flask_project
+
+[33mcommit 14883d70dff6c723e2312c82cb8c7b8b4f1e5ce9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 20 09:53:59 2024 +0100
+
+    Change UPLOAD_FOLDER's name from "devices/" to a more general "uploads/"
+
+[33mcommit bfa0bad64b1c4c2fb1916b58a443cdefb5fcafd1[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 20 09:53:59 2024 +0100
+
+    Change UPLOAD_FOLDER's name from devices/ to a general uploads
+
+[33mcommit afec3bfd950a93b8da7e089917a1db46f50c6d92[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 15 12:36:01 2024 +0100
+
+    Change text of admin's view looking at a customer profile
+
+[33mcommit 3826df47a0a64ab6f0cd055a405e2f80ec4087a6[m
+Merge: f358041 d50b177
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 15 12:15:05 2024 +0100
+
+    Merge branch 'main' of github.com:Sir-Jude/flask_project
+
+[33mcommit f3580413185466b4075e7243a957e4945923543b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 15 11:52:22 2024 +0100
+
+    Fix 2 bugs in customer profile view as administrator and change admin's logout landing page
+    
+    Bugs:
+    - Software can be downloaded from customer's profile even if logged in as admin
+    - Remove navbar from customer's profile if logged as admin: it was creating other bugs
+    
+    Config.py:
+    - After logging out, Admin lands on customer home's view
+
+[33mcommit 94d455dcb2c32c225b106c6b901d8bc6ed977138[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 14 17:03:16 2024 +0100
+
+    Minor improvements
+    
+    - If logging in as admin, redirect directly to admin pages
+    - Remove trailing point '.' at end of selected_release_version address view URL
+    - Modify selected_release_version address view URL
+    - Correct flash message text showing up after having successfully uploaded a file
+    - Keep device name value from previous attempt if release name/version not correct
+
+[33mcommit d50b17774ee88496bbf475c32dec787c96080338[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 15 11:52:22 2024 +0100
+
+    Fix 2 bugs in customer profile view as administrator and change admin's logout landing page
+    
+    Bugs:
+    - Software can be downloaded from customer's profile even if logged in as admin
+    - Remove navbar from customer's profile if logged as admin: it was creating other bugs
+    
+    Config.py:
+    - After logging out, Admin lands on customer home's view
+
+[33mcommit 6f12ebebecc0c70a4a7341fd8d19586fa0b39ff9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 14 17:03:16 2024 +0100
+
+    Minor improvements
+    
+    - Redirect to admin_pages, if admin.username == admin
+    - Remove trailing point '.' at end of selected_release_version address view URL
+    - Modify selected_release_version address view URL
+    - Correct flash message text showing up after having successfully uploaded a file
+    - Keep device name value from previous attempt if release name/version not correct
+
+[33mcommit 4bf120ce99d184e0362c62310c10f0579b1c9208[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 14 15:28:00 2024 +0100
+
+    Implement upload of the files
+    
+    templates/
+    - Create template admin/upload.html
+    
+    forms.py
+    - Build UploadReleaseForm with its methods 'allowed_files' and 'path_exits'
+    
+    admin_pages.py
+    - Build view upload
+
+[33mcommit b7a4623eadf41514ef8933a21aa8dbff5f77a455[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 13 16:14:16 2024 +0100
+
+    Link customer's profile page to admin device filter result
+    
+        - Link device name (in device filter result) with customer profile
+        - Create a link to go back from customer profile to device search
+
+[33mcommit dda97edef9acd1fb1638e6bf461371266de0ea16[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 13 14:06:56 2024 +0100
+
+    Allow admin to see any customer profile page and continue to build the upload new feature
+    
+    - config.py
+      Add ALLOWED_EXTENSIONS
+    
+    - admin_pages.py
+      from werkzeug.utils import secure_filename
+      from config import Config
+
+[33mcommit 6fbf69ec14995f3a2b9358ed1c2ad95f60e2b3e5[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 13 10:49:13 2024 +0100
+
+    Start to create feature for uploading releases and improve admin/index.html
+    
+    - Create the form UploadReleaseForm
+    - Create the 'Upload' button
+    > - Create the prototype of the upload view
+    > - Rename form DownloadRelease to DownloadReleaseForm
+    > - black *
+
+[33mcommit a56cc0ae2832af507a173012a388bfa4fd11057c[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 12 14:50:31 2024 +0100
+
+    Improve list of Users visualization in admin and semplify templates customers folder
+    
+        - Admin:
+        Order the releases in descending order (most updated first) --> coherent with Devices pages
+    
+        - Merge the templates' folder 'home' in 'customers'
+        - Adapt the http linked paths everywhere
+
+[33mcommit 3a75035518d43206215bb32014c8faa6a7cc9321[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 12 13:47:09 2024 +0100
+
+    Fix a bug and improve release filter result table
+    
+        Fix bug in admin_pages:
+        In selected_release_version, if-condition block did not allow Users to see selected release column if they selected most updated.
+    
+        Release filter:
+        Now headers of both column/row are clickable links for filtering for release/device.
+
+[33mcommit 462c0a6f7106c6c99a0ece76acd868fcb0e7dcbb[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Mar 11 13:59:55 2024 +0100
+
+    Improve release filter result
+    
+    Now, if the selected version is:
+    - the last (most updated) -> filter shows only previous 10 releases
+    - the first (least updated) -> filter shows only the following 10 releases
+    - any other case -> filter shows -10 : selected release version : +10
+
+[33mcommit 365588c340051357b510b211245768b82dd53891[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Mar 11 10:52:39 2024 +0100
+
+    Clean script create_tables
+
+[33mcommit bccd101ec190647b43612dc100c43b536bb53165[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 10 20:21:31 2024 +0100
+
+    Add the license file
+
+[33mcommit 7f86c4347f83b0ea6719b5ec94d6e1ea0c83e0b3[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Mar 10 20:03:57 2024 +0100
+
+    Improve the README and correct two typos:
+    
+    - Rewrite and improve README.md
+    - Remove the '_' by the name of the devices created by the script
+    - Capitalize the button 'login' string in admin/index.html
+
+[33mcommit f80017de0d7a644e604944223af5abfc3f04f764[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Mar 9 00:50:22 2024 +0100
+
+    Improve views.
+    
+    Admin_pages:
+    - Fix bug triggered by no providing any release nor device
+    - Improve text of error messages
+    
+    Customer_pages:
+    - Change filename variable name into version
+    - Remove redundand comments
+    - Shorten and semplify value of variable 'version'
+
+[33mcommit 6301901b655e7057a7dfab025853d194da15c8ce[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 13:30:07 2024 +0100
+
+    Fix the bug preventing the download of file
+
+[33mcommit 7a714af4d3f8e1debafc5ca0c0e96d09f8d5c896[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 12:06:49 2024 +0100
+
+    Fix the download_version file (kind of):
+    - Config:
+    Change 'devices' to 'devices/'
+    
+    - custorers.py:
+    Remove the try statement
+
+[33mcommit 4b87f7c152c954be6867141a62d6b78d6c2a097e[m
+Merge: e28433b 6469d5f
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 10:13:05 2024 +0100
+
+    - Create file note.md and move inside it all not necessary info for app launching
+    - Shorten and improve README.md file
+
+[33mcommit e28433b4cc21638baf2ca964010ff55413f6efd4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 09:04:40 2024 +0100
+
+    Improve README.md file
+
+[33mcommit 6469d5f0006b44f16073f20a129fa7d912b8397e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 09:04:40 2024 +0100
+
+    Improve README.md file
+
+[33mcommit 98e5c075675de3089eec9f0c18ac409e0c2cb509[m
+Merge: 3ca8201 0dd3caa
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 08:55:40 2024 +0100
+
+    Merge branch 'main' of github.com:Sir-Jude/flask_project
+
+[33mcommit 3ca82010052c08bf3ca406572092c13fcd7d5fff[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 08:40:30 2024 +0100
+
+    - Create file note.md and move inside it all not necessary info for app launching
+    - Shorten and improve README.md file
+
+[33mcommit 0dd3caa38e3d34a89d216f0b6aa3ca3ede8410d8[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 08:53:18 2024 +0100
+
+    Improve the README file
+
+[33mcommit 4c3ed0b2df917ada143bd8725e25f54d138eb2cc[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 8 08:40:30 2024 +0100
+
+    - Create file note.md and move inside it all not necessary info for app launching
+    - Shorten and improve README.md file
+
+[33mcommit e6782089ca3cff6bceef7876c099dc99be2b3611[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Mar 7 16:44:06 2024 +0100
+
+    Improve result of device search form in Devices pages:
+    
+        - Sort the list of releases
+        - Make each release a link as if User input them in the release search form
+    
+    Improve result of release search form in Devices pages
+    
+        - Users must input exact release number (X.X.X)
+        - They can now see all releases starting with the same major release (X.X)
+        - The column of the selected release is bordered in red and text is boldCC
+
+[33mcommit dde9eb6e796241cfa6a7c45626e7532e1d14b764[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 6 17:04:01 2024 +0100
+
+    Fix script
+
+[33mcommit 87615249f7744ac1ded75028d3f8e1a3b0bfeb15[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Mar 6 17:00:24 2024 +0100
+
+    Create the code to download files from Flask, but it still does not work:
+    
+    - Config: add UPLOAD_FOLDER
+    - Forms: add DownloadRelease
+    - Customers: add views download_version and improve profile
+    - Template profile.html: adapt to the new views
+
+[33mcommit a47bd7c1314238a773427b79fb5879dd81fe8cdc[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 5 16:52:11 2024 +0100
+
+    Remove path from device, remove devices's path from config, lower in the gitignore the first letter of devices folder and black the code
+
+[33mcommit fdc598f5849d737d93f2275eba16add349b6fb94[m
+Merge: d8bd26c 3811812
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Mar 5 16:21:03 2024 +0100
+
+    Test
+
+[33mcommit d8bd26c858fab04af427f41a446783c6811edcd6[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 1 12:45:02 2024 +0100
+
+     Modify the script, which now creates:
+        - one folder for each device inside the folder Devices
+        - releases are not anymore simply strings, but file .txt
+        - Add Devices to gitignore
+    
+    Modify models:
+        - Add the attribute device_path to Device
+        - Add the attribut release_path to Release
+    
+    Black *
+
+[33mcommit 3811812e85b1f7026e07691ee7ad51f5398f175c[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Mar 1 12:45:02 2024 +0100
+
+     Modify the script, which now creates:
+        - one folder for each device inside the folder Devices
+        - releases are not anymore simply strings, but file .txt
+        - Add Devices to gitignore
+    
+    Modify models:
+        - Add the attribute device_path to Device
+        - Add the attribut release_path to Release
+    
+    Black *
+
+[33mcommit c83dbc816924b82b5824f39391e50b6c349d2027[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Feb 28 16:31:43 2024 +0100
+
+    Improve Customer profile pages:
+    - Create a dropdown menu with ordered list of available releases (latest comes first)
+    - Show country where device is located
+    - Handle in html case of accounts without a device (-> no country)
+    
+    Improve Devices pages:
+    - Default table now shows only latest minor releases of latest major version
+    
+    Fix a security bug:
+    - Only User with 'Administrator' role can access any of the admin pages
+    
+    Create_tables script:
+    - Associate a country to every User with a Device
+
+[33mcommit 2ea1b9ead37143fc0a14401129236814ea32f25a[m
+Merge: 08692ab 2fbc605
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 27 17:20:25 2024 +0100
+
+    Fix conflict
+
+[33mcommit 08692ab3cce58ff751bd1af8693ce11f451a7326[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 27 17:10:30 2024 +0100
+
+    Make Devices html templates more maintainable
+    
+    Create 'devices_base.html' which extend 'security/base.html'
+    Copy the form inside devices_base and create 'block table'
+    > In the other files, remove the form and extend the new file
+
+[33mcommit fa7c9f77c1c7c24e46aced2a20eb0e83c2f7954f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 27 16:06:59 2024 +0100
+
+    Improve Device pages files:
+    
+    Now, indipendently from numbers, default table always shows last minor release of last major version
+    Rename and split view device_filter, so that now URL show release_version and device_name
+    Add the form to all Devices' pages and remove redundant 'Go back to search'
+
+[33mcommit 2fbc605b6061d6a6a90bb10543ea25cc5ce09c1c[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 27 16:06:59 2024 +0100
+
+    Improve Device pages files:
+    
+    Rename variable major_release as major_version to be more consistent with Release model
+    Refine default table so that now. indipendently from the numbers, it always show the last minor release of the last major version
+    Rename and split the view device_filter, so that now the URL show the release_version or the device_name
+    Add the form to all Devices' pages and remove redundant 'Go back to search'
+
+[33mcommit 42debdb238d400160bf216e9991af3e3d0a993f8[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Feb 23 16:30:21 2024 +0100
+
+    Rename variable major_release as major_version to be more consistent with Release model
+
+[33mcommit fb64660a3cb6e3a2f383fdb664fffd4fb43cfa8f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Feb 23 15:12:07 2024 +0100
+
+    Improve code clarity of Devices pages
+    
+    - Rename variables
+    - Add comments
+
+[33mcommit e73a87d4d60cf0c2e8e9f1f5e42a7a522503b413[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Feb 23 12:33:44 2024 +0100
+
+    Correct typo in customer's profile page and improve visualization of Devices tables
+    
+        Default and Releases output:
+        - Sort the column in reverse order
+        - Rid of the column header rotation
+        - Make sure the latest version paramether is not bind to a particular number
+    
+        Releaase output specifically:
+        - Reduce to 20 the max number of columns
+        - Sort and reverse the order of the devices (rows)
+    
+    Default page specificallyCC:
+    - Invert order of form's input (Release comes now first)
+
+[33mcommit ebdc3da6ca7135f1d5bd0c7d14f5450af0cbcc8e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Feb 22 14:44:06 2024 +0100
+
+    Uniform Customer pages experience and improve Devices visibility:
+    
+    Customer:
+    Make the customer login page prettier
+    Create a dedicate customer css file
+    Share the same style throughout all pages
+    
+    Devices:
+    Rename the previous css file as devices_styles
+    Make table background darker for browsers with disabled dark mode experience
+    Encapsulate form into a box
+    Allign the form input fields
+
+[33mcommit 732c86822aae01ec8f5aaeda501c1b9eb78c9d8a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Feb 21 15:04:13 2024 +0100
+
+    Complete the DeviceSearchForm
+    
+        Improve the names of the variables/classes
+        Add the Release field
+        Add the view to see the result
+        Complete and improved the (renamed) device_filter function
+        Add matrix_release.html
+        Update the css file
+
+[33mcommit da34dcd931931550aea2878a1496e9fcbb29d2a9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 20 14:53:16 2024 +0100
+
+    Improve master table and form
+
+[33mcommit d2ea658885598ff611ff94f67e4ada7d866c37a7[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 20 11:46:57 2024 +0100
+
+    Black *
+
+[33mcommit 67cda2d36cc5607481f7805b8a6140649bf4b720[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 20 11:45:17 2024 +0100
+
+    Rename model names in singular (e.g: Users.to User)
+    > Refine table visualization
+    > Create a form to filter the devices
+    > Rename matrix.html  as matrix_default.html
+    > Create file matrix_filtered.html to show the result of the form
+    Black *
+
+[33mcommit 480445d66500e45471a7a956ba8a6e1547355383[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 13 14:19:06 2024 +0100
+
+    Add style.css fiel and refine table visualization
+
+[33mcommit b491ada58f7c8398c6eda44614c43e4270297e7f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Feb 13 13:39:54 2024 +0100
+
+    Improve script and master table
+    
+    Script create a DB with a larger amount of data
+    Master table shows only the first 10 releases for each major release
+
+[33mcommit 52d86bfdb4c4e0b28497380100f677887aaac76e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Feb 12 10:50:24 2024 +0100
+
+    Creation of Master Table
+    
+    New company Logo
+    Creation of Master table with all devices and releases
+    Creation of the Devices button in the nav-bar of the Admin-page
+    Creation of the route to see the Devices
+    improve the create_table script for creating the DB
+
+[33mcommit f5fd6331eee2f4f09ae0ea9bb846bb605e4d9a7e[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Feb 2 14:03:59 2024 +0100
+
+        Fix the bug 'AttributeError: 'str' object has no attribute '_sa_instance_state'
+    
+    In the previous version, in line 18, the ORM was querying for the "device_id", instead of for the "name" of the device.
+    
+    Furthermore, on line 27, during the "new_user" creation, a string (the one inserted by the user) was assigned to the attribute "device", instead of the object resulting from the query in line 18.
+
+[33mcommit 34beab8c360dce0af042c247cb5712458f5bbcf1[m
+Merge: 4cf1feb d88ff04
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Feb 1 13:34:54 2024 +0100
+
+    Solve conflicts
+
+[33mcommit 4cf1febdd3923778f632bf679abd2da8c054293b[m
+Merge: 4726e41 a037c12
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Feb 1 11:34:13 2024 +0100
+
+    Merge branch 'main' of git-server.giulio.net
+
+[33mcommit 4726e418c05141f52a93afbd1e85935e70a5e3df[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Feb 1 11:33:06 2024 +0100
+
+    Customize security/_meny.html template adding 'Back to users' button, improve the README file - Users still do not have a device/release
+
+[33mcommit a037c12ef5c0b24432dd25b20d3dc3d2e886e9d7[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Thu Jan 4 06:57:45 2024 +0100
+
+    Reformat using 'black'.
+
+[33mcommit 3ca4653f529c071981ee8b34e83e0ec509b5eb3f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Jan 3 16:12:22 2024 +0100
+
+    Stabilize create_table.py, Users still do not have a device/release
+
+[33mcommit d88ff04a197ede18607b2f3355b7f7a2482b63e4[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Wed Jan 3 16:06:47 2024 +0100
+
+    Improve create_table.py
+
+[33mcommit 8feb17532c738732bb955852a94c3b7faaf52d6e[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Wed Jan 3 15:30:45 2024 +0100
+
+    Start to add Devices and Releases within a new script caled create_table.py
+
+[33mcommit c90aa83660427013f483921082f2b5d85632bc57[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Jan 3 15:13:39 2024 +0100
+
+    Try to merge dummy_data into create_table
+
+[33mcommit 35103bd7f17a511c618dfbe4565de5077b5e4354[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Wed Jan 3 09:54:48 2024 +0100
+
+    In extensions.py, add migrate to the list of extensions
+
+[33mcommit 4d832fb5186e969e3c28fd0e1ac91e91a8d1c5a4[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Wed Jan 3 09:54:01 2024 +0100
+
+    In __init__.py, make "migrate" an import from extensions.py
+
+[33mcommit 9a29e32f3af347fffc583ff3a97ac550fb0284a9[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Wed Jan 3 09:44:17 2024 +0100
+
+    Improve README.md
+
+[33mcommit e1c5ebc18f678c7f366e41e3f58373347972af59[m
+Merge: e78374c 1860af8
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Jan 3 09:19:11 2024 +0100
+
+    Merge branch 'main' of git-server.giulio.net
+
+[33mcommit 1860af88f7f0782a43fc0e51765f5ef5ffc33487[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Wed Jan 3 08:24:14 2024 +0100
+
+    Fix typos in README.
+
+[33mcommit f58fad69121f3f8537304316f9b69d763f7e4b4a[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Wed Jan 3 07:40:47 2024 +0100
+
+    Generalize instruction.
+
+[33mcommit 0b693f0cb8b7fd2bf7e8e045e073b74817a6214b[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Tue Jan 2 15:38:46 2024 +0100
+
+    Remove spurious whitespace.
+
+[33mcommit 0f33b1d4292143643ab65ba8a388c273bab7ab1e[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Tue Jan 2 15:13:03 2024 +0100
+
+    Treat flask_migrate like other extensions.
+
+[33mcommit 81bb3830eb36cf9e248126cd3eed82597bdb1726[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 17:54:10 2024 +0100
+
+    Start to include Devices and Releases features in dummy_data.py
+
+[33mcommit e78374c26eb78ef268040243f195220c41e035ec[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Jan 2 17:33:23 2024 +0100
+
+    Start to merge dummy_data.py and Wolfgang's script create_table.py
+
+[33mcommit 80ae79b8dc45c85f961c4ca2431d69509eb5b6ba[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 17:06:18 2024 +0100
+
+    Adjust register_user.html to modifications in models.py
+
+[33mcommit 4b8c21239e3f54315586c4197f1d4ef3c01805e8[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 17:04:59 2024 +0100
+
+    Adjust admin_pages.py to modifications in models.py
+
+[33mcommit 2adf80af005ec8717de614b16ffa9e5e6de4edd2[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 17:03:39 2024 +0100
+
+    Adjust customers.py to modifications in models.py
+
+[33mcommit d1442720f43ee90e46d657c97529441d1ef120d4[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 17:01:56 2024 +0100
+
+    Clean __init__.py and adjust it to modifications in models.py
+
+[33mcommit 1463eef9e4b59b3dc458394441b4c54cced51c4b[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 16:57:32 2024 +0100
+
+    Adjust forms.py to modifications made in models.py
+
+[33mcommit 40b9df279636a00826a852cf9a2c85a39f2d02e3[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 16:54:42 2024 +0100
+
+    Create ForeignKey columns for "Devices" and "Releases" into Users class and improve general models readability
+
+[33mcommit 87fa16077735fc873bcd9e3c3d3cc744346ad12b[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 16:47:26 2024 +0100
+
+    Update and improve the README.md
+
+[33mcommit 8303fdad68c6f85d7e7ea06e4c39e016e98ca3f8[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Jan 2 16:45:51 2024 +0100
+
+    Improve config.py
+
+[33mcommit 1854ee356664ebaec84cc0b06bce93c931c33fe7[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Jan 2 16:36:35 2024 +0100
+
+    Integrate Devices and Releases in the Users model, correct all the affected files,  improve the README
+
+[33mcommit 1f1bcfd06855a586b25ed682ecb863b60fa0bef2[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sat Dec 30 13:22:24 2023 +0100
+
+    Fix bug in config.py about DB URI and update requirements file: now everything works
+
+[33mcommit 44886a7186abcd708396ac391b594e6c029c87d7[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 14:12:37 2023 +0100
+
+    Update extensions.py
+    
+    Remove redundant import/variables
+
+[33mcommit 693552e8b4a7fdc939c88026295b92b2e90d7d0c[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 14:11:42 2023 +0100
+
+    Update __init__.py and ripristinate correct db migration
+    
+    Fix a bug that was preventing a correct db migration
+
+[33mcommit d0a1c2bc0546a3703356e013ee9b9d4cff9e7544[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:51:35 2023 +0100
+
+    Update README.md
+
+[33mcommit f90c49b8f4edbfba1228de1b87291c5d8abb7403[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:50:56 2023 +0100
+
+    Add SECURITY_USER_IDENTITY_ATTRIBUTES to  config.py
+
+[33mcommit 2c8c9ff73e89b80f1035aecb4a20ea463c965c68[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:48:13 2023 +0100
+
+    Delete old app.py file
+
+[33mcommit bdf1c167bb4d0bc75bfa2d7a7eef64c0b9b228b5[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:47:27 2023 +0100
+
+    Delete duplicate models.py
+
+[33mcommit f17deb2d0d5827a30f04d69c15c1a3c620f28d6a[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:47:08 2023 +0100
+
+    Delete duplicate errors.py
+
+[33mcommit 6fff2d43ef7b60634b9c04059d4aad8dda94a9f2[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:46:18 2023 +0100
+
+    Delete duplicate of views directory
+
+[33mcommit 1ce2c9f1bc2fa9cdba50b902f15e9644a95547b1[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:45:52 2023 +0100
+
+    Delete duplicate of static directory
+
+[33mcommit 112190514f2dc1e92d4f08c8f5f6241774f23fbb[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:45:14 2023 +0100
+
+    Delete duplicate of templates directory
+
+[33mcommit b9df541cf0fd2ea51ceb32ad843084959b2d3687[m
+Merge: 588687f d8077a2
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:43:28 2023 +0100
+
+    Merge pull request #1 from Sir-Jude/remake
+    
+    Restructure the project
+
+[33mcommit d8077a2f9c108e8c119552e498943c328abf0198[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:42:44 2023 +0100
+
+    Restructure the project
+
+[33mcommit 588687f968b7e7fb38a23dc52521cbdb01c7112d[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 29 13:37:39 2023 +0100
+
+    Improve dummy_data script
+
+[33mcommit 1752cae5a284bb3628d59b1191bf69be18823f8a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 29 11:26:12 2023 +0100
+
+    Start to update models.py with Release and Device, fix a db migration bug and add Release to Admin visualization
+
+[33mcommit a5dafe34bf42a54f3637d6c07f4d5b1a6a94b4d4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 28 17:48:16 2023 +0100
+
+    Add folder 'home' to templates folder
+
+[33mcommit a6a93641896b6db2843bf0c4afa399a162bf15a1[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 28 17:33:54 2023 +0100
+
+    Fix bug about admin_pages.py
+
+[33mcommit 275b9fcd58d5b0f42dcc3652424a91b3492fda99[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 28 16:01:21 2023 +0100
+
+    Clean the code: user_datastore to models.py and SECURITY_USER_IDENTITY_ATTRIBUTES in config.py - admin_pages.py filled, but still does not work properly
+
+[33mcommit d97c00ef7464ec3b009742b50f411e287c7508ed[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 28 14:41:08 2023 +0100
+
+    Write the first test for the app
+
+[33mcommit aeaa6e5d13f9f0f9e6e923a7f07ffb6d94521616[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 28 09:56:35 2023 +0100
+
+    Improve extension.py file
+
+[33mcommit 496457c2d42deddd4812c8a633e03e1ce727feef[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 27 17:19:51 2023 +0100
+
+    Keep restructuring code towards a more flask's blueprintstandard and adjust script dummy_data.py accordingly
+
+[33mcommit 4672ed34674ccc9d0cba57d09e940682789d6a1a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 27 15:31:22 2023 +0100
+
+    Create the extensions file to import SQLAlchemy and initialize the db
+
+[33mcommit f4c238f971a1de444cabea2e5df36cf92cd27e4a[m
+Merge: 73dd6e1 a118b9c
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 27 15:08:39 2023 +0100
+
+    Merge branch 'test'
+
+[33mcommit a118b9c1c67892cb9775234f74cb9d8a5ee685e1[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 27 15:07:02 2023 +0100
+
+    Restructure the main app creating a Flask Apllication Factory
+
+[33mcommit 73dd6e10af24d33a785608ab888a211cd34725a6[m
+Merge: 5f8045a f3b7e0f
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 27 14:49:41 2023 +0100
+
+    Merge branch 'main' of git-server.giulio.net
+
+[33mcommit f3b7e0ffff1a51382c5fb168f432fcc4c3babfc4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 27 10:21:02 2023 +0100
+
+    Create the file forms.py and move there all the forms
+
+[33mcommit 988c8c339d0da9201c6ceed3f21ff1836b512a3b[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 22 15:08:34 2023 +0100
+
+    Update README.md
+    
+    Update the README.md file
+
+[33mcommit e84a873c1b155c06cfa93bc767b3c9d0bc8bbc08[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 22 15:07:50 2023 +0100
+
+    Update and rename project.py to app.py
+    
+    Remove all the config lines of code (now inside config.py) and cleanup the code.
+
+[33mcommit ee355951600fe4e4692aa689168e9ec2f4d81f65[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 22 15:05:55 2023 +0100
+
+    Update dummy_data.py file
+    
+    Improve the script dummy_data.py, so that now before creating the dummy data, it also deletes the instance and migrations folders, logs into the flask shell, creates the database, and performs the migrations.
+
+[33mcommit 3c4960c301a71d9289d13e70d506793ca0989ef0[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Fri Dec 22 15:03:52 2023 +0100
+
+    Add files via upload
+    
+    Create the file config.py and copy all the flask configurations inside it.
+
+[33mcommit 5f8045a9d026c51bae0d666fd656a213b9bd3cdb[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 22 14:56:02 2023 +0100
+
+    Improve the script dummy_data.py, now before creating the dummy data, it also deletes the folders instance and migrations, log into flask shell, create the database and perform the migrations
+
+[33mcommit 490f54fc3d4d82f7671855d51c43c5d293a81c0b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 22 14:08:57 2023 +0100
+
+    Clean app.py and update the README file
+
+[33mcommit 459b4059ed6058e5d380269152383fd4be59b3e6[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 22 11:48:03 2023 +0100
+
+    Create the file config.py and move inside it all the configuration lines of code
+
+[33mcommit ab97d8df92a22fe714b3e6e75436175f18d4b1ff[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 21 17:08:48 2023 +0100
+
+    Rename project.py as app.py in order to follow online standards
+
+[33mcommit c1fa7cc37ac8615c95668cbbd3c1f5cc96915c39[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Thu Dec 21 16:19:44 2023 +0100
+
+    Improve project.py file integrating it with the code provided by the dummy_data.py file
+
+[33mcommit c0e4158db626197e6ec14961a91383d62695558f[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Thu Dec 21 16:12:06 2023 +0100
+
+    Create a script to upload into the database some dummy users
+
+[33mcommit 04849062cc3ffdfcdb0903f04b9e34461b99256c[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Thu Dec 21 16:08:01 2023 +0100
+
+    Add button "Profile", when user is logged in
+
+[33mcommit 6c7cb38089ef0f5edc7e1ba672f2c8757721ad0d[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Thu Dec 21 16:00:23 2023 +0100
+
+    Imporve text of the admin/index.html file
+
+[33mcommit 337923ae114d0107d6fe236c1d410837fd698db6[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 21 15:33:47 2023 +0100
+
+    Review the script, adapt the main code, fix the bugs about not been able to modify or delete the new dummy users just creates
+
+[33mcommit fc7eb2be48fe4bff08019af57352d15b04a7fee0[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 21 12:04:02 2023 +0100
+
+    Add a script which create some dummy users and assign them a role
+
+[33mcommit 67c560cf1da2673055d414db43639f80797799b4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 20 12:22:03 2023 +0100
+
+    Add cascade to model and correct the creation of 'first user'
+
+[33mcommit 7128de30c84b46402bc574396bc3a1084d9af78d[m
+Merge: a8f0594 c50dfe6
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 20 12:15:33 2023 +0100
+
+    Merge remote-tracking branch 'origin/main'
+
+[33mcommit c50dfe6f2a3600fb5c882a7781b3edb9215f8488[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 18:10:04 2023 +0100
+
+    Delete local branch main and substitute it with new_model, now called main
+
+[33mcommit a8f059463367d81d44051d1c29143f01359f08fb[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 17:53:01 2023 +0100
+
+    Begin to rewiew and correct the README.md file
+
+[33mcommit f0d7d286b3573e332917a7831f1bed1971ab8605[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 17:15:49 2023 +0100
+
+    Remove file commented.py
+    
+    The file contained an old and wrong version: all the snippets have been corrected and reused.
+
+[33mcommit 16aa968fd4e6b61fc4660ecd1dabfc756afe5f13[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 17:08:08 2023 +0100
+
+    Remove visualization of the encrypted password from the admin page and Black project.py file
+
+[33mcommit 43e4cd5fcea29726bc2c57895bb51015f285c71d[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 17:02:22 2023 +0100
+
+    Fix bug about users not able to log
+    
+    Before, users created from inside the admin panel could only log in using the admin page, because in the custom login function there was no way to compare the plain password typed by the customer with the encrypted one saved into the database.
+    
+    The bug was solved using the following line of code:
+     if verify_password(form.password.data, user.password):
+
+[33mcommit e0a85af3ae6bb00db0f1ff30cbf5ca04ebf38474[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 16:52:48 2023 +0100
+
+    Remove line 8 '<h1>Admin page</h1>'
+
+[33mcommit fb29f18fbd1b3b22b29d96887e872c0055fb5111[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 15:57:16 2023 +0100
+
+    Fix the bug about user not able to login from the customer lage
+
+[33mcommit 7b9a416bbcc2315005c43e244400ce6b4de15854[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 15:14:34 2023 +0100
+
+    Improve text on admin's homepage, customer's homepage and hide password in the admin'user list panel
+
+[33mcommit 94ae4d95c2b0f0e4b952e5820a98bc34c75abc94[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 12:11:25 2023 +0100
+
+    Update project.py
+    
+    Make Admin page accessible only to admin
+
+[33mcommit bfbfd2cd6721e4a848a07c1cd37fafb8558848ec[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 12:08:45 2023 +0100
+
+    Make Admin page accessible only to admin
+
+[33mcommit 4f56f73bb7b9433ad860080c3673fa8092de9922[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 11:39:12 2023 +0100
+
+    Improve text.
+
+[33mcommit 39261c8e81e8ec9acee0d519dd6744b90c67388c[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 11:38:02 2023 +0100
+
+    Introduce the button to switch between home and profile once logged in
+
+[33mcommit 0ee6c796dfb3b95b1abf4feaf13b3eaccd8ad874[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 11:34:45 2023 +0100
+
+    Improve the nav bar on the general index.html page
+
+[33mcommit 2f128bb1b3e0b9db7f7393b7150863cd737b1aec[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 11:33:30 2023 +0100
+
+    Improve the nav bar on the general index.html page
+
+[33mcommit f71d31afe780ae1c8d643a581ea72bc19472d8ea[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 10:45:06 2023 +0100
+
+    Imporve customer/profile.html and admin/index.html
+
+[33mcommit 936424f5b14f4ca9014f9b00888d9c658be608f2[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Tue Dec 19 09:43:47 2023 +0100
+
+    Update admin's home page welcome message
+
+[33mcommit 12d0fa260f2637567a0ae60514d78f161665ceea[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 19 09:31:40 2023 +0100
+
+    Fix bug new users cannot log into admin, but cannot yet log into customer website
+
+[33mcommit 709c7f081c0ddd20fb21660816cd8bdf3245a89a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Dec 18 18:41:49 2023 +0100
+
+    Add tasks for tomorrow
+
+[33mcommit e415ee60213eabc09015fb986f758ec8c1204b5f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Dec 18 16:41:22 2023 +0100
+
+    Fix bug new users cannot log in
+
+[33mcommit d08b12a5823c486f7ef72aa62087bfc648819150[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Dec 18 10:19:43 2023 +0100
+
+    Black everything and resolve old bug in register_user.html
+
+[33mcommit 3f1ae0d8a316298a5e96f999a5297862f51fae79[m
+Merge: a9bbb1d c396117
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Dec 18 10:09:33 2023 +0100
+
+    Merge branch 'main' of git-server.giulio.net into new_model
+
+[33mcommit a9bbb1d2d8cf7e3d64566c87592539c1d2933bfa[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Dec 18 09:47:47 2023 +0100
+
+    Automatically assign 'administrator' role when creating the first user, fix bug about visible passsword and roles visualized as object instead that with their namesCC
+
+[33mcommit 977c0aa3bf2c6301f98ff8aa35ce30fb56f8e148[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Dec 17 19:54:31 2023 +0100
+
+    Automatically assign 'administrator' role when creating the first user
+
+[33mcommit ef6fffbc5fbe8333dd4d0eb571c546a5ae5100ca[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Sun Dec 17 19:03:53 2023 +0100
+
+    Fix bug about visible passsword and roles visualized as object instead that with their names
+
+[33mcommit dc4a0dec47372da20c585ddba5f53ec1f64e962a[m
+Merge: 3bbc1dc dfd69f6
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 14 14:01:01 2023 +0100
+
+    Merge branch 'database_test' into new_model
+
+[33mcommit dfd69f65ebebdc50680d7828aa6d49bdea927d9c[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 14 13:59:44 2023 +0100
+
+    Fix roles'bug: now is it possible to assign the role to user and on admin page the column is sortable
+
+[33mcommit 469647369bbba2852497d92c5664797fa30bca10[m
+Merge: 9701ad9 3bbc1dc
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 14 10:29:08 2023 +0100
+
+    Merge branch 'new_model' into database_test
+
+[33mcommit 3bbc1dc365beff5ce7d3256c3f497a0edec8d235[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 14 10:28:51 2023 +0100
+
+    Start to implement test
+
+[33mcommit 011e96050f03a785df23ea8e818c09d8c534fb64[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 14 10:13:30 2023 +0100
+
+    Add work done so far and rewrite README file
+
+[33mcommit e232914fafbe74ec209b716fc2aa249f7c7a2573[m
+Author: Giulio Arpaia <31657930+Sir-Jude@users.noreply.github.com>
+Date:   Thu Dec 14 10:09:50 2023 +0100
+
+    Initial commit
+
+[33mcommit 9701ad95fd2bbbc6c9c03d46f86e63ab3a58a8a7[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 8 17:40:20 2023 +0100
+
+    Simplify the ExtendedRegisterForm and try to link Users to Role, so that when I create a new User, the Role is linked to it.
+
+[33mcommit 3f38b1e384ec5a1344a3308437806b2db83b810b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 8 15:08:13 2023 +0100
+
+    Fix bug: new user can now been registered
+
+[33mcommit 08b8dc83d5994e5fd8d147faa642dfe600f5cf26[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 7 15:26:59 2023 +0100
+
+    Overwrite the template register, but the visualization is not perfect and new user are not registered in the database
+
+[33mcommit f0f1e302eb1d6e653bf4fe0836cfd526b6959bcc[m
+Merge: 2143747 e665fa7
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 7 12:11:46 2023 +0100
+
+    Merge branch 'test' into new_model
+
+[33mcommit e665fa788bd04f6f08692474a2dbf8f113e54e92[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 7 12:11:24 2023 +0100
+
+    Add login_manager.init_app(app) and shorten LoginForm
+
+[33mcommit 214374789033ee187a13d78ebb82a0157a91dffb[m
+Merge: 2a4f5fd d488e72
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 7 11:28:26 2023 +0100
+
+    Merge branch 'new_model' of git-server.giulio.net into new_model
+
+[33mcommit d488e72ca287ccefb865a9c146baeb4e555f485a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Dec 7 09:23:55 2023 +0100
+
+    Move everything about the customer in a separate Blueprint
+
+[33mcommit 154c30f68445187c5443784be9f434889b0deb7a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 6 17:33:40 2023 +0100
+
+    Fix the interruptions in the connections between files
+
+[33mcommit 767d7757222db48dc1fab1a12ff50d1922d8bff6[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 6 14:42:21 2023 +0100
+
+    Create Blueprint for homepage and customer_login, restablish the connectins with the new endpoints, move Login form in a separate file
+
+[33mcommit 1678f3d8b456c75636e742d462aa449860f62f45[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 6 12:04:38 2023 +0100
+
+    Clean up the file system eliminating redundant files and fix the login for customers. Bug - Created user un admin, cannot login
+
+[33mcommit 9b06eee88403c7f5b0a58be836cf29841a779d5f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Dec 6 10:27:09 2023 +0100
+
+    Separate admin login from customer login, but now bcrypt snippet needs to be rewritten
+
+[33mcommit 14dcd525858aab004cc9afbafe85ccaa378679f1[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 5 14:16:59 2023 +0100
+
+    Separate errors from main project creating a file errors.py
+
+[33mcommit d2a94be5fdb2a9411f7fac961386a8ad0d036592[m
+Merge: bf7267e 28abd5b
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 5 13:54:16 2023 +0100
+
+    Merge branch 'new_model' of git-server.giulio.net into new_model
+
+[33mcommit bf7267e43d459fc40467b1fa2f08ce071db3b931[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Dec 5 13:52:54 2023 +0100
+
+    Separate models from main project
+
+[33mcommit 28abd5b556b3bea7a82deeff2dafbc7be611549b[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Tue Dec 5 11:54:01 2023 +0100
+
+    Deduplicate function names.
+    
+    This should not break anything if my understanding is correct.
+    
+    ~
+
+[33mcommit c3961174dd306c3303c027aff11d6ba20fb5a684[m
+Author: Giulio 2 <giulio_work@email.com>
+Date:   Tue Dec 5 11:42:51 2023 +0100
+
+    Deduplicate function names.
+    
+    This should not break anything if my understanding is correct.
+
+[33mcommit 90fecc9e08c61710ab2fa5b258334baec1587912[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Dec 4 14:11:58 2023 +0100
+
+    Fix bug admin loggd in and homepage not working
+
+[33mcommit e1d076563fc4582f1602231a710feb789b4b822d[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 1 15:44:52 2023 +0100
+
+    Comment out logout (redundant), change the url of register in /admin/users/register, remove register from login_user, add template/customers login and user for future use
+
+[33mcommit d10f2d6a425850d872d779c8a83e4a2a0c8533b9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Dec 1 12:15:06 2023 +0100
+
+    Fix the bug which not allowed to register or login
+
+[33mcommit b2a3e2c7f6cc83882c412ced7399e3e885326a7d[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 30 18:33:10 2023 +0100
+
+    Fix bug homepage
+
+[33mcommit d8f91555bade3ca584831d1978e69c670cd77b55[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 30 18:15:16 2023 +0100
+
+    Quick update of the README
+
+[33mcommit e17bdd55b0f33630371eaa8b26d69f79deaed47f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 30 18:11:26 2023 +0100
+
+    Overwright the form, but after register nothing happens
+
+[33mcommit 60b03a9ecf3412b4bafd8042586a8768ec6e189b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 30 16:40:13 2023 +0100
+
+    Update old project
+
+[33mcommit f40ff051d759534edbd6dc5d4ce7d5be09518589[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 30 16:39:16 2023 +0100
+
+    Update old project
+
+[33mcommit 71b2472208efc4f83be66f16d8649c13ff196b94[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 29 14:35:49 2023 +0100
+
+    Modify template admin/index and security/register_user
+
+[33mcommit 9cbb4e0124f3af34ecfac4d289699bb48a0942c9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 29 14:17:47 2023 +0100
+
+    Modified the models to add the Roles, start to implement Flask Security model, I still cannot merge the register with admin/master.html
+
+[33mcommit a7651eb63f0fecd6ed4cd06b60794af8b28caff0[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 29 10:09:44 2023 +0100
+
+    Implement Flask Security Too, but I cannot merge the register with admin/master.html
+
+[33mcommit 650f0f055e63d0e604d671de8655fdc945ab91d8[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 28 18:02:11 2023 +0100
+
+    Succeeded in implementing Flask security, but templates need to be modified and joined with old_project
+
+[33mcommit 78089b27001c20bf88e2f8368eaec6cc80852423[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 28 16:33:49 2023 +0100
+
+    Secured admin page, but temporary revert from username to emil
+
+[33mcommit 8031793057000be7eef7b272fc9fbde38a9e2d6f[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 28 14:44:40 2023 +0100
+
+    Change User model id to UUID
+
+[33mcommit 8e8817dabb51ce94df8ab0c6577e55508635ec83[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 28 14:14:59 2023 +0100
+
+    Create new models, redesign templates, restructure the login/register process, add the relative app.config+
+
+[33mcommit bfa99112ba66eaeb5c0e99af64d150deeffcd58b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 28 09:16:57 2023 +0100
+
+    Start of the new branch
+
+[33mcommit a18d91b06c9536ed34f75947e9b716201b9ef96a[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 24 13:01:17 2023 +0100
+
+    Fix bug linked to the new name of model (users) and the route in the admin page
+
+[33mcommit be9fdae50cb3cfcb7a049a7830c4e056460284f5[m
+Merge: 2240738 20e6517
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 24 12:52:17 2023 +0100
+
+    Merge branch 'main' of git-server.giulio.net
+
+[33mcommit 20e651702bd1a1867335ba63b64a30d545b3be05[m
+Merge: 128f27a 2240738
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 23 14:48:03 2023 +0100
+
+    Merge branch 'login_functionality'
+
+[33mcommit 2240738bee7ab78efeaf4011da4410202f686a15[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 23 14:41:41 2023 +0100
+
+    Change the user model name from User to users
+
+[33mcommit cc7494ac4922d2228799a2ace3d59007e7afcd87[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 23 14:24:57 2023 +0100
+
+    Login works, but has to be modified
+
+[33mcommit 128f27ab4ec47cf180fcf4f25c05690b329e319d[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 23 10:15:59 2023 +0100
+
+    When reigster a new User, show messages if Password and Confirm password fields do not match
+
+[33mcommit 88354189e1b547dbc7fcf7147c8c64e941bc8115[m
+Merge: e8fe3f9 b362c82
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 22 17:43:56 2023 +0100
+
+    Merge branch 'main' of git-server.giulio.net
+
+[33mcommit b362c82c14a4a35a650e31dcfab0c0dfa487c837[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 22 15:28:00 2023 +0100
+
+    Remove field password
+
+[33mcommit 8875a6386922a2da0ff3566617155ac73c06807b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 22 11:26:11 2023 +0100
+
+    Update User model, improve nav bar so that Home button disappear if logged in and update README file
+
+[33mcommit e8fe3f9ba7ae9f1cafe4a6781d9830c9029aeb29[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 22 11:24:04 2023 +0100
+
+    Update User model, improve nav bar so that Home button disappear if logged in and update README file
+
+[33mcommit b9f9d468da0409c1a80636b684d1b5393128d6d9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 21 15:55:07 2023 +0100
+
+    Add 'device' to User model, register form/route/template  and improve README
+
+[33mcommit c2972eaba35e40ea12306a9e4ce4b23d49727e5c[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 21 10:19:58 2023 +0100
+
+    Hide User's password field in Admin dashboard
+
+[33mcommit 1c7d7f4bd64473e16c0eade944f0dceb87cee693[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 21 09:44:11 2023 +0100
+
+    Fixed bug: every user, once logged, can see any other user page simply changing the url
+
+[33mcommit 5a24f1b3416f32aa583c78a34afe50e9557cc661[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Nov 20 09:55:05 2023 +0100
+
+    Remove default='user' from role in User model - it create a bug in the login feature
+
+[33mcommit 1a53cccc2a7f4e57a5a319f52476bb079b2cac72[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 17 09:33:29 2023 +0100
+
+    BUG: the home page was always and only showing the button 'logout'
+
+[33mcommit 59eb3f36fbdf1e39bfa78bd3bcb5d04531a1d9d3[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 16 16:49:06 2023 +0100
+
+    Add role (customer and admin)  to User model, update DB, register's html page, form and route
+
+[33mcommit 7fd34ed91c16cd232b0b65ff7057b15b753dd8df[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 16 16:19:36 2023 +0100
+
+    Add logout logic and login_required to user- and logout-route
+
+[33mcommit 2651ac2fac6d41dbd6002c587de4e1002372ba9b[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 16 15:24:00 2023 +0100
+
+    Add email to User model, register form and register route
+
+[33mcommit 290acf39c5b48833d15ff8cdf530c014d90b62d3[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 16 12:42:06 2023 +0100
+
+    Improve flash messages
+
+[33mcommit 0c91ae77c8b576cf7c573609822b5993249b210d[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 16 12:10:05 2023 +0100
+
+    Add flash messages
+
+[33mcommit aed168ae17746d6b4b2a598f60c683bab71933bc[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 16 11:19:27 2023 +0100
+
+    Imporoving the README file
+
+[33mcommit 2c83f00e57a18d008a5e0130abb38fe7d95a7f21[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 15 18:06:52 2023 +0100
+
+    Implement bcrypt in the password feature
+
+[33mcommit b7e9203d3334d2658b558c6e5039b1b4140b0feb[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 15 17:22:01 2023 +0100
+
+    Fix massive bug about registration and login: now only admin can register new users and the password is not visible. Next task, use bcrypt to hash the password
+
+[33mcommit 5a270cc63713863b6d91d767c9d5446cb472c3bb[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 15 16:02:52 2023 +0100
+
+    Find a temporary solution to implement the admin-only registration
+
+[33mcommit c224d35127a142859ec139c92379c8c13126b9a4[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 15 16:01:42 2023 +0100
+
+    Find a temporary solution to implement the admin-only registration
+
+[33mcommit fad5629c65f62501e83386570aad7652de53c501[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 15 15:47:02 2023 +0100
+
+    Test - Ripristinate registration opton
+
+[33mcommit 341096808be7072b7129875752aaf57ba6ded396[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 14 11:52:35 2023 +0100
+
+    Heavily remake of the code: now only Admin can register new users, the password needs to be inserted twice and is hashed
+
+[33mcommit f5e74031b284fec3a31a8adeebf04403af0938fa[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Nov 13 09:47:59 2023 +0100
+
+    Add search feature in the nav bar
+
+[33mcommit 7763bbd9cf5872d7517cd8a59e29762f66cd53c9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 10 16:46:27 2023 +0100
+
+    Add error pages
+
+[33mcommit fc1a84f710efc957aaddef69502424b59554931e[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 10 14:58:33 2023 +0100
+
+    Bug: login does not work - It has been fixed
+
+[33mcommit f30937aaf73733b3eb19728d1b800ac32a2e9c63[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 9 17:55:39 2023 +0100
+
+    Add password confirmation and improve the html page of both login and registration BUG-Login still does not work
+
+[33mcommit 31c7b9f04788b388e65086e623835b488a852377[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 9 17:21:14 2023 +0100
+
+    Hash password with Werkzeug, BUG=login function is still not working
+
+[33mcommit 2a4f5fddf933628b97a1279eb02631fc0db304a0[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Thu Nov 9 14:15:16 2023 +0100
+
+    Create the Register and login feature - bug: when user logs in, nothing happensCC
+
+[33mcommit 0ce22ce3566c3695a1963961f32339215bea6c80[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 8 17:32:34 2023 +0100
+
+    Create the form for login
+
+[33mcommit 8fd2c9e96b76bf7ed057a8500b707382d5237832[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Wed Nov 8 13:29:35 2023 +0100
+
+    Improve the Admin page and create the user model view
+
+[33mcommit 460c4f2f437af55b43989f6a09e2bed3bb594ac9[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 7 17:15:25 2023 +0100
+
+    Create prototype for a dummy list of devices.
+
+[33mcommit b6b02eec08a5101216bc00213ff148af4e851d38[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Tue Nov 7 16:32:23 2023 +0100
+
+    start to create the logic/template for admin and user page
+
+[33mcommit 670fc95820cda46343ec8cba15e3e4ecc0eafe43[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Mon Nov 6 10:38:38 2023 +0100
+
+    Fix the nav bar
+
+[33mcommit d329a025fcdb5fd25051ed89c1a50f2498de7cf5[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 3 17:01:49 2023 +0100
+
+    Create files requirements, README, virtual environment, .env, .gitignore and index.html, but frontend does not look nice
+
+[33mcommit 6fd2bf693beee9871d74e92d62814dd7dac705fc[m
+Author: Giulio Arpaia <giulio.arpaia@gmail.com>
+Date:   Fri Nov 3 14:39:27 2023 +0100
+
+    First commit

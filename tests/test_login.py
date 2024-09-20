@@ -1,20 +1,29 @@
 class TestStudent:
-    def test_student_login(self, student_login):
-        response, student_username = student_login
+    def test_student_login(self, client, student_user):
+        
+        response = client.post(
+            "/student_login",
+            data=dict(
+                username=student_user.username,
+                password=student_user.plaintext_password,
+                roles=student_user.roles,
+            ),
+            follow_redirects=True,
+        )
 
         # Check if request was successful
         assert response.status_code == 200
 
         # Check if the content includes the username
         assert (
-            f"<h3>{student_username.title()}'s profile.</h3>".encode() in response.data
+            f"<h3>{student_user.username.title()}'s profile.</h3>".encode() in response.data
         )
 
         # Check if the content includes the flash message
         assert b"Logged in successfully." in response.data
 
         # Also assert that the final location URL is correct
-        assert response.request.path == f"/student/{student_username}/"
+        assert response.request.path == f"/student/{student_user.username}/"
 
     def test_student_logout(self, client, student_login):
         _, _ = student_login
@@ -90,10 +99,9 @@ class TestWrongLogin:
         assert response.request.path == "/student_login"
 
     def test_wrong_student_password(self, client, student_user):
-        student_username, _, _ = student_user
         response = client.post(
             "/student_login",
-            data=dict(username=student_username, password="Wrong password"),
+            data=dict(username=student_user.username, password="Wrong password"),
             follow_redirects=True,
         )
 
